@@ -10,6 +10,12 @@ contract EthBnB {
 
         uint id; 
 
+        uint dateCreated; 
+
+        uint fromDate; 
+
+        uint toDate; 
+        
         // TODO: isFinalised (when the bookee confirms their arrival.. etc)
         // cancel booking 
     } 
@@ -75,14 +81,16 @@ contract EthBnB {
     // FUNCTIONS 
     // =======================================================================
 
+    function checkListingId(uint listingId) {
+       require(listing.id != 0, "No such listing found."); 
+       require(listing.owner == msg.sender, "Only the owner of a listing can make it available/unavailable.");  
+    }
 
     /**
      * creates a new listing for the message sender
      */
     function createListing(string _location, uint _price, string _description) public {
         // Note: enforce a maximum number of listings per user? 
-
-        require(_price > 0, "Cannot have 0 or negative price"); 
 
         listings[nextListingId] = Listing({
             id : nextListingId, 
@@ -103,10 +111,8 @@ contract EthBnB {
     function setListingAvailability(uint listingId, uint[] dates, bool available) public {
         Listing storage listing = listings[listingId]; 
 
-        // TODO: move these checks to a new function
-        require(listing.id != 0, "No such listing found."); 
-        require(listing.owner == msg.sender, "Only the owner of a listing can make it available/unavailable."); 
-
+        checkingListingId(listingId); 
+        
         // if available is 'true', delete the entries from unavailable map
         // else create them 
         for(uint i = 0; i < dates.length; i++) {
@@ -118,21 +124,23 @@ contract EthBnB {
                 listing.unavailable[date] = true; 
             }
         }
-
     }
 
     function setListingPrice(uint listingId, uint _price) { 
-        // TODO: implement
+        checkingListingId(listingId); 
+        require(_price > 0, "Price must be > 0."); 
+        listings[listingId].price = _price; 
     }
 
-    function setListingDescription(uint listingId, string description) {
-        // TODO: implement
+    function setListingDescription(uint listingId, string _description) {
+        checkingListingId(listingId); 
+        listings[listingId].description = _description; 
     }
 
     function deleteListing(uint listingId) {
-        // TODO: implement 
-
-        // make sure there are no Bookings that are not yet finalised. 
+        checkingListingId(listingId); 
+        // TODO: check that there are no pending bookings, before deteleting
+        delete listings[listingId]; 
     }
 
 }
