@@ -131,11 +131,22 @@ contract EthBnB {
    * the created account will be added to 'accounts'
    */
   function createAccount(string _name) public {
+      // require(hasAccount(), "Account for msg.sender already exists. Cannot create a new one.");
       accounts[msg.sender] = Account({
           owner : msg.sender,
           name : _name,
+          // TODO: recheck block.timestamp used for date here
           dateCreated : block.timestamp
       });
+  }
+
+  function hasAccount() public view returns (bool) {
+      return accounts[msg.sender].owner == msg.sender;
+  }
+
+  function getName() public view returns (string) {
+      require(accounts[msg.sender].owner == msg.sender, "No account found.");
+      return accounts[msg.sender].name;
   }
 
   // LISTING
