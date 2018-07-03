@@ -7,38 +7,37 @@
     /**
      * checks that hasAccount() returns false when no account has been created
      */
-    it('Account: hasAcccount returns false when no account has been created', function() {
-      var bnb; 
-      return EthBnB.deployed().then(function(instance) {
-        bnb = instance
-        var accountExists0 = bnb.hasAccount.call({from: accounts[0]}).then(function(account0Exists) {
-          assert.isFalse(account0Exists, "Account 0 exists for some reason, shouldn't be the case.");
-        });
-        var accountExists1 = bnb.hasAccount.call({from: accounts[1]}).then(function(account1Exists) {
-          assert.isFalse(account1Exists, "Account 1 exists for some reason, shouldn't be the case.");
-        });
-      });
+    it('Account: hasAcccount returns false when no account has been created', async()  => {
+      var bnb = await EthBnB.deployed();
+      var account0Exists = await bnb.hasAccount.call({from: accounts[0]});
+      var account1Exists = await bnb.hasAccount.call({from: accounts[1]});
+      assert.isFalse(account0Exists, "Account 0 exists for some reason, shouldn't be the case.");
+      assert.isFalse(account1Exists, "Account 1 exists for some reason, shouldn't be the case.");
     });
 
     /**
      * checks that we can create accounts correctly and that the returned name is correct
      */
-    it('Account: createAccount correct', function() {
-      var bnb; 
+    it('Account: createAccount correct', async() => {
+      var bnb = await EthBnB.deployed();
+      
+      // create the account
+      var _shortName = "sami";
+      var res = await bnb.createAccount.call(_shortName, {from: accounts[0]});
+      console.log(accounts[0]);
+      console.log(res);
 
-      return EthBnB.deployed().then(function(instance) {
-        bnb = instance;
+      // check the account exists
+      var accountExists = await bnb.hasAccount.call({from: accounts[0]});
+      console.log(bnb.hasAccount);
+      console.log(accountExists)
+      assert.isTrue(accountExists, "createAccount doesn't seem to have created an account");
 
-        var _shortName = "sami";
-        bnb.createAccount(_shortName, {from: accounts[0]});
-        var accountExists = bnb.hasAccount.call( {from: accounts[0]} );
-        assert(accountExists, "createAccount doesn't seem to have created an account");
-        bnb.getName.call(function(actualName) {
-          assert(actualName === _shortName, "The account shortName does not match what we expect.");
-        });
-      });
+      // check the name is the same
+      var actualName = await bnb.getName.call({from: accounts[0]});
+      console.log(actualName);
+      assert.equals(actualName, _shortName, "The account shortName does not match what we expect.");
     });
-
 
     it('Listing: createListing correct', function() {
       var bnb;

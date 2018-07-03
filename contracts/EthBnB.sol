@@ -95,6 +95,8 @@ contract EthBnB {
   // MEMBER VARIABLES
   // =======================================================================
 
+  event Log(string _functionName, string _message);
+
   /**
    *
    */
@@ -118,6 +120,7 @@ contract EthBnB {
    */
   mapping(address => Account) accounts;
 
+
   // =======================================================================
   // FUNCTIONS
   // =======================================================================
@@ -131,17 +134,29 @@ contract EthBnB {
    * the created account will be added to 'accounts'
    */
   function createAccount(string _name) public {
-      // require(hasAccount(), "Account for msg.sender already exists. Cannot create a new one.");
-      accounts[msg.sender] = Account({
-          owner : msg.sender,
-          name : _name,
-          // TODO: recheck block.timestamp used for date here
-          dateCreated : block.timestamp
-      });
+    if (accounts[msg.sender].owner == msg.sender) {
+      emit Log("createAccount", "they are equal");
+    }
+    else {
+      emit Log("createAccount", "they are not equal");
+    }
+    // require(hasAccount(), "Account for msg.sender already exists. Cannot create a new one.");
+    accounts[msg.sender] = Account({
+      owner : msg.sender,
+      name : _name,
+      // TODO: recheck block.timestamp used for date here
+      dateCreated : block.timestamp
+    });
   }
 
   function hasAccount() public view returns (bool) {
-      return accounts[msg.sender].owner == msg.sender;
+    if (accounts[msg.sender].owner == msg.sender) {
+      emit Log("hasAccount", "they are equal");
+    }
+    else {
+      emit Log("hasAccount", "they are not equal");
+    }
+    return accounts[msg.sender].owner == msg.sender;
   }
 
   function getName() public view returns (string) {
