@@ -1,67 +1,73 @@
 pragma solidity ^0.4.22;
 
 /**
-* 
+*
+* Listings:
+* ---------
+* Created listings are stored in the their account's struct as well as in the
+* contract's listings mapping.
+*
+*
 * A calendar day is the minimum duration for a Booking
-*/ 
+*/
 contract EthBnB {
-    
-  struct Booking { 
 
-    uint id; 
+  struct Booking {
 
-    uint dateCreated; 
+    uint id;
 
-    uint fromDate; 
+    uint dateCreated;
 
-    uint toDate; 
+    uint fromDate;
+
+    uint toDate;
 
     // TODO: isFinalised (when the bookee confirms their arrival.. etc)
-    // cancel booking 
-  } 
+    // cancel booking
+  }
 
   struct Listing {
 
-    uint id; 
+    uint id;
 
-    uint price; 
+    uint price;
 
     address owner;
 
     /** title description of the listing */
-    string shortName; 
+    string shortName;
 
-    string description; 
+    string description;
 
-    string location; 
+    string location;
 
     /**
-     * stores all bookings for this Listing with 
-     * 
+     * stores all bookings for this Listing with
+     *
      * key       => value
      * bookingId => Booking
-     */ 
-    mapping(uint => Booking) bookings; 
+     */
+    mapping(uint => Booking) bookings;
 
-    /**  
-    * stores all dates and their corresponding bookings 
-    * 
-      * For a booking that spans several days, each date of 
+    /**
+    * stores all dates and their corresponding bookings
+    *
+      * For a booking that spans several days, each date of
     * of the booking duration is stored.
-      * 
+      *
       * key             => value
     * bookingDate     => Booking
-    */ 
-    mapping(uint => Booking) bookingDates; 
+    */
+    mapping(uint => Booking) bookingDates;
 
-    /** 
-    * stores all dates where the listing is unavailable. 
-    * 
-      * Note that the bool value is of no use here as only, 
+    /**
+    * stores all dates where the listing is unavailable.
+    *
+      * Note that the bool value is of no use here as only,
     * we only care about checking whether a specific date
-    * is present in this map.  
-      */ 
-    mapping(uint => bool) unavailable; 
+    * is present in this map.
+      */
+    mapping(uint => bool) unavailable;
   }
 
   struct Account {
@@ -72,15 +78,16 @@ contract EthBnB {
     string name;
 
     /** date at which the account was created */
-    uint dateCreated; 
- 
+    uint dateCreated;
+
     /**
      * stores all of this accounts listings with 'listingId' as the key
-     * 
+     *
      * key       => value
      * listingId => Listing
-     */    
-    mapping(uint => Listing);
+     */
+    mapping(uint => Listing) listings;
+
   }
 
 
@@ -88,104 +95,123 @@ contract EthBnB {
   // MEMBER VARIABLES
   // =======================================================================
 
+  /**
+   *
+   */
+  uint nextListingId = 1;
 
   /**
-  * increments for every created listing
-  */ 
-  uint nextListingId = 1; 
+   *
+   * store all created listings
+   * note that these are also stored in each Account.
+   *
+   * key        => value
+   * listingId  => Listing
+   */
+  mapping(uint => Listing) listings;
 
-  /** 
-  * maps 'listingId' to Listing
-  */ 
-  mapping(uint => Listing) listings; 
-
-  mapping(uint => Account) accounts;
+  /**
+   * stores created accounts
+   *
+   * key        => value
+   * msg.sender => Account
+   */
+  mapping(address => Account) accounts;
 
   // =======================================================================
-  // FUNCTIONS 
+  // FUNCTIONS
   // =======================================================================
 
+  // ACCOUNT
+  // ---------------------------------------------------------------------------
+
+  /**
+   * create an account
+   *
+   * the created account will be added to 'accounts'
+   */
   function createAccount(string _name) public {
-
-
+      accounts[msg.sender] = Account({
+          owner : msg.sender,
+          name : _name,
+          dateCreated : block.timestamp
+      });
   }
 
-  function checkListingId(uint listingId) {
-    Listing storage listing = listings[listingId]; 
-    require(listing.id != 0, "No such listing found."); 
-    require(listing.owner == msg.sender, "Only the owner of a listing can make it available/unavailable.");  
-  }
+  // LISTING
+  // ---------------------------------------------------------------------------
 
   /**
-  * creates a new listing for the message sender
-  * and returns the Id of the created listing
-  */
+   * creates a new listing for the message sender
+   * and returns the Id of the created listing
+   */
   function createListing(string _location, uint _price, string _shortName, string _description) public returns (uint) {
-    // Note: enforce a maximum number of listings per user? 
+    // Note: enforce a maximum number of listings per user?
 
-    listings[nextListingId] = Listing({
-      id : nextListingId, 
+    Listing memory newListing = Listing({
+      id : nextListingId,
       owner: msg.sender,
       location: _location,
-      price: _price, 
+      price: _price,
       shortName: _shortName,
       description: _description
-    }); 
+    });
 
-    nextListingId++; 
+    listings[nextListingId] = newListing;
+    accounts[msg.sender].listings[nextListingId] = newListing;
+    nextListingId++;
     return nextListingId - 1;
   }
 
   /**
-  * returns an array of all listings created by the message sender
-  */
-  function getMyListings() public {
-
-  }
-
-  /**
-  * make the listing with id provided unavailable for the given dates
-  * 
-    * only the listing owner can execute this function
-    */
+   * make the listing with id provided unavailable for the given dates
+   * only the listing owner can execute this function
+   */
   function setListingAvailability(uint listingId, uint[] dates, bool available) public {
-    Listing storage listing = listings[listingId]; 
-
-    checkListingId(listingId); 
+    checkListingId(listingId);
 
     // if available is 'true', delete the entries from unavailable map
-    // else create them 
+    // else create them
     for(uint i = 0; i < dates.length; i++) {
-      uint date = dates[i]; 
+      uint date = dates[i];
       if (available) {
-        delete listing.unavailable[date]; 
-      }  
+        delete listings[listingId].unavailable[date];
+      }
       else {
-        listing.unavailable[date] = true; 
+        listings[listingId].unavailable[date] = true;
       }
     }
   }
 
-  function setListingPrice(uint listingId, uint _price) { 
-    checkListingId(listingId); 
-    require(_price > 0, "Price must be > 0."); 
-    listings[listingId].price = _price; 
+  function setListingPrice(uint listingId, uint _price) public {
+    checkListingId(listingId);
+    require(_price > 0, "Price must be > 0.");
+    listings[listingId].price = _price;
   }
 
-  function setListingShortName(uint listingId, string _shortName) {
-    checkListingId(listingId); 
-    listings[listingId].shortName = _shortName; 
+  function setListingShortName(uint listingId, string _shortName) public {
+    checkListingId(listingId);
+    listings[listingId].shortName = _shortName;
   }
 
-  function setListingDescription(uint listingId, string _description) {
-    checkListingId(listingId); 
-    listings[listingId].description = _description; 
+  function setListingDescription(uint listingId, string _description) public {
+    checkListingId(listingId);
+    listings[listingId].description = _description;
   }
 
-  function deleteListing(uint listingId) {
-    checkListingId(listingId); 
+  function deleteListing(uint listingId) public {
+    checkListingId(listingId);
     // TODO: check that there are no pending bookings, before deteleting
-    delete listings[listingId]; 
+    delete listings[listingId];
+  }
+
+  function checkListingId(uint listingId) view private {
+    // make sure account exists
+    require(accounts[msg.sender].owner == msg.sender);
+
+    // make sure listing exists and properly associated with account
+    require(listings[listingId].id != 0, "No such listing found.");
+    require(listings[listingId].owner == msg.sender, "Only the owner of a listing can make it available/unavailable.");
   }
 
 }
