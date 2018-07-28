@@ -1,8 +1,10 @@
 (function() {
   'use strict';
+  const assert = require("chai").assert;
+  // const truffleAssert = require('truffle-assertions');
   var EthBnB = artifacts.require("EthBnB");
 
-  contract('EthBnB', function(accounts) {
+  contract('EthBnB', async (accounts) => {
 
     /**
      * checks that hasAccount() returns false when no account has been created
@@ -20,23 +22,18 @@
      */
     it('Account: createAccount correct', async() => {
       var bnb = await EthBnB.deployed();
-      
+
       // create the account
       var _shortName = "sami";
-      var res = await bnb.createAccount.call(_shortName, {from: accounts[0]});
-      console.log(accounts[0]);
-      console.log(res);
+      var res = await bnb.createAccount(_shortName, {from: accounts[0]});
 
       // check the account exists
-      var accountExists = await bnb.hasAccount.call({from: accounts[0]});
-      console.log(bnb.hasAccount);
-      console.log(accountExists)
+      var accountExists = await bnb.hasAccount({from: accounts[0]});
       assert.isTrue(accountExists, "createAccount doesn't seem to have created an account");
 
       // check the name is the same
       var actualName = await bnb.getName.call({from: accounts[0]});
-      console.log(actualName);
-      assert.equals(actualName, _shortName, "The account shortName does not match what we expect.");
+      assert.equal(actualName, _shortName, "The account shortName does not match what we expect.");
     });
 
     it('Listing: createListing correct', function() {
@@ -82,5 +79,16 @@
       });
     });
 
+      // FOR DEBUG: 
+      // Use snippet below to monitor logs 
+      // ---------------------------------
+      // var logEvent = bnb.Log()
+      // logEvent.watch(function(error, result) {
+      //   console.log("received the log event")
+      //   if (!error)
+      //     console.log(result)
+      //   else
+      //     console.log(error)
+      // }); 
   });
 })();
