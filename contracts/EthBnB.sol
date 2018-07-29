@@ -96,6 +96,7 @@ contract EthBnB {
   // =======================================================================
 
   event Log(string _functionName, string _message);
+  event CreateEvent(string _functionName, uint id, string more); 
 
   /**
    *
@@ -126,7 +127,7 @@ contract EthBnB {
   // =======================================================================
 
   // ACCOUNT
-  // ---------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
 
   /**
    * create an account
@@ -134,19 +135,13 @@ contract EthBnB {
    * the created account will be added to 'accounts'
    */
   function createAccount(string _name) public {
-    if (accounts[msg.sender].owner == msg.sender) {
-      emit Log("createAccount", "they are equal");
-    }
-    else {
-      emit Log("createAccount", "they are not equal");
-    }
-    // require(hasAccount(), "Account for msg.sender already exists. Cannot create a new one.");
     accounts[msg.sender] = Account({
       owner : msg.sender,
       name : _name,
       // TODO: recheck block.timestamp used for date here
       dateCreated : block.timestamp
     });
+    emit CreateEvent("createAccount", 0, _name); 
   }
 
   function hasAccount() public view returns (bool) {
@@ -165,13 +160,14 @@ contract EthBnB {
   }
 
   // LISTING
-  // ---------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
 
   /**
    * creates a new listing for the message sender
    * and returns the Id of the created listing
    */
-  function createListing(string _location, uint _price, string _shortName, string _description) public returns (uint) {
+  function createListing(string _location, uint _price, string _shortName, string _description) public {
+    require(hasAccount(), "Must have an account before creating a listing");
     // Note: enforce a maximum number of listings per user?
 
     Listing memory newListing = Listing({
@@ -185,8 +181,10 @@ contract EthBnB {
 
     listings[nextListingId] = newListing;
     accounts[msg.sender].listings[nextListingId] = newListing;
+    
+    emit CreateEvent("createListing", nextListingId, "");
+
     nextListingId++;
-    return nextListingId - 1;
   }
 
   /**
