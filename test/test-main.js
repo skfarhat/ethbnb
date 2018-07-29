@@ -1,13 +1,18 @@
 (function() {
   'use strict';
+
   const assert = require("chai").assert;
-  // const truffleAssert = require('truffle-assertions');
+  const truffleAssert = require('truffle-assertions');
   var EthBnB = artifacts.require("EthBnB");
+
 
   contract('EthBnB', async (accounts) => {
 
+    // Eth account that has no corresponding 'Account' in EthBnB contract
+    let UNUSED_ACCOUNT = accounts[8]; 
+
     /**
-     * checks that hasAccount() returns false when no account has been created
+     * Checks that hasAccount() returns false when no account has been created
      */
     it('Account: hasAcccount returns false when no account has been created', async()  => {
       var bnb = await EthBnB.deployed();
@@ -18,65 +23,67 @@
     });
 
     /**
-     * checks that we can create accounts correctly and that the returned name is correct
+     * Check that we can create an account
      */
     it('Account: createAccount correct', async() => {
       var bnb = await EthBnB.deployed();
 
-      // create the account
+      // Create the account
       var _shortName = "sami";
       var res = await bnb.createAccount(_shortName, {from: accounts[0]});
 
-      // check the account exists
+      // Check the account exists
       var accountExists = await bnb.hasAccount({from: accounts[0]});
       assert.isTrue(accountExists, "createAccount doesn't seem to have created an account");
 
-      // check the name is the same
+      // Check the name is the same
       var actualName = await bnb.getName.call({from: accounts[0]});
       assert.equal(actualName, _shortName, "The account shortName does not match what we expect.");
     });
 
-    it('Listing: createListing correct', function() {
-      var bnb;
+    /**
+     *  Check that we can create a listing returning a positive listing Id
+     */ 
+    it('Listing: createListing correct', async() => {
+      var bnb = await EthBnB.deployed(); 
 
-      return EthBnB.deployed().then(function(instance) {
-        bnb = instance;
+      // Create account
+      var _shortName = "Sami";
+      var res = await bnb.createAccount(_shortName, {from: accounts[0]}); 
 
-        // create account
-        var _shortName = "Sami";
-        bnb.createAccount.call(_shortName, {from: accounts[0]}).then(function() {
-          // create a listing
-          var _location = "London";
-          var _price = 5000;
-          var _shortName = "Sami's awesome place";
-          var _description = "You must be really awesome and Sami-approved to get the room there.\n" + 
-            "Also, you must invite him to all of the parties.";
-          bnb.createListing.call(_location, _price, _shortName, _description, {from : accounts[0]})
-            .then(function(listingId) {
-              assert(listingId > 0, "The returned Id was zero or negative.");
-            });
-        });
-      })
+      // Create a listing
+      var _location = "London";
+      var _price = 5000;
+      var _shortName = "Sami's awesome place";
+      var _description = "You must be really awesome and Sami-approved to get the room there.\n" + 
+          "Also, you must invite him to all of the parties.";
+      res = await bnb.createListing(_location, _price, _shortName, _description, {from: accounts[0]})
+    
+      // Check that an event was emitted 
+      truffleAssert.eventEmitted(res, 'CreateEvent', (ev) => {
+        return ev.id > 0 
+      }, 'CreateEvent should be emitted with the id of the created listing');
     });
 
     /**
-     * create listing without an account
+     * Create listing without an account
      */
-    it('Listing: createListing fails when user has no \'Account\'', function() {
-      var bnb;
-      EthBnB.deployed().then(function(instance) {
-        bnb = instance;
-        // create a listing
-        var _location = "London";
-        var _price = 5000;
-        var _shortName = "Sami's awesome place";
-        var _description = "You must be really awesome and Sami-approved to get the room there.\n" + 
-          "Also, you must invite him to all of the parties.";
-        bnb.createListing.call(_location, _price, _shortName, _description, {from : accounts[0]})
-          .then(function(listingId) {
-            assert(listingId < 1, "The returned Id was zero or negative.");
-          });
-      });
+    it('Listing: createListing fails when user has no \'Account\'', async() => {
+      var bnb = await EthBnB.deployed(); 
+
+      // Create a listing
+      var _location = "London";
+      var _price = 5000;
+      var _shortName = "Sami's awesome place";
+      var _description = "You must be really awesome and Sami-approved to get the room there.\n" + 
+        "Also, you must invite him to all of the parties.";
+        try {
+          var res = await bnb.createListing(_location, _price, _shortName, _description, {from : UNUSED_ACCOUNT})    
+          assert(false, "Should have thrown an exception")
+        }
+        catch(error) {
+          // Test pass 
+        }
     });
 
       // FOR DEBUG: 
