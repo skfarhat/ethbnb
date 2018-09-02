@@ -42,6 +42,26 @@
     })
 
     /**
+     * Create listing without an account
+     */
+    it('Listing: createListing fails when user has no \'Account\'', async() => {
+      var bnb = await EthBnB.deployed() 
+
+      // Create a listing
+      var _location = "London"
+      var _price = 5000
+      var _shortName = "Sami's awesome place"
+      var _description = "The place is so awesome - it's just awesome"
+        try {
+          var res = await bnb.createListing(_location, _price, _shortName, _description, {from : UNUSED_ACCOUNT})    
+          assert(false, "Should have thrown an exception")
+        }
+        catch(error) {
+          // Test pass 
+        }
+    })
+
+    /**
      *  Check that we can create a listing returning a positive listing Id
      */ 
     it('Listing: createListing correct', async() => {
@@ -64,26 +84,21 @@
       }, 'CreateEvent should be emitted with the id of the created listing')
     })
 
-    /**
-     * Create listing without an account
-     */
-    it('Listing: createListing fails when user has no \'Account\'', async() => {
-      var bnb = await EthBnB.deployed() 
+    /** 
+     * Check that getListing() returns only one entry for account0
+     */ 
+    it('Listing: getListing()', async() => {
+      var bnb = await EthBnB.deployed()
 
-      // Create a listing
-      var _location = "London"
-      var _price = 5000
-      var _shortName = "Sami's awesome place"
-      var _description = "The place is so awesome - it's just awesome"
-        try {
-          var res = await bnb.createListing(_location, _price, _shortName, _description, {from : UNUSED_ACCOUNT})    
-          assert(false, "Should have thrown an exception")
-        }
-        catch(error) {
-          // Test pass 
-        }
+      try {
+        var res = await bnb.getMyListingIds({from : accounts[0]})      
+        assert(res.length == 1)
+        assert(res[0] != 0)
+      }
+      catch(error) {
+        assert(false, "getListing() should not have thrown an exception")
+      }
     })
-
 
       // FOR DEBUG: 
       // Use snippet below to monitor logs 

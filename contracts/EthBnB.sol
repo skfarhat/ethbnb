@@ -87,6 +87,11 @@ contract EthBnB {
      * listingId => Listing
      */
     mapping(uint => Listing) listings;
+    
+    /** 
+     * array of all listing ids 
+     */
+    uint[] listingIds; 
 
   }
 
@@ -139,7 +144,8 @@ contract EthBnB {
       owner : msg.sender,
       name : _name,
       // TODO: recheck block.timestamp used for date here
-      dateCreated : block.timestamp
+      dateCreated : block.timestamp, 
+      listingIds: new uint[](0) // gives an array of 0 zeros
     });
     emit CreateEvent("createAccount", 0, _name); 
   }
@@ -162,6 +168,11 @@ contract EthBnB {
   // LISTING
   // -----------------------------------------------------------------------
 
+  function getMyListingIds() public view returns (uint[]) {
+      require(accounts[msg.sender].owner == msg.sender, "No account found.");
+      return accounts[msg.sender].listingIds; 
+  }
+  
   /**
    * creates a new listing for the message sender
    * and returns the Id of the created listing
@@ -179,8 +190,13 @@ contract EthBnB {
       description: _description
     });
 
+    // A new listing is stored in 3 places: 
+    // (1) global 'listings': this is a mapping of all listings 
+    // (2) account's 'listing': mapping of all listings for the given account 
+    // (3) account's 'listingIds': array of all the given account's listing ids
     listings[nextListingId] = newListing;
     accounts[msg.sender].listings[nextListingId] = newListing;
+    accounts[msg.sender].listingIds.push(nextListingId); 
     
     emit CreateEvent("createListing", nextListingId, "");
 
