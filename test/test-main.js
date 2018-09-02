@@ -100,6 +100,34 @@
       }
     })
 
+
+    /** 
+     * Test get/set listing price
+     */ 
+    it('Listing: get/set listing price()', async() => {
+      var bnb = await EthBnB.deployed()
+
+      try {
+        var res = await bnb.getMyListingIds({from : accounts[0]})      
+        var listingId = res[0]
+
+        // Get old listing price 
+        var oldPrice = await bnb.getListingPrice(listingId, {from : accounts[0]})
+
+        // Change it to 500 
+        var newPrice = 500
+        await bnb.setListingPrice(listingId, newPrice, {from : accounts[0]})
+
+        // Check that the changes applied
+        var toVerify = await bnb.getListingPrice(listingId, {from : accounts[0]})
+        assert(toVerify.toNumber() == newPrice)
+      }
+      catch(error) {
+        console.log(error)
+        assert(false, "getListing() should not have thrown an exception")
+      }
+    })
+
       // FOR DEBUG: 
       // Use snippet below to monitor logs 
       // ---------------------------------

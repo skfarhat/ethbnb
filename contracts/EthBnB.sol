@@ -68,6 +68,7 @@ contract EthBnB {
     * is present in this map.
       */
     mapping(uint => bool) unavailable;
+    
   }
 
   struct Account {
@@ -80,14 +81,6 @@ contract EthBnB {
     /** date at which the account was created */
     uint dateCreated;
 
-    /**
-     * stores all of this accounts listings with 'listingId' as the key
-     *
-     * key       => value
-     * listingId => Listing
-     */
-    mapping(uint => Listing) listings;
-    
     /** 
      * array of all listing ids 
      */
@@ -181,7 +174,7 @@ contract EthBnB {
     require(hasAccount(), "Must have an account before creating a listing");
     // Note: enforce a maximum number of listings per user?
 
-    Listing memory newListing = Listing({
+    listings[nextListingId] = Listing({
       id : nextListingId,
       owner: msg.sender,
       location: _location,
@@ -190,12 +183,6 @@ contract EthBnB {
       description: _description
     });
 
-    // A new listing is stored in 3 places: 
-    // (1) global 'listings': this is a mapping of all listings 
-    // (2) account's 'listing': mapping of all listings for the given account 
-    // (3) account's 'listingIds': array of all the given account's listing ids
-    listings[nextListingId] = newListing;
-    accounts[msg.sender].listings[nextListingId] = newListing;
     accounts[msg.sender].listingIds.push(nextListingId); 
     
     emit CreateEvent("createListing", nextListingId, "");
@@ -221,6 +208,11 @@ contract EthBnB {
         listings[listingId].unavailable[date] = true;
       }
     }
+  }
+
+  function getListingPrice(uint listingId) public view returns (uint) {
+      checkListingId(listingId);
+      return /*accounts[msg.sender].*/listings[listingId].price; 
   }
 
   function setListingPrice(uint listingId, uint _price) public {
@@ -255,4 +247,3 @@ contract EthBnB {
   }
 
 }
-
