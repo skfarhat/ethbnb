@@ -50,25 +50,25 @@ contract EthBnB {
     mapping(uint => Booking) bookings;
 
     /**
-    * stores all dates and their corresponding bookings
-    *
-      * For a booking that spans several days, each date of
-    * of the booking duration is stored.
-      *
-      * key             => value
-    * bookingDate     => Booking
-    */
+     * stores all dates and their corresponding bookings
+     *
+     * For a booking that spans several days, each date of
+     * of the booking duration is stored.
+     *
+     * key             => value
+     * bookingDate     => Booking
+     */
     mapping(uint => Booking) bookingDates;
 
     /**
-    * stores all dates where the listing is unavailable.
-    *
-      * Note that the bool value is of no use here as only,
-    * we only care about checking whether a specific date
-    * is present in this map.
-      */
+     * stores all dates where the listing is unavailable.
+     *
+     * Note that the bool value is of no use here as only,
+     * we only care about checking whether a specific date
+     * is present in this map.
+     */
     mapping(uint => bool) unavailable;
-    
+
   }
 
   struct Account {
@@ -103,7 +103,7 @@ contract EthBnB {
 
   /**
    *
-   * store all created listings
+   * Store all created listings
    * note that these are also stored in each Account.
    *
    * key        => value
@@ -112,7 +112,7 @@ contract EthBnB {
   mapping(uint => Listing) listings;
 
   /**
-   * stores created accounts
+   * Stores created accounts
    *
    * key        => value
    * msg.sender => Account
@@ -128,9 +128,9 @@ contract EthBnB {
   // -----------------------------------------------------------------------
 
   /**
-   * create an account
+   * Create an account
    *
-   * the created account will be added to 'accounts'
+   * The created account will be added to 'accounts'
    */
   function createAccount(string _name) public {
     accounts[msg.sender] = Account({
@@ -167,7 +167,7 @@ contract EthBnB {
   }
   
   /**
-   * creates a new listing for the message sender
+   * Creates a new listing for the message sender
    * and returns the Id of the created listing
    */
   function createListing(string _location, uint _price, string _shortName, string _description) public {
@@ -191,7 +191,7 @@ contract EthBnB {
   }
 
   /**
-   * make the listing with id provided unavailable for the given dates
+   * Make the listing with id provided unavailable for the given dates
    * only the listing owner can execute this function
    */
   function setListingAvailability(uint listingId, uint[] dates, bool available) public {
