@@ -212,7 +212,7 @@ contract EthBnB {
 
   function getListingPrice(uint listingId) public view returns (uint) {
       checkListingId(listingId);
-      return /*accounts[msg.sender].*/listings[listingId].price; 
+      return listings[listingId].price; 
   }
 
   function setListingPrice(uint listingId, uint _price) public {
@@ -221,9 +221,19 @@ contract EthBnB {
     listings[listingId].price = _price;
   }
 
+  function getListingShortName(uint listingId) public view returns (string) {
+      checkListingId(listingId);
+      return listings[listingId].shortName; 
+  }
+
   function setListingShortName(uint listingId, string _shortName) public {
     checkListingId(listingId);
     listings[listingId].shortName = _shortName;
+  }
+
+  function getListingDescription(uint listingId) public view returns (string){
+      checkListingId(listingId);
+      return listings[listingId].description; 
   }
 
   function setListingDescription(uint listingId, string _description) public {

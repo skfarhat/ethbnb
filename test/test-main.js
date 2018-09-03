@@ -2,6 +2,7 @@
   'use strict'
 
   const assert = require("chai").assert
+
   const truffleAssert = require('truffle-assertions')
   var EthBnB = artifacts.require("EthBnB")
 
@@ -87,7 +88,7 @@
     /** 
      * Check that getListing() returns only one entry for account0
      */ 
-    it('Listing: getListing()', async() => {
+    it("Listing: getListing()", async() => {
       var bnb = await EthBnB.deployed()
 
       try {
@@ -104,15 +105,12 @@
     /** 
      * Test get/set listing price
      */ 
-    it('Listing: get/set listing price()', async() => {
+    it("Listing: get/set listing price()", async() => {
       var bnb = await EthBnB.deployed()
 
       try {
         var res = await bnb.getMyListingIds({from : accounts[0]})      
         var listingId = res[0]
-
-        // Get old listing price 
-        var oldPrice = await bnb.getListingPrice(listingId, {from : accounts[0]})
 
         // Change it to 500 
         var newPrice = 500
@@ -120,11 +118,38 @@
 
         // Check that the changes applied
         var toVerify = await bnb.getListingPrice(listingId, {from : accounts[0]})
-        assert(toVerify.toNumber() == newPrice)
+        assert.equal(toVerify.toNumber(), newPrice)
       }
       catch(error) {
         console.log(error)
         assert(false, "getListing() should not have thrown an exception")
+      }
+    })
+
+    it("Listing: get/set description and shortName", async() => {
+      var bnb = await EthBnB.deployed()
+
+      try {
+        var res = await bnb.getMyListingIds({from : accounts[0]})      
+        var listingId = res[0]
+
+        // Setters
+        var newDescription = "Description NEW"
+        var newShortName = "ShortName NEW"
+        await bnb.setListingDescription(listingId, newDescription, {from: accounts[0]})
+        await bnb.setListingShortName(listingId, newShortName, {from: accounts[0]})
+
+        // Getters
+        var actualDescription = await bnb.getListingDescription(listingId, {from: accounts[0]})
+        var actualShortName = await bnb.getListingShortName(listingId, {from: accounts[0]})
+
+        assert.equal(actualShortName, newShortName, "ShortNames don't match")
+        assert.equal(actualDescription, newDescription, "Descriptions don't match")
+
+      }
+      catch(error) {
+        console.log(error)
+        assert(false, "shortname/description getter or setter should not have thrown an exception")
       }
     })
 
