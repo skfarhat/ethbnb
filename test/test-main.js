@@ -6,7 +6,6 @@
   const truffleAssert = require('truffle-assertions')
   var EthBnB = artifacts.require("EthBnB")
 
-
   contract('EthBnB', async (accounts) => {
 
     /** Eth account that has no corresponding 'Account' in EthBnB contract **/ 
@@ -86,7 +85,7 @@
     })
 
     /** 
-     * Check that getListing() returns only one entry for account0
+     * Check that getMyListingIds() returns only one entry for account0
      */ 
     it("Listing: getListing()", async() => {
       var bnb = await EthBnB.deployed()
@@ -100,7 +99,6 @@
         assert(false, "getListing() should not have thrown an exception")
       }
     })
-
 
     /** 
      * Test get/set listing price
@@ -126,6 +124,9 @@
       }
     })
 
+    /** 
+     * Test get/set description and shortName
+     */ 
     it("Listing: get/set description and shortName", async() => {
       var bnb = await EthBnB.deployed()
 
