@@ -95,6 +95,7 @@ contract EthBnB {
 
   event Log(string _functionName, string _message);
   event CreateEvent(string _functionName, uint id, string more); 
+  event DeleteEvent(string _functionName, uint id, string more); 
 
   /**
    *
@@ -192,7 +193,6 @@ contract EthBnB {
 
   /**
    * Make the listing with id provided unavailable for the given dates
-   * only the listing owner can execute this function
    */
   function setListingAvailability(uint listingId, uint[] dates, bool available) public {
     checkListingId(listingId);
@@ -245,6 +245,7 @@ contract EthBnB {
     checkListingId(listingId);
     // TODO: check that there are no pending bookings, before deteleting
     delete listings[listingId];
+    emit DeleteEvent("deleteListing", listingId, ""); 
   }
 
   function checkListingId(uint listingId) view private {

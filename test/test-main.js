@@ -1,3 +1,5 @@
+// TODO: complete test implementation of delete 
+//  
 (function() {
   'use strict'
 
@@ -151,6 +153,63 @@
       catch(error) {
         console.log(error)
         assert(false, "shortname/description getter or setter should not have thrown an exception")
+      }
+    })
+
+    /** 
+     * Test delete
+     */ 
+    it("Listing: delete", async() => {
+      var bnb = await EthBnB.deployed() 
+
+      // Create a listing
+      var _location = "Paris"
+      var _price = 300
+      var _shortName = "Place to be deleted"
+      var _description = "Description of a place to be deleted"
+      try {
+
+        // Count the number of listings for account0 
+        var myListings = await bnb.getMyListingIds({from: accounts[0]})
+        var prevCount = myListings.length
+
+        // Create a new listing then delete it 
+        var res = await bnb.createListing(_location, _price, _shortName, _description, 
+          {from : accounts[0]})
+
+        // Define delete callback 
+        async function deleteListingCallback(id) {
+          var res = await bnb.deleteListing(id, {from: accounts[0]})
+
+          // Check that a DeleteEvent is emitted
+          // truffleAssert.eventEmitted(res, "DeleteEvent", (ev) => {
+            // return ev.id == id
+          // }, "CreateEvent should be emitted with the id of the created listing")
+
+          // TODO: Change most/all function calls to use "call"
+          // TODO: revert createListing to just emit an event, no need to return. 
+
+          // Count the number of listings - should be the same as old  
+          var myListings2 = await bnb.getMyListingIds({from: accounts[0]})
+          var newCount = myListings2.length
+          assert.equal(newCount, oldCount, "Number of listings changed between creating/deleting")
+          
+          // Make sure created listing does not appear in myListings 
+          for (var i = 0 ; i < newCount; i++) {
+            if(myListings2[i] == id) 
+              assert(false)
+          }
+        }
+
+        truffleAssert.eventEmitted(res, 'CreateEvent', (ev) => {
+          deleteListingCallback(ev.id)
+          return ev.id > 0 
+        }, "CreateEvent should be emitted with the id of the created listing")
+
+      }
+      catch(error) {
+        console.log(error)
+        assert(false)
       }
     })
 
