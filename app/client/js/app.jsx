@@ -6,9 +6,11 @@ class App extends React.Component {
         console.log("App: constructor")
         super(props)
         this.state = {
-            'eth': {}     // Eth-related state
-        }
-        
+             // Eth-related state, 
+            'eth': {
+                selectedClient : -1 // Eth client that's selected    
+            },
+        } 
         this.setupState()
     }
     async setupState() {
@@ -47,7 +49,10 @@ class App extends React.Component {
         eth.contractInstance = contractInstance
         this.state.eth = eth
     }
-
+    clientSelectionChange(index) {
+        console.log("ClientSelectionChange: " + index)
+        console.log(index)
+    }
     render() {
         console.log("App: render")
         return (
@@ -57,7 +62,7 @@ class App extends React.Component {
                 </div>
                 <div id="div-content" className="row">
                     <div id="clients-container" className="col-8"> 
-                        <ClientsManager ctxt={this.state.eth}/> 
+                        <ClientsManager ctxt={this.state.eth} onClientSelectionChange={this.clientSelectionChange}/> 
                     </div>
                     <div id="api-container" className="col-4">
                         <APICaller />
