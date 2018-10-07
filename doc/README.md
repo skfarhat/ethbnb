@@ -16,6 +16,11 @@ In terminal 2: `truffle test`
 
 ### Running client 
 
+
+Running babel
+`npx babel --watch app/client/js --presets react-app/prod --out-dir .`
+
+
 js/main.js depends on loadAbi.js being populated with the correct contract ABI. 
 
 `loadAbi.js` must be manually updated if the contract is changed. To update it: 

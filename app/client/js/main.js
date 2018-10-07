@@ -3,7 +3,6 @@
     var Web3 = require('web3')
     // Global variables 
     // ----------------
-    const CLIENTS_NB = 3
     const PROVIDER_STR = "http://localhost:8545"
     var web3
     var web3Provider
@@ -22,19 +21,12 @@
         // create an instance of web3 using the HTTP provider.
         // NOTE in mist web3 is already available, so check first if it's available before instantiating
         web3 = new Web3(web3Provider)
-
         // Load ABI into contract
         var abiArray = window.abiArray // get it from somewhere
         var MyContract = TruffleContract(abiArray)
         MyContract.setProvider(web3Provider)
         console.log(MyContract)
         contractInstance = await MyContract.deployed()
-        // var event = contractInstance.CreateEvent({
-        //     x: null
-        // }, function(e, v) {
-        //     console.log("event watched")
-        //     console.log(result)
-        // })
     }
     // Set callbacks for button presses
     function setup_button_handlers() {
@@ -46,12 +38,13 @@
             console.log(inputName)
             console.log("balance: " + web3.eth.getBalance(account))
             var res = await contractInstance.createAccount(inputName, {
-                from: account, gas:100000
+                from: account,
+                gas: 100000
             })
             console.log(res)
             res = await contractInstance.hasAccount({
-                from: account, 
-                gas:100000
+                from: account,
+                gas: 100000
             })
             console.log("has account: " + res)
             // TODO: get the name parameter from the field
@@ -73,7 +66,7 @@
     // -------
     init()
     setup_button_handlers()
-    for (var i = 0; i < CLIENTS_NB; i++) {
-        update_client_div(i)
-    }
+    // for (var i = 0; i < CLIENTS_NB; i++) {
+    //     // update_client_div(i)
+    // }
 })()

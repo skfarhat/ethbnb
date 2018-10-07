@@ -9,6 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-react-app": "^3.1.2",
+    "react": "^16.5.2",
+    "react-dom": "^16.5.2",
     "truffle-contract": "^3.0.6"
   }
 }
