@@ -25,7 +25,6 @@
         var abiArray = window.abiArray // get it from somewhere
         var MyContract = TruffleContract(abiArray)
         MyContract.setProvider(web3Provider)
-        console.log(MyContract)
         contractInstance = await MyContract.deployed()
     }
     // Set callbacks for button presses
@@ -64,7 +63,7 @@
     }
     // Execute 
     // -------
-    init()
-    setup_button_handlers()
-    
+    // init()
+    // setup_button_handlers()
+
 })()
