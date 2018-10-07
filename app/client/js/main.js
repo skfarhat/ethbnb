@@ -66,7 +66,5 @@
     // -------
     init()
     setup_button_handlers()
-    // for (var i = 0; i < CLIENTS_NB; i++) {
-    //     // update_client_div(i)
-    // }
+    
 })()

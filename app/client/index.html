@@ -25,35 +25,8 @@
 </head>
 <body>
 
-    <div class="container"> 
-        <div id="div-top" class="row">
-            <div id="div-common" class="col-8">
-                <h2> Common </h2>
-                <p> Some common stuff here! </p>
-            </div>
-            <div id="div-general" class="col-4">
-                <h2> General </h2>
-            </div>
-        </div>
-
-        <div id="div-content" class="row">
-            
-            <div id="clients-container" class="col-8"> 
-                <!-- Populated by React module --> 
-            </div>
-
-            <div id="div-api" class="col-4">
-                <h2> API </h2>
-                <div>
-                    <button id="button-create-account"> Create Account </button> 
-                    <input type="text" name="account-name" placeholder="name" /> 
-                </div>
-
-                <button> Create Listing </button>
-            </div>
-        </div>
+    <div id="app" class="container"> 
     </div> <!-- container --> 
-
 
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
     <!-- Load React. -->
@@ -66,8 +39,13 @@
     <script type="text/javascript" src="./node_modules/truffle-contract/dist/truffle-contract.js"></script>
 
     <!-- Load our scripts -->
-    <script src="js/loadAbi.js"> </script>
-    <script type="text/babel" src="js/client.js"></script>
+    <script src="js/loadAbi.js"> </script> <!-- MUST BE BEFORE main.js -->
+    
+    <script type="text/babel" src="js/client.jsx"></script>
+    <script type="text/babel" src="js/common.jsx"></script>
+    <script type="text/babel" src="js/api-caller.jsx"></script>
+
+    <script type="text/babel" src="js/app.jsx"></script>
     <script src="js/main.js"> </script>
 
 </body>
