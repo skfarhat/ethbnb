@@ -8,6 +8,7 @@ class App extends React.Component {
         this.state = {
              // Eth-related state, 
             'eth': {
+                num_clients: 3, 
                 selectedClient : -1 // Eth client that's selected    
             },
         } 
@@ -65,7 +66,7 @@ class App extends React.Component {
                         <ClientsManager ctxt={this.state.eth} onClientSelectionChange={this.clientSelectionChange}/> 
                     </div>
                     <div id="api-container" className="col-4">
-                        <APICaller />
+                        <APICaller ctxt={this.state.eth}/>
                     </div>
                 </div>
             </div>

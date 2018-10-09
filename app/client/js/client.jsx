@@ -6,7 +6,6 @@ function Client(props) {
     return (            
         <div className="col client-div" data-client-id="{id}">
             <h2> Client {id} </h2>
-            <input type="radio" name="client" value="{id}" onChange={props.selectionChange}/>
             <div>
                 <em> Account ID </em> <span id="account_id"> {account_id} </span>
             </div>
@@ -18,12 +17,12 @@ class ClientsManager extends React.Component {
         console.log("ClientsManager: constructor()")
         super(props)
         this.eth = props.ctxt
-        this.num_clients = 3
+        console.log("ClientsManager: number of clients given is " + this.num_clients)
     }
     getClients() {
         console.log("ClientsManager: getClients()")
         let all_clients = []; 
-        for (var i = 0; i < this.num_clients; i++) {
+        for (var i = 0; i < this.eth.num_clients; i++) {
             if (this.eth.accounts) {
                 all_clients.push(
                     <Client 
