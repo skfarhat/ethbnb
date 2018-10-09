@@ -1,8 +1,6 @@
 function Client(props) {
     let id = props.clientId
     let account_id = props.clientAddress
-    console.log("Client props: ")
-    console.log(props)
     return (            
         <div className="col client-div" data-client-id="{id}">
             <h2> Client {id} </h2>
@@ -14,10 +12,8 @@ function Client(props) {
 }
 class ClientsManager extends React.Component {
     constructor(props) {
-        console.log("ClientsManager: constructor()")
         super(props)
         this.eth = props.ctxt
-        console.log("ClientsManager: number of clients given is " + this.num_clients)
     }
     getClients() {
         console.log("ClientsManager: getClients()")
@@ -29,7 +25,6 @@ class ClientsManager extends React.Component {
                     key={i} 
                     clientId={i} 
                     clientAddress={this.eth.accounts[i]} 
-                    selectionChange={this.props.onClientSelectionChange}
                     />
                     )
             }
