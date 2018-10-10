@@ -81,10 +81,10 @@ contract EthBnB {
     /** date at which the account was created */
     uint dateCreated;
 
-    /** 
-     * array of all listing ids 
+    /**
+     * array of all listing ids
      */
-    uint[] listingIds; 
+    uint[] listingIds;
 
   }
 
@@ -94,8 +94,9 @@ contract EthBnB {
   // =======================================================================
 
   event Log(string _functionName, string _message);
-  event CreateEvent(string _functionName, uint id, string more); 
-  event DeleteEvent(string _functionName, uint id, string more); 
+  event EvCreateAccount(address from, string name, uint dateCreated);
+  event CreateEvent(string _functionName, uint id, string more);
+  event DeleteEvent(string _functionName, uint id, string more);
 
   /**
    *
@@ -138,10 +139,10 @@ contract EthBnB {
       owner : msg.sender,
       name : _name,
       // TODO: recheck block.timestamp used for date here
-      dateCreated : block.timestamp, 
+      dateCreated : block.timestamp,
       listingIds: new uint[](0) // gives an array of 0 zeros
     });
-    emit CreateEvent("createAccount", 0, _name); 
+    emit EvCreateAccount(msg.sender, _name, block.timestamp);
   }
 
   function hasAccount() public view returns (bool) {
@@ -164,9 +165,9 @@ contract EthBnB {
 
   function getMyListingIds() public view returns (uint[]) {
       require(accounts[msg.sender].owner == msg.sender, "No account found.");
-      return accounts[msg.sender].listingIds; 
+      return accounts[msg.sender].listingIds;
   }
-  
+
   /**
    * Creates a new listing for the message sender
    * and returns the Id of the created listing
@@ -184,8 +185,8 @@ contract EthBnB {
       description: _description
     });
 
-    accounts[msg.sender].listingIds.push(nextListingId); 
-    
+    accounts[msg.sender].listingIds.push(nextListingId);
+
     emit CreateEvent("createListing", nextListingId, "");
 
     nextListingId++;
@@ -212,7 +213,7 @@ contract EthBnB {
 
   function getListingPrice(uint listingId) public view returns (uint) {
       checkListingId(listingId);
-      return listings[listingId].price; 
+      return listings[listingId].price;
   }
 
   function setListingPrice(uint listingId, uint _price) public {
@@ -223,7 +224,7 @@ contract EthBnB {
 
   function getListingShortName(uint listingId) public view returns (string) {
       checkListingId(listingId);
-      return listings[listingId].shortName; 
+      return listings[listingId].shortName;
   }
 
   function setListingShortName(uint listingId, string _shortName) public {
@@ -233,7 +234,7 @@ contract EthBnB {
 
   function getListingDescription(uint listingId) public view returns (string){
       checkListingId(listingId);
-      return listings[listingId].description; 
+      return listings[listingId].description;
   }
 
   function setListingDescription(uint listingId, string _description) public {
@@ -245,7 +246,7 @@ contract EthBnB {
     checkListingId(listingId);
     // TODO: check that there are no pending bookings, before deteleting
     delete listings[listingId];
-    emit DeleteEvent("deleteListing", listingId, ""); 
+    emit DeleteEvent("deleteListing", listingId, "");
   }
 
   function checkListingId(uint listingId) view private {

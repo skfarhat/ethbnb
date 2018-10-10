@@ -17,34 +17,33 @@ function Client(props) {
 class ClientsManager extends Component {
   constructor(props) {
     super(props)
-    this.eth = props.ctxt
+    this.eth = props.eth
   }
 
   getClients() {
-    console.log('ClientsManager: getClients()')
     let all_clients = [];
-    for (var i = 0; i < this.eth.num_clients; i++) {
-      if (this.eth.accounts) {
-        all_clients.push(
-          <Client
-          key={i}
-          clientId={i}
-          clientAddress={this.eth.accounts[i]}
-          />
-        )
-      }
+    for (var i = 0; i < this.props.clients.length; i++) {
+      all_clients.push(
+        <Client
+        key={i}
+        clientId={i}
+        clientAddress={this.props.clients[i].address}
+        clientAccount={this.props.clients[i].account}
+        clientListings={this.props.clients[i].listings}
+        />
+      )
     }
     return all_clients
   }
 
   render() {
-    console.log('ClientsManager: render')
     return (
       <div id="div-clients">
         <h2> Clients </h2>
-          { this.getClients() }
+        { this.getClients() }
       </div>
     )
   }
 }
+
 export default ClientsManager
