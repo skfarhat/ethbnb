@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
-import Common from "./common.jsx"
-import ClientsManager from "./client.jsx"
-import APICaller from "./api-caller.jsx"
+import Common from "./Common.jsx"
+import ClientsManager from "./Client.jsx"
+import APICaller from "./APICaller.jsx"
 import TruffleContract from 'truffle-contract'
 import "./loadAbi.js"
 import './main.css'
@@ -35,7 +35,7 @@ class App extends Component {
       web3 = new Web3(web3.currentProvider);
     } else {
       // set the provider you want from Web3.providers
-      web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+      web3 = new Web3(new Web3.providers.HttpProvider(PROVIDER_STR));
     }
 
     // Load ABI into contract
@@ -57,14 +57,14 @@ class App extends Component {
     console.log('App: render')
     return (
       <div>
-        <div id="div-top" className= "row">
+        <div className= "row">
           <Common />
         </div>
-        <div id= "div-content" className="row" >
-          <div id="clients-container" className="col-8" >
+        <div className="row">
+          <div className="col-8" >
             <ClientsManager ctxt={this.state} />
           </div>
-        <div id="api-container" className="col-4" >
+        <div className="col-4" >
           <APICaller ctxt={this.state} />
         </div>
       </div>

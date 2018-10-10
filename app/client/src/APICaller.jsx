@@ -65,16 +65,19 @@ class APICaller extends Component {
             var optionElements = []
             for (var i = 0; i < this.props.ctxt.num_clients; i++) {
                 optionElements.push(
-                    <option value={i}>{i}</option>)
+                    <option key={i} value={i}>{i}</option>)
             }
 
             var selectElem = React.createElement(
               "select",
-              { onChange: (evt) => this.clientSelectChanged(evt) } , // props
+              {
+                key: "client-selector",
+                onChange: (evt) => this.clientSelectChanged(evt)
+              } , // props
               [optionElements] // children
             )
             var rest = (
-                  <div>
+                  <div key="command-buttons">
                       <h2> API </h2>
                       <div>
                           <EthButton name="Has Account" handleClick={this.hasAccount} parent={this}/>
