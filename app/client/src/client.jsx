@@ -1,3 +1,5 @@
+import React, { Component } from 'react';
+
 function Client(props) {
   const id = props.clientId
   const accountId = props.clientAddress
@@ -12,7 +14,7 @@ function Client(props) {
   )
 }
 
-class ClientsManager extends React.Component {
+class ClientsManager extends Component {
   constructor(props) {
     super(props)
     this.eth = props.ctxt
@@ -45,3 +47,4 @@ class ClientsManager extends React.Component {
     )
   }
 }
+export default ClientsManager

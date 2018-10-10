@@ -1,7 +1,6 @@
-class Common extends React.Component {
-    constructor(props) {
-        super(props)
-    }
+import React, { Component } from 'react';
+
+class Common extends Component {
     render() {
         return (
             <div id="div-common">
@@ -11,3 +10,5 @@ class Common extends React.Component {
             )
     }
 }
+
+export default Common

@@ -1,18 +1,20 @@
-class EthButton extends React.Component {
-  render(props) {
+import React, { Component } from 'react';
+
+class EthButton extends Component {
+  render() {
     var props = this.props
     return (
-        <button onClick={() => props.handleClick(props.parent)}> {props.name} </button> 
+        <button onClick={() => props.handleClick(props.parent)}> {props.name} </button>
       )
   }
 }
 
-class APICaller extends React.Component {
+class APICaller extends Component {
         constructor(props) {
             super(props)
-            this.state = { 
-              error: null, 
-              errorInfo: null, 
+            this.state = {
+              error: null,
+              errorInfo: null,
               selectedClient: 0
             };
         }
@@ -31,7 +33,7 @@ class APICaller extends React.Component {
           var clientId = parseInt(state.selectedClient)
           var account = eth.web3.eth.accounts[clientId]
           var res = await eth.contractInstance.hasAccount({
-            from: account, 
+            from: account,
             gas:100000
           })
           console.log("Client ", clientId, " has account:", res)
@@ -49,39 +51,37 @@ class APICaller extends React.Component {
           })
           console.log("CreateAccount result", res)
         }
-        // Called when the select (dropdown) changes. 
-        // It updates state.selectedClient which is a string. 
+        // Called when the select (dropdown) changes.
         clientSelectChanged(evt) {
-          this.state.selectedClient = evt.target.value
+          this.setState({selectedClient: evt.target.value})
         }
-        // Called when the input field for account name changes. 
-        // It will update state.accountNameIn without triggering an update to UI (it doesn't call setState())
+        // Called when the input field for account name changes.
         updateAccountNameInput(evt) {
-          this.state.accountNameIn = evt.target.value
+          this.setState({accountNameIn: evt.target.value})
         }
         getContent() {
             console.log("APICaller")
 
             var optionElements = []
             for (var i = 0; i < this.props.ctxt.num_clients; i++) {
-                optionElements.push( 
+                optionElements.push(
                     <option value={i}>{i}</option>)
             }
-            
+
             var selectElem = React.createElement(
-              "select", 
+              "select",
               { onChange: (evt) => this.clientSelectChanged(evt) } , // props
               [optionElements] // children
             )
             var rest = (
-                  <div> 
+                  <div>
                       <h2> API </h2>
                       <div>
-                          <EthButton name="Has Account" handleClick={this.hasAccount} parent={this}/> 
+                          <EthButton name="Has Account" handleClick={this.hasAccount} parent={this}/>
                           <EthButton name="Create Account" handleClick={this.createAccount} parent={this}/>
                           <input type="text" name="account-name" placeholder="name" onChange={evt => this.updateAccountNameInput(evt)} />
                       </div>
-                      <div> 
+                      <div>
                           <button> Create Listing </button>
                       </div>
                   </div>
@@ -90,7 +90,7 @@ class APICaller extends React.Component {
             return div
         }
         render() {
-            content = this.getContent()
+            let  content = this.getContent()
             // Error path
             if (this.state.errorInfo) {
               return (<h2>Something went wrong.</h2>);
@@ -98,3 +98,5 @@ class APICaller extends React.Component {
             return (content)
         }
 }
+
+export default APICaller

@@ -1,7 +1,16 @@
-var Web3 = require('web3')
+import React, { Component } from 'react'
+import Common from "./common.jsx"
+import ClientsManager from "./client.jsx"
+import APICaller from "./api-caller.jsx"
+import TruffleContract from 'truffle-contract'
+import "./loadAbi.js"
+import './main.css'
+
+var Web3 = require("web3")
+var web3
 const PROVIDER_STR = 'http://localhost:8545'
 
-class App extends React.Component {
+class App extends Component {
   constructor(props) {
     console.log('App: constructor')
     super(props)
@@ -21,24 +30,21 @@ class App extends React.Component {
   }
 
   async setupEth() {
-    let provider
     console.log('App: setupEth')
-    if (typeof this.web3 !== 'undefined') {
-      provider = this.web3.currentProvider;
+    if (typeof web3 !== 'undefined') {
+      web3 = new Web3(web3.currentProvider);
     } else {
-      // If no injected web3 instance is detected, fall back to Ganache
-      provider = new Web3.providers.HttpProvider(PROVIDER_STR);
+      // set the provider you want from Web3.providers
+      web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
     }
-
-    // Create an instance of web3 using the HTTP provider.
-    // NOTE in mist web3 is already available, so check first if it's available before instantiating
-    const web3 = new Web3(provider)
 
     // Load ABI into contract
     const abiArray = window.abiArray // get it from somewhere
+    console.log("Before creating TruffleContract")
     const MyContract = TruffleContract(abiArray)
-    MyContract.setProvider(provider)
+    MyContract.setProvider(web3.currentProvider)
     const contractInstance = await MyContract.deployed()
+    console.log("After creating contractInstance")
 
     // Set properties on `this.state.eth`
     this.state.web3 = web3
@@ -67,7 +73,4 @@ class App extends React.Component {
   }
 }
 
-ReactDOM.render(
-  <App />,
-  document.getElementById('app')
-)
+export default App
