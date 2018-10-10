@@ -1,17 +1,37 @@
 import React, { Component } from 'react';
 
-function Client(props) {
-  const id = props.clientId
-  const accountId = props.clientAddress
-  return (
-    <div className="col client-div" data-client-id="{id}">
-      <h2> Client {id} </h2>
+class Account extends Component {
+
+  render(props) {
+    let toAdd = []
+    if (this.props.act !== null && this.props.act !== undefined) {
+      toAdd.push(<h3 key="3"> Account information here </h3>)
+    }
+    return (
       <div>
-        <em> Account ID </em>
-        <span id="accountId"> {accountId} </span>
+      {toAdd}
       </div>
+    )
+  }
+}
+
+class Client extends Component {
+  render() {
+    const id = this.props.clientId
+    const accountId = this.props.clientAddress
+    const clientAccount = this.props.clientAccount
+
+    return (
+      <div className="col client-div" data-client-id="{id}">
+        <h2> Client {id} </h2>
+        <div>
+          <em> Address </em>
+          <span id="accountId"> {accountId} </span>
+        </div>
+        <Account act={clientAccount} />
     </div>
-  )
+    )
+  }
 }
 
 class ClientsManager extends Component {
@@ -20,7 +40,8 @@ class ClientsManager extends Component {
     this.eth = props.eth
   }
 
-  getClients() {
+  render() {
+    console.log("ClientsManager: render")
     let all_clients = [];
     for (var i = 0; i < this.props.clients.length; i++) {
       all_clients.push(
@@ -33,14 +54,11 @@ class ClientsManager extends Component {
         />
       )
     }
-    return all_clients
-  }
 
-  render() {
     return (
       <div id="div-clients">
         <h2> Clients </h2>
-        { this.getClients() }
+        { all_clients }
       </div>
     )
   }

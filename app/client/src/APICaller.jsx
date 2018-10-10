@@ -64,8 +64,6 @@ class APICaller extends Component {
     })
   }
   getContent() {
-    console.log("APICaller")
-
     var optionElements = []
     for (var i = 0; i < this.props.eth.num_clients; i++) {
       optionElements.push(
@@ -97,6 +95,7 @@ class APICaller extends Component {
     return div
   }
   render() {
+    console.log("APICaller: render")
     let content = this.getContent()
     // Error path
     if (this.state.errorInfo) {

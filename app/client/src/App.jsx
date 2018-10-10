@@ -18,7 +18,13 @@ class App extends Component {
     this.state = {
       clients: []
     }
-    this.setupState() // async method
+    // Dictionary organising clients by (key->value)
+    // 'string address'->'int index'
+    // where the index represents the client object referenced
+    // in this.state.clients
+    this.clientsDict = {}
+    // Async method
+    this.setupState()
   }
 
   async setupState() {
@@ -32,7 +38,7 @@ class App extends Component {
     if (typeof web3 !== 'undefined') {
       web3 = new Web3(web3.currentProvider);
     } else {
-      // set the provider you want from Web3.providers
+      // Set the provider you want from Web3.providers
       web3 = new Web3(new Web3.providers.HttpProvider(PROVIDER_STR));
     }
 
@@ -56,23 +62,42 @@ class App extends Component {
         "account": null,
         "listings": null
       }
+      this.clientsDict[this.state.accounts[i]] = i
     }
 
     // Setup event listener for CreateAccountEv
+    var self = this
     var ContractInstance = this.state.contractInstance
     var createAccountEv = ContractInstance.EvCreateAccount()
+    // NOTE: looks like it's returning only the last event..
     createAccountEv.watch(function(error, result) {
       console.log("createAccountEv fired.", error, result)
-    // TODO: extract the event arguments from result.args
+      const {from, name, dateCreated} = result.args
+      var client = self.getClientObjFromAddress(from)
+      client.account = {
+        name: name,
+        dateCreated: dateCreated,
+      }
+      // self.forceUpdate()
+      self.setState(self.state)
+      console.log("SetState")
     })
 
     var toSet = {
       clients: clients,
-      num_clients: 3
+      num_clients: this.NUM_CLIENTS
     }
     // Change state after all eth is setup to re-render child components
     this.setState(toSet)
     console.log("setState called again..", toSet)
+  }
+
+  // Given the account address for a client, return the client object
+  getClientObjFromAddress(address) {
+    if (address in this.clientsDict)
+      return this.state.clients[this.clientsDict[address]]
+    else
+      return null
   }
 
   render() {
