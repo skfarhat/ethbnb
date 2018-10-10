@@ -1,14 +1,15 @@
 {
-    "extends": "airbnb", 
-    "plugins": ["react"], 
+    "extends": "airbnb",
+    "plugins": ["react"],
 
       "rules" : {
-        "semi": 0, 
-        "no-console": 0, 
+        "semi": 0,
+        "no-console": 0,
         "quotes": [2, "single"],
         "strict": [2, "never"],
         "react/jsx-uses-react": 2,
         "react/jsx-uses-vars": 2,
-        "react/react-in-jsx-scope": 2
-  } 
+        "react/react-in-jsx-scope": 2,
+        "prefer-destructuring": 0
+  }
 }
