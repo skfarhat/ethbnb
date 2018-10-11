@@ -14,7 +14,7 @@ class Account extends Component {
           <table border="1">
           <tbody>
           <tr>
-          <td colspan="2"> <b> Account </b> </td>
+          <td colSpan="2"> <b> Account </b> </td>
           </tr>
             <tr>
               <td> Name </td>
@@ -29,7 +29,7 @@ class Account extends Component {
         </div>
       )
     } else {
-      return (<div> jk</div>)
+      return (<div> <em> No account information. </em> </div>)
     }
   }
 }

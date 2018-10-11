@@ -63,6 +63,50 @@ class APICaller extends Component {
       accountNameIn: evt.target.value
     })
   }
+  parseABIForFunctions() {
+    console.log("parseABIForFunctions", this.props)
+
+    // If there's no ABI to work with abort.
+    if ( !('eth' in this.props) || !('abiArray' in this.props.eth))
+      return []
+
+    console.log(this.props)
+
+    // We will return this after populating
+    let ret = []
+
+    // For each function in the ABI
+    var abi = this.props.eth.abiArray.abi
+    for (var i = 0; i < abi.length; i++) {
+      var o = abi[i]
+
+      // Skip non-functions
+      if (o.type !== "function")
+        continue
+
+      // Parse the inputs of this function and create a list of DOM elements
+      let inputsDom = []
+      for (var j = 0; j < o.inputs.length; j++) {
+        var input = o.inputs[j]
+        if (input.type !== "uint256" && input.type !== "string") {
+          console.log("Skipping input.type", input.type, ". Still unsupported.");
+          continue
+        }
+        inputsDom.push(
+          <div key={input.name}>
+            <input type="text" name={input.name} placeholder={input.name}/>
+          </div>
+        )
+      }
+
+      // TODO: replace the inputs here with EthButton which will need to take a handler for the function too.
+      ret.push(React.createElement('div',
+        {key: o.name},
+        [<EthButton key={o.name} name={o.name}/>, inputsDom]
+      ))
+    }
+    return ret
+  }
   getContent() {
     var optionElements = []
     for (var i = 0; i < this.props.eth.num_clients; i++) {
@@ -96,7 +140,9 @@ class APICaller extends Component {
   }
   render() {
     console.log("APICaller: render")
-    let content = this.getContent()
+    // let content = this.getContent()
+    // let content = this.parseABIForFunctions()
+    let content = this.parseABIForFunctions()
     // Error path
     if (this.state.errorInfo) {
       return (<h2>Something went wrong.</h2>);

@@ -43,7 +43,6 @@ class App extends Component {
     }
     console.log(web3.version)
 
-
     // Load ABI into contract
     const abiArray = window.abiArray // get it from somewhere
     const MyContract = TruffleContract(abiArray)
@@ -52,6 +51,7 @@ class App extends Component {
 
     // Set properties on `this.state.eth`
     this.state.web3 = web3
+    this.state.abiArray = abiArray
     this.state.accounts = web3.eth.accounts
     this.state.MyContract = MyContract
     this.state.contractInstance = contractInstance
@@ -80,15 +80,18 @@ class App extends Component {
         var ev = result[i]
         const {from, name, dateCreated} = ev.args
         var client = self.getClientObjFromAddress(from)
+        if (!client) {
+          console.log("BUG: something wrong here??")
+          continue
+        }
         client.account = {
           name: name,
           dateCreated: dateCreated,
         }
       }
 
-      // self.forceUpdate()
       self.setState(self.state)
-      // console.log("SetState")
+      console.log("SetState")
     }
 
     // Get all future events
