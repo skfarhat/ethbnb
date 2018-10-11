@@ -1,22 +1,56 @@
 import React, { Component } from 'react';
 
 class APICommand extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      buttonEnabled: true
+    }
+    this.inputsDom = []
+  }
+
+  generateInputFields() {
+    let inputs = this.props.inputs
+
+    // Parse the inputs of this function and create a list of DOM elements
+    let inputsDom = []
+    // Set this to true if the function input parameter is unsupported and we don't want to include that function
+    // as an API button.
+    let unsupportedInput = false
+    for (var j = 0; j < inputs.length; j++) {
+      var input = inputs[j]
+      if (input.type !== "uint256" && input.type !== "string") {
+        console.log("Skipping input.type", input.type, ". Still unsupported.");
+        unsupportedInput = true
+        break
+      }
+      inputsDom.push(
+        <div key={input.name}>
+            <input type="text" name={input.name} placeholder={input.name}/>
+          </div>
+      )
+    }
+    this.inputsDom = React.createElement(
+      'div',
+      {},
+      inputsDom)
+    this.buttonDisabled = unsupportedInput
+  }
+
   render() {
     return (
       <div className="apiCommand">
-        <button key="button" className="btn btn-default" type="button"> {this.props.name} </button>
-          {this.props.inputsDom}
+        <button
+      key="button"
+      className="btn btn-default"
+      type="button"
+      disabled={this.buttonDisabled}
+      onClick={(evt) => this.props.handleButtonClick(evt, this.props.name)}>
+        {this.props.name}
+        </button>
+        {this.generateInputFields()}
       </div>
       );
-  }
-}
-
-class EthButton extends Component {
-  render() {
-    var props = this.props
-    return (
-      <button onClick={() => props.handleClick(props.parent)}> {props.name} </button>
-    )
   }
 }
 
@@ -37,6 +71,7 @@ class APICaller extends Component {
     })
   // You can also log error messages to an error reporting service here
   }
+
   async hasAccount(self) {
     console.log("hasAccount", self)
     var state = self.state
@@ -49,6 +84,7 @@ class APICaller extends Component {
     })
     console.log("Client ", clientId, " has account:", res)
   }
+
   async createAccount(self) {
     console.log("createAccount", self)
     var state = self.state
@@ -62,12 +98,20 @@ class APICaller extends Component {
     })
     console.log("CreateAccount result", res)
   }
+
   // Called when the select (dropdown) changes.
   clientSelectChanged(evt) {
     this.setState({
       selectedClient: evt.target.value
     })
   }
+
+  // Called when an APICommand button is clicked
+  handleAPIButtonClick(evt, name) {
+    console.log("handleAPIButtonClick")
+    console.log(evt, name)
+  }
+
   // Called when the input field for account name changes.
   updateAccountNameInput(evt) {
     this.setState({
@@ -96,75 +140,22 @@ class APICaller extends Component {
       if (o.type !== "function")
         continue
 
-      // Parse the inputs of this function and create a list of DOM elements
-      let inputsDom = []
-      // Set this to true if the function input parameter is unsupported and we don't want to include that function
-      // as an API button.
-      let unsupportedInput = false
-      for (var j = 0; j < o.inputs.length; j++) {
-        var input = o.inputs[j]
-        if (input.type !== "uint256" && input.type !== "string") {
-          console.log("Skipping input.type", input.type, ". Still unsupported.");
-          unsupportedInput = true
-          break
-        }
-        inputsDom.push(
-          <div key={input.name}>
-            <input type="text" name={input.name} placeholder={input.name}/>
-          </div>
-        )
-      }
-
-      // This function has some input parameters that we don't know how to handle (or render in the DOM),
-      // so we'll skip adding
-      if (unsupportedInput)
-        continue
-
       // TODO: replace the inputs here with EthButton which will need to take a handler for the function too.
-      ret.push(React.createElement('div',
-        {
-          id: 'rightSideAPI',
-          key: o.name,
-        },
-        [<APICommand key={o.name} name={o.name} inputsDom={inputsDom}/>]
-        ))
+      ret.push(React.createElement('div', {
+        id: 'rightSideAPI',
+        key: o.name,
+      },
+        [<APICommand
+        key={o.name}
+        name={o.name}
+        inputs={o.inputs}
+        handleButtonClick={this.handleAPIButtonClick}
+        />]
+      ))
     }
-
     return ret
   }
 
-  // TODO: to remove
-  getContent() {
-    var optionElements = []
-    for (var i = 0; i < this.props.eth.num_clients; i++) {
-      optionElements.push(
-        <option key={i} value={i}>{i}</option>)
-    }
-
-    var selectElem = React.createElement(
-      "select",
-      {
-        key: "client-selector",
-        onChange: (evt) => this.clientSelectChanged(evt)
-      }, // props
-      [optionElements] // children
-    )
-    var h2 = React.createElement('h2', {}, ["API"])
-    var rest = (
-    <div key="command-buttons">
-                      <div>
-                          <EthButton name="Has Account" handleClick={this.hasAccount} parent={this}/>
-                          <EthButton name="Create Account" handleClick={this.createAccount} parent={this}/>
-                          <input type="text" name="account-name" placeholder="name" onChange={evt => this.updateAccountNameInput(evt)} />
-                      </div>
-                      <div>
-                          <button> Create Listing </button>
-                      </div>
-                  </div>
-    )
-    var div = React.createElement('div', {}, [h2, selectElem, rest])
-    return div
-  }
   render() {
     console.log("APICaller: render")
     let content = this.parseABIForFunctions()
