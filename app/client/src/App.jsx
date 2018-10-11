@@ -41,6 +41,8 @@ class App extends Component {
       // Set the provider you want from Web3.providers
       web3 = new Web3(new Web3.providers.HttpProvider(PROVIDER_STR));
     }
+    console.log(web3.version)
+
 
     // Load ABI into contract
     const abiArray = window.abiArray // get it from somewhere
