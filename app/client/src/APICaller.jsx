@@ -78,9 +78,9 @@ class APICaller extends Component {
       }, // props
       [optionElements] // children
     )
+    var h2 = React.createElement('h2', {}, ["API"])
     var rest = (
     <div key="command-buttons">
-                      <h2> API </h2>
                       <div>
                           <EthButton name="Has Account" handleClick={this.hasAccount} parent={this}/>
                           <EthButton name="Create Account" handleClick={this.createAccount} parent={this}/>
@@ -91,7 +91,7 @@ class APICaller extends Component {
                       </div>
                   </div>
     )
-    var div = React.createElement('div', {}, [selectElem, rest])
+    var div = React.createElement('div', {}, [h2, selectElem, rest])
     return div
   }
   render() {

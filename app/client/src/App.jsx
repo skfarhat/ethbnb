@@ -122,8 +122,8 @@ class App extends Component {
     return (
       <div>
           <Common />
-          <ClientsManager clients={this.state.clients} />
           <APICaller eth={this.state} />
+          <ClientsManager clients={this.state.clients} />
       </div>
     )
   }
