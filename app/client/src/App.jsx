@@ -71,19 +71,34 @@ class App extends Component {
     var self = this
     var ContractInstance = this.state.contractInstance
     var createAccountEv = ContractInstance.EvCreateAccount()
-    // NOTE: looks like it's returning only the last event..
-    createAccountEv.watch(function(error, result) {
-      console.log("createAccountEv fired.", error, result)
-      const {from, name, dateCreated} = result.args
-      var client = self.getClientObjFromAddress(from)
-      client.account = {
-        name: name,
-        dateCreated: dateCreated,
+
+    var createAccountEvHandler = function(error, result) {
+      console.log("createAccountEvHandler")
+      console.log(error)
+      console.log(result)
+      for (var i = 0; i < result.length; i++) {
+        var ev = result[i]
+        const {from, name, dateCreated} = ev.args
+        var client = self.getClientObjFromAddress(from)
+        client.account = {
+          name: name,
+          dateCreated: dateCreated,
+        }
       }
+
       // self.forceUpdate()
       self.setState(self.state)
-      console.log("SetState")
-    })
+      // console.log("SetState")
+    }
+
+    // Get all future events
+    createAccountEv.watch(createAccountEvHandler)
+
+    // Get all past events
+    ContractInstance.EvCreateAccount({}, {
+      fromBlock: 0,
+      toBlock: 'latest'
+    }).get(createAccountEvHandler);
 
     var toSet = {
       clients: clients,

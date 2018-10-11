@@ -2,16 +2,35 @@ import React, { Component } from 'react';
 
 class Account extends Component {
 
+  bigNumberToDate(bigNumber) {
+    console.log(bigNumber.toString())
+    return new Date(parseInt(bigNumber.toString()) * 1000).toString()
+  }
+
   render(props) {
-    let toAdd = []
     if (this.props.act !== null && this.props.act !== undefined) {
-      toAdd.push(<h3 key="3"> Account information here </h3>)
+      return (
+        <div>
+          <table border="1">
+          <tbody>
+          <tr>
+          <td colspan="2"> <b> Account </b> </td>
+          </tr>
+            <tr>
+              <td> Name </td>
+              <td> {this.props.act.name} </td>
+            </tr>
+            <tr>
+              <td> Date Created </td>
+              <td> {this.bigNumberToDate(this.props.act.dateCreated)} </td>
+            </tr>
+          </tbody>
+          </table>
+        </div>
+      )
+    } else {
+      return (<div> jk</div>)
     }
-    return (
-      <div>
-      {toAdd}
-      </div>
-    )
   }
 }
 
