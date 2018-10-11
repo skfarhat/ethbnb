@@ -86,11 +86,15 @@ class APICaller extends Component {
 
       // Parse the inputs of this function and create a list of DOM elements
       let inputsDom = []
+      // Set this to true if the function input parameter is unsupported and we don't want to include that function
+      // as an API button.
+      let unsupportedInput = false
       for (var j = 0; j < o.inputs.length; j++) {
         var input = o.inputs[j]
         if (input.type !== "uint256" && input.type !== "string") {
           console.log("Skipping input.type", input.type, ". Still unsupported.");
-          continue
+          unsupportedInput = true
+          break
         }
         inputsDom.push(
           <div key={input.name}>
@@ -98,6 +102,11 @@ class APICaller extends Component {
           </div>
         )
       }
+
+      // This function has some input parameters that we don't know how to handle (or render in the DOM),
+      // so we'll skip adding
+      if (unsupportedInput)
+        continue
 
       // TODO: replace the inputs here with EthButton which will need to take a handler for the function too.
       ret.push(React.createElement('div',
