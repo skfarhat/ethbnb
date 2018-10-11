@@ -1,5 +1,16 @@
 import React, { Component } from 'react';
 
+class APICommand extends Component {
+  render() {
+    return (
+      <div className="apiCommand">
+        <button key="button" className="btn btn-default" type="button"> {this.props.name} </button>
+          {this.props.inputsDom}
+      </div>
+      );
+  }
+}
+
 class EthButton extends Component {
   render() {
     var props = this.props
@@ -15,8 +26,8 @@ class APICaller extends Component {
     this.state = {
       error: null,
       errorInfo: null,
-      selectedClient: 0
-    };
+      selectedClient: 0,
+    }
   }
   componentDidCatch(error, errorInfo) {
     // Catch errors in any components below and re-render with error message
@@ -63,17 +74,18 @@ class APICaller extends Component {
       accountNameIn: evt.target.value
     })
   }
+
   parseABIForFunctions() {
     console.log("parseABIForFunctions", this.props)
 
     // If there's no ABI to work with abort.
-    if ( !('eth' in this.props) || !('abiArray' in this.props.eth))
+    if (!('eth' in this.props) || !('abiArray' in this.props.eth))
       return []
 
     console.log(this.props)
 
     // We will return this after populating
-    let ret = []
+    let ret = [<h2 key="title"> API </h2>]
 
     // For each function in the ABI
     var abi = this.props.eth.abiArray.abi
@@ -110,12 +122,18 @@ class APICaller extends Component {
 
       // TODO: replace the inputs here with EthButton which will need to take a handler for the function too.
       ret.push(React.createElement('div',
-        {key: o.name},
-        [<EthButton key={o.name} name={o.name}/>, inputsDom]
-      ))
+        {
+          id: 'rightSideAPI',
+          key: o.name,
+        },
+        [<APICommand key={o.name} name={o.name} inputsDom={inputsDom}/>]
+        ))
     }
+
     return ret
   }
+
+  // TODO: to remove
   getContent() {
     var optionElements = []
     for (var i = 0; i < this.props.eth.num_clients; i++) {
@@ -149,9 +167,8 @@ class APICaller extends Component {
   }
   render() {
     console.log("APICaller: render")
-    // let content = this.getContent()
-    // let content = this.parseABIForFunctions()
     let content = this.parseABIForFunctions()
+
     // Error path
     if (this.state.errorInfo) {
       return (<h2>Something went wrong.</h2>);

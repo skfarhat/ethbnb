@@ -123,10 +123,17 @@ class App extends Component {
   render() {
     console.log('App: render')
     return (
-      <div>
-          <Common />
-          <APICaller eth={this.state} />
-          <ClientsManager clients={this.state.clients} />
+      <div className="container">
+      <h1 className="mainTitle"> EthBnb </h1>
+      <div className="row">
+          { /*<Common />*/ }
+          <div className="col-lg">
+            <ClientsManager clients={this.state.clients} />
+          </div>
+          <div className="col-lg-3">
+            <APICaller eth={this.state} />
+          </div>
+      </div>
       </div>
     )
   }

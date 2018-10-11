@@ -1,3 +1,13 @@
 #div-clients {
     background-color: cyan;
 }
+#rightSideAPI {
+    overflow: scroll;
+}
+.apiCommand {
+    margin:5px auto 5px;
+}
+.mainTitle {
+    width:100%;
+    text-align:center;
+}
