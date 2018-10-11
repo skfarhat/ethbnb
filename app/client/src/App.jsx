@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import Common from "./Common.jsx"
 import ClientsManager from "./Client.jsx"
 import APICaller from "./APICaller.jsx"
 import TruffleContract from 'truffle-contract'
@@ -126,7 +125,6 @@ class App extends Component {
       <div className="container">
       <h1 className="mainTitle"> EthBnb </h1>
       <div className="row">
-          { /*<Common />*/ }
           <div className="col-lg">
             <ClientsManager clients={this.state.clients} />
           </div>
