@@ -11,3 +11,6 @@
     width:100%;
     text-align:center;
 }
+h2.client-selected {
+    color: blue;
+}

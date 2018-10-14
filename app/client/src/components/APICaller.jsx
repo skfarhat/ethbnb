@@ -1,4 +1,19 @@
 import React, { Component } from 'react';
+import { connect } from "react-redux";
+import { selectClient } from "../actions/"
+
+const mapStateToProps = (state) => {
+  return {
+    eth: state.eth,
+    clients: state.clients
+  }
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    selectClient: (index) => dispatch(selectClient(index)),
+  };
+};
 
 class APICommand extends Component {
   constructor(props) {
@@ -55,23 +70,7 @@ class APICommand extends Component {
   }
 }
 
-class APICaller extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      error: null,
-      errorInfo: null,
-      selectedClient: 0,
-    }
-  }
-  componentDidCatch(error, errorInfo) {
-    // Catch errors in any components below and re-render with error message
-    this.setState({
-      error: error,
-      errorInfo: errorInfo
-    })
-  // You can also log error messages to an error reporting service here
-  }
+class ConnectedAPICaller extends Component {
 
   async hasAccount(self) {
     console.log("hasAccount", self)
@@ -103,38 +102,37 @@ class APICaller extends Component {
 
   // Called when the select (dropdown) changes.
   clientSelectChanged(evt) {
-    this.setState({
-      selectedClient: evt.target.value
-    })
+    const val = parseInt(evt.target.value)
+    this.props.selectClient(val)
   }
 
   // Called when an APICommand button is clicked
   // here parent is meant to refer to 'this' which is not available in handleAPIButtonClick
   // because it's called as a callback function
-  async handleAPIButtonClick(evt, name, parent) {
-    console.log("handleAPIButtonClick")
-    console.log(evt, name)
-    if (name === "createAccount") {
-      await parent.createAccount(parent)
-      // TODO: implement handling here
-    } else if (name === "hasAccount") {
+  // async handleAPIButtonClick(evt, name, parent) {
+  //   console.log("handleAPIButtonClick")
+  //   console.log(evt, name)
+  //   if (name === "createAccount") {
+  //     await parent.createAccount(parent)
+  //     // TODO: implement handling here
+  //   } else if (name === "hasAccount") {
 
-    } else {
-      console.log("Unimplemented function.")
-    }
-  }
+  //   } else {
+  //     console.log("Unimplemented function.")
+  //   }
+  // }
 
   // Called when the input field for account name changes.
-  updateAccountNameInput(evt) {
-    this.setState({
-      accountNameIn: evt.target.value
-    })
-  }
+  // updateAccountNameInput(evt) {
+  //   this.setState({
+  //     accountNameIn: evt.target.value
+  //   })
+  // }
 
   // Called in render to generate a selector for clients
   generateClientSelector() {
     var optionElements = []
-    for (var i = 0; i < this.props.eth.num_clients; i++) {
+    for (var i = 0; i < this.props.clients.length; i++) {
       optionElements.push(
         <option key={i} value={i}>{i}</option>)
     }
@@ -149,42 +147,42 @@ class APICaller extends Component {
     return selectElem
   }
   parseABIForFunctions() {
-    console.log("parseABIForFunctions", this.props)
-    // If there's no ABI to work with abort.
-    if (!('eth' in this.props) || !('abiArray' in this.props.eth))
-      return []
+    // console.log("parseABIForFunctions", this.props)
+    // // If there's no ABI to work with abort.
+    // if (!('eth' in this.props) || !('abiArray' in this.props.eth))
+    //   return []
 
     // We will return this after populating
     let ret = []
 
-    var abi = this.props.eth.abiArray.abi
-    for (var i = 0; i < abi.length; i++) {
-      var o = abi[i]
-      // Skip non-functions
-      if (o.type !== "function")
-        continue
-      // TODO: replace the inputs here with EthButton which will need to take a handler for the function too.
-      ret.push(React.createElement('div', {
-        id: 'rightSideAPI',
-        key: o.name,
-      },
-        [<APICommand
-        key={o.name}
-        name={o.name}
-        inputs={o.inputs}
-        handleButtonClick={this.handleAPIButtonClick}
-        parent={this}
-        />]
-      ))
-    }
+    // var abi = this.props.eth.abiArray.abi
+    // for (var i = 0; i < abi.length; i++) {
+    //   var o = abi[i]
+    //   // Skip non-functions
+    //   if (o.type !== "function")
+    //     continue
+    //   // TODO: replace the inputs here with EthButton which will need to take a handler for the function too.
+    //   ret.push(React.createElement('div', {
+    //     id: 'rightSideAPI',
+    //     key: o.name,
+    //   },
+    //     [<APICommand
+    //     key={o.name}
+    //     name={o.name}
+    //     inputs={o.inputs}
+    //     handleButtonClick={this.handleAPIButtonClick}
+    //     parent={this}
+    //     />]
+    //   ))
+    // }
     return ret
   }
 
   render() {
     console.log("APICaller: render")
     let h2UI = <h2 key="title"> API </h2>
-    let abiCommands = this.parseABIForFunctions()
     let selectorUI = this.generateClientSelector()
+    let abiCommands = null //this.parseABIForFunctions()
     let content = React.createElement(
       'div',
       {},
@@ -192,11 +190,12 @@ class APICaller extends Component {
       )
 
     // Error path
-    if (this.state.errorInfo) {
-      return (<h2>Something went wrong.</h2>);
-    }
+    // if (this.state.errorInfo) {
+      // return (<h2>Something went wrong.</h2>);
+    // }
     return (content)
   }
 }
 
+const APICaller = connect(mapStateToProps, mapDispatchToProps)(ConnectedAPICaller)
 export default APICaller
