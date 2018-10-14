@@ -2,11 +2,12 @@ import React, { Component } from 'react'
 import EthManager from "./EthManager.jsx"
 import ClientsManager from "./ClientsManager.jsx"
 import APICaller from "./APICaller.jsx"
+import log from "../logger"
 import '../main.css'
 
 class App extends Component {
   render() {
-    console.log('App: render', this.props, this.state)
+    log.debug('App: render', this.props, this.state)
     return (
       <div className="container">
       <h1 className="mainTitle"> EthBnb </h1>

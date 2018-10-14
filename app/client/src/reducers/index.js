@@ -1,3 +1,4 @@
+import log from "../logger"
 import { REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT } from "../constants/action-types.js"
 
 const initialState = {
@@ -34,7 +35,7 @@ const updateClientWithAddr = (clients, addr, action) => {
 }
 
 const rootReducer = (state = initialState, action) => {
-  console.log("rootReducer", action, state)
+  log.debug("rootReducer", action, state)
   switch (action.type) {
     case REFRESH_ETH: {
       const eth = action.payload
@@ -48,14 +49,14 @@ const rootReducer = (state = initialState, action) => {
       return {...state, selectedClient: action.payload}
     }
     case CREATE_ACCOUNT: {
-      console.log("CREATE_ACCOUNT", action.payload.from)
+      log.debug("CREATE_ACCOUNT", action.payload.from)
       const clients = updateClientWithAddr(state.clients, action.payload.from, action)
       let x = {...state, clients: clients}
-      console.log('state', x)
+      log.debug('state', x)
       return x
     }
     default: {
-      console.log("default")
+      log.debug("default")
       return state
     }
   }

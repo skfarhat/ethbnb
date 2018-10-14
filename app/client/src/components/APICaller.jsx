@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
+import log from "../logger"
 import { selectClient } from "../actions/"
 import APICommand from "./APICommand.js"
 
@@ -27,7 +28,7 @@ class ConnectedAPICaller extends Component {
   }
 
   async myHandleButtonClick(evt, name, inputs, client, eth) {
-    console.log("myHandleButtonClick", eth, name, inputs, client, eth)
+    log.debug("myHandleButtonClick", eth, name, inputs, client, eth)
     evt.preventDefault()
     inputs = inputs.map(in1 => in1.value)
 
@@ -42,7 +43,7 @@ class ConnectedAPICaller extends Component {
     }
 
     if (!foundFunction) {
-      console.log("Could not find", name, " in ", eth.abi)
+      log.debug("Could not find", name, " in ", eth.abi)
     } else {
       const ethFunction = eth.contractInstance[name]
       const lastParam = {
@@ -50,9 +51,8 @@ class ConnectedAPICaller extends Component {
         gas: 100000
       }
       // TODO: unpack the param 'inputs' into the ethFunction here.
-      console.log(ethFunction)
       var result = await ethFunction.sendTransaction(...inputs, lastParam)
-      console.log("result of calling", name, "is ", result)
+      log.debug("result of calling", name, "is ", result)
     }
   }
 
@@ -75,8 +75,6 @@ class ConnectedAPICaller extends Component {
   }
 
   parseABIForFunctions() {
-    console.log("parseABIForFunctions", this.props)
-
     // We will return this after populating
     let ret = []
 
@@ -106,7 +104,7 @@ class ConnectedAPICaller extends Component {
   }
 
   render() {
-    console.log("APICaller: render")
+    log.debug("APICaller: render")
     let h2UI = <h2 key="title"> API </h2>
     let selectorUI = this.generateClientSelector()
     let abiCommands = this.parseABIForFunctions()

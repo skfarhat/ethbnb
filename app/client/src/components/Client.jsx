@@ -1,9 +1,9 @@
+import log from "../logger"
 import React, { Component } from 'react';
 
 class Account extends Component {
 
   bigNumberToDate(bigNumber) {
-    console.log(bigNumber.toString())
     return new Date(parseInt(bigNumber.toString()) * 1000).toString()
   }
 

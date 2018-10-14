@@ -1,4 +1,5 @@
 import React, { Component } from "react"
+import log from "../logger"
 import { connect } from "react-redux"
 import TruffleContract from 'truffle-contract'
 import "../loadAbi.js"
@@ -24,13 +25,14 @@ const mapDispatchToProps = (dispatch) => {
 
 class ConnectedEthManager extends Component {
   constructor(props) {
+    log.debug("ConnectedEthManager")
     super(props)
     // We start making connection to Ethereum Network
     this.setupEth()
   }
 
   async setupEth() {
-    console.log('EthManager: setupEth')
+    log.debug("setupEth")
     const eth = {}
 
     if (typeof web3 !== 'undefined') {
@@ -39,7 +41,7 @@ class ConnectedEthManager extends Component {
       // Set the provider you want from Web3.providers
       web3 = new Web3(new Web3.providers.HttpProvider(PROVIDER_STR));
     }
-    console.log(web3.version)
+    log.debug(web3.version)
 
     // Load ABI into contract
     const abiArray = window.abiArray // get it from somewhere
@@ -70,7 +72,7 @@ class ConnectedEthManager extends Component {
   }
 
   registerEvents() {
-    console.log("registerEvents", this.props)
+    log.debug("registerEvents", this.props)
     const self = this
     // Setup event listener for CreateAccountEv
     var ContractInstance = this.props.eth.contractInstance

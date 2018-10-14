@@ -1,11 +1,10 @@
+import log from "../logger"
 import React, { Component } from 'react'
 
 
 class APICommand extends Component {
 
   inputChanged(evt, name) {
-    // console.log(this.props.inputs[inputIndex])
-    // this.props.inputs[inputIndex].value = evt.target.value
     for (var i = 0; i < this.props.inputs.length; i++) {
       let input = this.props.inputs[i]
       if (input.name === name) {
@@ -25,7 +24,7 @@ class APICommand extends Component {
     for (var j = 0; j < inputs.length; j++) {
       var input = inputs[j]
       if (input.type !== "uint256" && input.type !== "string") {
-        console.log("Skipping input.type", input.type, ". Still unsupported.");
+        log.warn("Skipping input.type", input.type, ". Still unsupported.");
         unsupportedInput = true
         break
       }
