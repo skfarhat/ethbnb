@@ -4,8 +4,6 @@ import React, { Component } from 'react'
 class APICommand extends Component {
 
   inputChanged(evt, name) {
-    console.log("inputChanged", evt, evt.target.type, evt.target.value)
-    console.log(name)
     // console.log(this.props.inputs[inputIndex])
     // this.props.inputs[inputIndex].value = evt.target.value
     for (var i = 0; i < this.props.inputs.length; i++) {

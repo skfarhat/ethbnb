@@ -71,46 +71,26 @@ class ConnectedEthManager extends Component {
 
   registerEvents() {
     console.log("registerEvents", this.props)
-
     const self = this
     // Setup event listener for CreateAccountEv
     var ContractInstance = this.props.eth.contractInstance
     var createAccountEv = ContractInstance.EvCreateAccount()
 
-    var createAccountForAddress = (addr, name, dateCreated) => {
-      var client = self.getClientObjFromAddress(addr)
-      if (!client) {
-        console.log("BUG: something wrong here??")
-      } else {
-        console.log("calling createAccount()")
-        self.props.createAccount({
-          name: name,
-          dateCreated: dateCreated,
-        })
+    const ev = (error, result) => {
+      const r = (result.constructor === Array) ? result : [result]
+      for (var i = 0; i < r.length; i++) {
+        self.props.createAccount(r[i].args)
       }
-
-      var createAccountEvHandler = function(error, result) {
-        console.log("createAccountEvHandler", result)
-        if (result.constructor === Array) {
-          for (var i = 0; i < result.length; i++) {
-            const {from, name, dateCreated} = result[i].args
-            createAccountForAddress(from, name, dateCreated)
-          }
-        } else {
-          const {from, name, dateCreated} = result.args
-          createAccountForAddress(from, name, dateCreated)
-        }
-      }
-
-      // Get all future events
-      createAccountEv.watch(createAccountEvHandler)
-
-      // Get all past events
-      ContractInstance.EvCreateAccount({}, {
-        fromBlock: 0,
-        toBlock: 'latest'
-      }).get(createAccountEvHandler);
     }
+
+    // Get all future events
+    createAccountEv.watch(ev)
+
+    // Get all past events
+    ContractInstance.EvCreateAccount({}, {
+      fromBlock: 0,
+      toBlock: 'latest'
+    }).get(ev);
   }
 
   render() {

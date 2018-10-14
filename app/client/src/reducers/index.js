@@ -19,8 +19,22 @@ const getClients = (eth, state) => {
   return clients
 }
 
+const updateClientWithAddr = (clients, addr, action) => {
+  return clients.map((client, index) => {
+    if (client.address === action.payload.from) {
+      return {
+        ...client, 
+        account: action.payload
+      }
+    }
+    else {
+      return client
+    }
+  }) 
+}
+
 const rootReducer = (state = initialState, action) => {
-  console.log("rootReducer", action.type, state)
+  console.log("rootReducer", action, state)
   switch (action.type) {
     case REFRESH_ETH: {
       const eth = action.payload
@@ -34,8 +48,11 @@ const rootReducer = (state = initialState, action) => {
       return {...state, selectedClient: action.payload}
     }
     case CREATE_ACCOUNT: {
-      console.log("CREATE_ACCOUNT")
-      return state
+      console.log("CREATE_ACCOUNT", action.payload.from)
+      const clients = updateClientWithAddr(state.clients, action.payload.from, action)
+      let x = {...state, clients: clients}
+      console.log('state', x)
+      return x
     }
     default: {
       console.log("default")
