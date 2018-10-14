@@ -5,15 +5,6 @@ import APICaller from "./APICaller.jsx"
 import '../main.css'
 
 class App extends Component {
-
-  // // Given the account address for a client, return the client object
-  // getClientObjFromAddress(address) {
-  //   if (address in this.clientsDict)
-  //     return this.state.clients[this.clientsDict[address]]
-  //   else
-  //     return null
-  // }
-
   render() {
     console.log('App: render', this.props, this.state)
     return (

@@ -1,11 +1,20 @@
 import React, { Component } from 'react'
 
+
 class APICommand extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      buttonEnabled: true
+
+  inputChanged(evt, name) {
+    console.log("inputChanged", evt, evt.target.type, evt.target.value)
+    console.log(name)
+    // console.log(this.props.inputs[inputIndex])
+    // this.props.inputs[inputIndex].value = evt.target.value
+    for (var i = 0; i < this.props.inputs.length; i++) {
+      let input = this.props.inputs[i]
+      if (input.name === name) {
+        this.props.inputs[i].value = evt.target.value
+      }
     }
+    evt.preventDefault()
   }
 
   generateInputFields() {
@@ -24,8 +33,12 @@ class APICommand extends Component {
       }
       inputsDom.push(
         <div key={input.name}>
-            <input type="text" name={input.name} placeholder={input.name}/>
-          </div>
+          <input 
+          type="text" 
+          name={input.name} 
+          placeholder={input.name} 
+          onChange={(evt) => this.inputChanged(evt, input.name)} />
+        </div>
       )
     }
     this.inputsDom = React.createElement(
@@ -45,7 +58,7 @@ class APICommand extends Component {
       className="btn btn-default"
       type="button"
       disabled={this.buttonDisabled}
-      onClick={(evt) => this.props.handleButtonClick(evt, this.props.name, this.props.parent)}>
+      onClick={(evt) => this.props.handleButtonClick(evt, this.props.name, this.props.inputs)}>
         {this.props.name}
         </button>
         {this.generateInputFields()}

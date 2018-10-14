@@ -34,6 +34,7 @@ const rootReducer = (state = initialState, action) => {
       return {...state, selectedClient: action.payload}
     }
     case CREATE_ACCOUNT: {
+      console.log("CREATE_ACCOUNT")
       return state
     }
     default: {

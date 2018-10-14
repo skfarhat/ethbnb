@@ -7,7 +7,8 @@ const mapStateToProps = (state) => {
   return {
     eth: state.eth,
     clients: state.clients,
-    abi: state.eth.abi
+    abi: state.eth.abi,
+    selectedClient: state.selectedClient
   }
 }
 
@@ -19,33 +20,33 @@ const mapDispatchToProps = dispatch => {
 
 class ConnectedAPICaller extends Component {
 
-  async hasAccount(self) {
-    console.log("hasAccount", self)
-    var state = self.state
-    var eth = self.props.eth
-    var clientId = parseInt(state.selectedClient)
-    var account = eth.web3.eth.accounts[clientId]
-    var res = await eth.contractInstance.hasAccount({
-      from: account,
-      gas: 100000
-    })
-    console.log("Client ", clientId, " has account:", res)
-  }
+  // async hasAccount(self) {
+  //   console.log("hasAccount", self)
+  //   var state = self.state
+  //   var eth = self.props.eth
+  //   var clientId = parseInt(state.selectedClient)
+  //   var account = eth.web3.eth.accounts[clientId]
+  //   var res = await eth.contractInstance.hasAccount({
+  //     from: account,
+  //     gas: 100000
+  //   })
+  //   console.log("Client ", clientId, " has account:", res)
+  // }
 
-  async createAccount() {
-    var self = this
-    console.log("createAccount", self)
-    var state = self.state
-    var eth = self.props.eth
-    var clientId = parseInt(state.selectedClient)
-    var inputName = state.accountNameIn
-    var account = eth.web3.eth.accounts[clientId]
-    var res = await eth.contractInstance.createAccount(inputName, {
-      from: account,
-      gas: 100000
-    })
-    console.log("CreateAccount result", res)
-  }
+  // async createAccount() {
+  //   var self = this
+  //   console.log("createAccount", self)
+  //   var state = self.state
+  //   var eth = self.props.eth
+  //   var clientId = parseInt(state.selectedClient)
+  //   var inputName = state.accountNameIn
+  //   var account = eth.web3.eth.accounts[clientId]
+  //   var res = await eth.contractInstance.createAccount(inputName, {
+  //     from: account,
+  //     gas: 100000
+  //   })
+  //   console.log("CreateAccount result", res)
+  // }
 
   // Called when the select (dropdown) changes.
   clientSelectChanged(evt) {
@@ -56,18 +57,45 @@ class ConnectedAPICaller extends Component {
   // Called when an APICommand button is clicked
   // here parent is meant to refer to 'this' which is not available in handleAPIButtonClick
   // because it's called as a callback function
-  // async handleAPIButtonClick(evt, name, parent) {
-  //   console.log("handleAPIButtonClick")
-  //   console.log(evt, name)
-  //   if (name === "createAccount") {
-  //     await parent.createAccount(parent)
-  //     // TODO: implement handling here
-  //   } else if (name === "hasAccount") {
+  async handleAPIButtonClick(evt, name, parent) {
+    console.log("handleAPIButtonClick")
+    console.log(evt, name)
+    if (name === "createAccount") {
+      
+    } else if (name === "hasAccount") {
 
-  //   } else {
-  //     console.log("Unimplemented function.")
-  //   }
-  // }
+    } else {
+      console.log("Unimplemented function.")
+    }
+  }
+
+  async myHandleButtonClick(evt, name, inputs, client, eth) {
+    console.log("myHandleButtonClick", eth, name, inputs, client, eth)
+    evt.preventDefault()
+    inputs = inputs.map(in1 => in1.value)
+
+    // Find function that matches name
+    let foundFunction = null
+    for (var i = 0; i < eth.abi.length; i++) {
+      var o = eth.abi[i]
+      if (o.type === "function" && o.name === name) {
+        foundFunction = o
+      }
+    }
+
+    if (!foundFunction) {
+      console.log("Could not find", name, " in ", eth.abi)
+    } else {
+      const ethFunction = eth.contractInstance[name]
+      const lastParam = {
+        from: client.address,
+        gas: 100000
+      }
+      // TODO: unpack the param 'inputs' into the ethFunction here.
+      var result = await ethFunction(...inputs, lastParam)
+      console.log("result of calling", name, "is ", result)
+    }
+  }
 
   // Called when the input field for account name changes.
   // updateAccountNameInput(evt) {
@@ -93,13 +121,14 @@ class ConnectedAPICaller extends Component {
     )
     return selectElem
   }
+
   parseABIForFunctions() {
     console.log("parseABIForFunctions", this.props)
 
     // We will return this after populating
     let ret = []
 
-    if ( ! this.props.abi )
+    if (!this.props.abi)
       return ret
 
     for (var i = 0; i < this.props.abi.length; i++) {
@@ -114,9 +143,9 @@ class ConnectedAPICaller extends Component {
       },
         [<APICommand
         key={o.name}
-        name={o.name}
-        inputs={o.inputs}
-        handleButtonClick={this.handleAPIButtonClick}
+        name={o.name} // the name of the function
+        inputs={o.inputs} // the inputs to the function
+        handleButtonClick={ (evt, name, inputs) => this.myHandleButtonClick(evt, name, inputs, this.props.clients[this.props.selectedClient], this.props.eth)}
         parent={this}
         />]
       ))
@@ -133,12 +162,7 @@ class ConnectedAPICaller extends Component {
       'div',
       {},
       [h2UI, selectorUI, abiCommands]
-      )
-
-    // Error path
-    // if (this.state.errorInfo) {
-      // return (<h2>Something went wrong.</h2>);
-    // }
+    )
     return (content)
   }
 }
