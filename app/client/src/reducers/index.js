@@ -3,12 +3,11 @@ import { REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT } from "../constants/action-
 const initialState = {
   selectedClient: 0,
   clients: [],
-  MAX_CLIENTS: 3
+  MAX_CLIENTS: 3,
+  eth: {}
 }
 
 const getClients = (eth, state) => {
-    console.log("getClients", state)
-  // Create the clients and add watchers for each
   let clients = []
   for (var i = 0; i < state.MAX_CLIENTS; i++) {
     clients.push({
@@ -17,7 +16,6 @@ const getClients = (eth, state) => {
       "listings": null
     })
   }
-  console.log("finished with getClients", clients)
   return clients
 }
 
@@ -33,7 +31,6 @@ const rootReducer = (state = initialState, action) => {
       };
     }
     case SELECT_CLIENT: {
-      console.log("the select client payload is ", action.payload, typeof(action.payload))
       return {...state, selectedClient: action.payload}
     }
     case CREATE_ACCOUNT: {

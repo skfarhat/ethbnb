@@ -40,7 +40,7 @@ class ConnectedEthManager extends Component {
 
     // Set properties on 'eth'
     eth.web3 = web3
-    eth.abiArray = abiArray
+    eth.abi = abiArray.abi
     eth.accounts = web3.eth.accounts
     eth.MyContract = MyContract
     eth.contractInstance = contractInstance

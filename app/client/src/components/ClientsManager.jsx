@@ -63,21 +63,17 @@ class ConnectedClientsManager extends Component {
 
   render() {
     console.log("ClientsManager:: render", this.props)
-    let all_clients = [];
 
-    // Create the clients and add watchers for each
-    for (var i = 0; i < this.props.clients.length; i++) {
-      var client = this.props.clients[i]
-      all_clients.push(
-        <Client
-        key={i}
-        clientId={i}
-        selected={this.props.selectedClient === i}
+    let all_clients = this.props.clients.map((client, index) =>
+    <Client
+        key={index}
+        clientId={index}
+        selected={this.props.selectedClient === index}
         clientAddress={client.address}
         clientAccount={client.account}
         clientListings={client.listings}
-        />)
-    }
+        />
+    )
 
     if (!this.hasRegisteredEventWatchers && this.props.eth) {
       // Register watchers

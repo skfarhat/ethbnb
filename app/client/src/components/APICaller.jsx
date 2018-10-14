@@ -1,72 +1,19 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
 import { selectClient } from "../actions/"
+import APICommand from "./APICommand.js"
 
 const mapStateToProps = (state) => {
   return {
     eth: state.eth,
-    clients: state.clients
+    clients: state.clients,
+    abi: state.eth.abi
   }
 }
 
 const mapDispatchToProps = dispatch => {
   return {
     selectClient: (index) => dispatch(selectClient(index)),
-  };
-};
-
-class APICommand extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      buttonEnabled: true
-    }
-  }
-
-  generateInputFields() {
-    let inputs = this.props.inputs
-
-    // Parse the inputs of this function and create a list of DOM elements
-    let inputsDom = []
-    // Set this to true if the function input parameter is unsupported and we don't want to include that function
-    // as an API button.
-    let unsupportedInput = false
-    for (var j = 0; j < inputs.length; j++) {
-      var input = inputs[j]
-      if (input.type !== "uint256" && input.type !== "string") {
-        console.log("Skipping input.type", input.type, ". Still unsupported.");
-        unsupportedInput = true
-        break
-      }
-      inputsDom.push(
-        <div key={input.name}>
-            <input type="text" name={input.name} placeholder={input.name}/>
-          </div>
-      )
-    }
-    this.inputsDom = React.createElement(
-      'div',
-      {},
-      inputsDom)
-    this.buttonDisabled = unsupportedInput
-
-    return inputsDom
-  }
-
-  render() {
-    return (
-      <div className="apiCommand">
-        <button
-      key="button"
-      className="btn btn-default"
-      type="button"
-      disabled={this.buttonDisabled}
-      onClick={(evt) => this.props.handleButtonClick(evt, this.props.name, this.props.parent)}>
-        {this.props.name}
-        </button>
-        {this.generateInputFields()}
-      </div>
-      );
   }
 }
 
@@ -141,40 +88,39 @@ class ConnectedAPICaller extends Component {
       {
         key: "client-selector",
         onChange: (evt) => this.clientSelectChanged(evt)
-      }, // props
-      [optionElements] // children
+      },
+      [optionElements]
     )
     return selectElem
   }
   parseABIForFunctions() {
-    // console.log("parseABIForFunctions", this.props)
-    // // If there's no ABI to work with abort.
-    // if (!('eth' in this.props) || !('abiArray' in this.props.eth))
-    //   return []
+    console.log("parseABIForFunctions", this.props)
 
     // We will return this after populating
     let ret = []
 
-    // var abi = this.props.eth.abiArray.abi
-    // for (var i = 0; i < abi.length; i++) {
-    //   var o = abi[i]
-    //   // Skip non-functions
-    //   if (o.type !== "function")
-    //     continue
-    //   // TODO: replace the inputs here with EthButton which will need to take a handler for the function too.
-    //   ret.push(React.createElement('div', {
-    //     id: 'rightSideAPI',
-    //     key: o.name,
-    //   },
-    //     [<APICommand
-    //     key={o.name}
-    //     name={o.name}
-    //     inputs={o.inputs}
-    //     handleButtonClick={this.handleAPIButtonClick}
-    //     parent={this}
-    //     />]
-    //   ))
-    // }
+    if ( ! this.props.abi )
+      return ret
+
+    for (var i = 0; i < this.props.abi.length; i++) {
+      var o = this.props.abi[i]
+      // Skip non-functions
+      if (o.type !== "function")
+        continue
+      // TODO: replace the inputs here with EthButton which will need to take a handler for the function too.
+      ret.push(React.createElement('div', {
+        id: 'rightSideAPI',
+        key: o.name,
+      },
+        [<APICommand
+        key={o.name}
+        name={o.name}
+        inputs={o.inputs}
+        handleButtonClick={this.handleAPIButtonClick}
+        parent={this}
+        />]
+      ))
+    }
     return ret
   }
 
@@ -182,7 +128,7 @@ class ConnectedAPICaller extends Component {
     console.log("APICaller: render")
     let h2UI = <h2 key="title"> API </h2>
     let selectorUI = this.generateClientSelector()
-    let abiCommands = null //this.parseABIForFunctions()
+    let abiCommands = this.parseABIForFunctions()
     let content = React.createElement(
       'div',
       {},
