@@ -4,6 +4,7 @@ import ClientsManager from "./ClientsManager.jsx"
 import APICaller from "./APICaller.jsx"
 import log from "../logger"
 import '../main.css'
+import "../css/bootstrap-4.1.0.min.css"
 
 class App extends Component {
   render() {
