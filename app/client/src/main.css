@@ -14,3 +14,20 @@
 h2.client-selected {
     color: blue;
 }
+
+/* Message Board */ 
+#message-board {
+    background-color:lightgrey;
+    border-color:black;
+    border-width: 1px;
+    border-radius: 5px; 
+    border-style: solid; 
+    max-height: 400px;
+    overflow: scroll;
+}
+#message-board h3 {
+    text-align:center;
+}
+#message-board p {
+    margin:0px;
+}

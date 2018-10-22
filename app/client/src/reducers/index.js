@@ -1,8 +1,11 @@
 import log from "../logger"
-import { REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT } from "../constants/action-types.js"
+import { 
+  REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, ADD_MESSAGE
+} from "../constants/action-types.js"
 
 const initialState = {
   selectedClient: 0,
+  messages: [],
   clients: [],
   MAX_CLIENTS: 3,
   eth: {}
@@ -54,6 +57,9 @@ const rootReducer = (state = initialState, action) => {
       let x = {...state, clients: clients}
       log.debug('state', x)
       return x
+    case ADD_MESSAGE: {
+      log.debug('ADD_MESSAGE', action.payload)
+      return {...state, messages: state.messages.concat(action.payload)}
     }
     default: {
       log.debug("default")

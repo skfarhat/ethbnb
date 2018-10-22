@@ -3,7 +3,7 @@ import log from "../logger"
 import { connect } from "react-redux"
 import TruffleContract from 'truffle-contract'
 import "../loadAbi.js"
-import { refreshEth, createAccount } from "../actions/"
+import { refreshEth, createAccount, addMessage } from "../actions/"
 
 var Web3 = require("web3")
 var web3
@@ -19,7 +19,8 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = (dispatch) => {
   return {
     refreshEth: (eth) => dispatch(refreshEth(eth)),
-    createAccount: (account) => dispatch(createAccount(account))
+    createAccount: (account) => dispatch(createAccount(account)),
+    addMessage: (message) => dispatch(addMessage(message))
   }
 }
 
@@ -79,9 +80,17 @@ class ConnectedEthManager extends Component {
     var createAccountEv = ContractInstance.EvCreateAccount()
 
     const ev = (error, result) => {
-      const r = (result.constructor === Array) ? result : [result]
-      for (var i = 0; i < r.length; i++) {
-        self.props.createAccount(r[i].args)
+      if (error) {
+        log.error(error)
+      } else if (result) {
+        log.debug("result is", result)
+        const r = (result.constructor === Array) ? result : [result]
+        for (var i = 0; i < r.length; i++) {
+          self.props.addMessage({
+            text: 'Adding new account: ' + r[i].args.from
+          })
+          self.props.createAccount(r[i].args)
+        }
       }
     }
 
