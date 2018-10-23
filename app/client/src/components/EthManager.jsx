@@ -24,9 +24,9 @@ const mapDispatchToProps = (dispatch) => {
   }
 }
 
-class ConnectedEthManager extends Component {
+class EthManager_ extends Component {
   constructor(props) {
-    log.debug("ConnectedEthManager")
+    log.debug("EthManager_")
     super(props)
     // We start making connection to Ethereum Network
     this.setupEth()
@@ -89,6 +89,12 @@ class ConnectedEthManager extends Component {
           self.props.addMessage({
             text: 'Adding new account: ' + r[i].args.from
           })
+          self.props.addMessage({
+            text: 'Adding1 new account: ' + r[i].args.from
+          })
+          self.props.addMessage({
+            text: 'Adding2 new account: ' + r[i].args.from
+          })
           self.props.createAccount(r[i].args)
         }
       }
@@ -111,5 +117,5 @@ class ConnectedEthManager extends Component {
   }
 }
 
-const EthManager = connect(mapStateToProps, mapDispatchToProps)(ConnectedEthManager)
+const EthManager = connect(mapStateToProps, mapDispatchToProps)(EthManager_)
 export default EthManager

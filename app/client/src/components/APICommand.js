@@ -4,14 +4,17 @@ import React, { Component } from 'react'
 
 class APICommand extends Component {
 
-  inputChanged(evt, name) {
+  // Called when the input to a text field is changed
+  textInputChanged(evt, name) {
+    evt.preventDefault()
+    // Find the input field associated with the event target and
+    // change the property 'value' in it.
     for (var i = 0; i < this.props.inputs.length; i++) {
       let input = this.props.inputs[i]
       if (input.name === name) {
-        this.props.inputs[i].value = evt.target.value
+        input.value = evt.target.value
       }
     }
-    evt.preventDefault()
   }
 
   generateInputFields() {
@@ -30,11 +33,11 @@ class APICommand extends Component {
       }
       inputsDom.push(
         <div key={input.name}>
-          <input 
-          type="text" 
-          name={input.name} 
-          placeholder={input.name} 
-          onChange={(evt) => this.inputChanged(evt, input.name)} />
+          <input
+          type="text"
+          name={input.name}
+          placeholder={input.name}
+          onChange={(evt) => this.textInputChanged(evt, input.name)} />
         </div>
       )
     }

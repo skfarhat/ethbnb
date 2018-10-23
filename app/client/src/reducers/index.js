@@ -4,10 +4,10 @@ import {
 } from "../constants/action-types.js"
 
 const initialState = {
+  MAX_CLIENTS: 3,
   selectedClient: 0,
   messages: [],
   clients: [],
-  MAX_CLIENTS: 3,
   eth: {}
 }
 
@@ -54,9 +54,8 @@ const rootReducer = (state = initialState, action) => {
     case CREATE_ACCOUNT: {
       log.debug("CREATE_ACCOUNT", action.payload.from)
       const clients = updateClientWithAddr(state.clients, action.payload.from, action)
-      let x = {...state, clients: clients}
-      log.debug('state', x)
-      return x
+      return {...state, clients: clients}
+    }
     case ADD_MESSAGE: {
       log.debug('ADD_MESSAGE', action.payload)
       return {...state, messages: state.messages.concat(action.payload)}

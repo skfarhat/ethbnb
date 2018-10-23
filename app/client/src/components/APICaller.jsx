@@ -19,7 +19,7 @@ const mapDispatchToProps = dispatch => {
   }
 }
 
-class ConnectedAPICaller extends Component {
+class APICaller_ extends Component {
 
   // Called when the select (dropdown) changes.
   clientSelectChanged(evt) {
@@ -117,5 +117,5 @@ class ConnectedAPICaller extends Component {
   }
 }
 
-const APICaller = connect(mapStateToProps, mapDispatchToProps)(ConnectedAPICaller)
+const APICaller = connect(mapStateToProps, mapDispatchToProps)(APICaller_)
 export default APICaller
