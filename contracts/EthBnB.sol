@@ -93,10 +93,10 @@ contract EthBnB {
   // MEMBER VARIABLES
   // =======================================================================
 
-  event Log(string _functionName, string _message);
+  event Log(string functionName, string msg);
   event EvCreateAccount(address from, string name, uint dateCreated);
-  event CreateEvent(string _functionName, uint id, string more);
-  event DeleteEvent(string _functionName, uint id, string more);
+  event CreateEvent(string functionName, uint id, string more);
+  event DeleteEvent(string functionName, uint id, string more);
 
   /**
    *
@@ -134,15 +134,15 @@ contract EthBnB {
    *
    * The created account will be added to 'accounts'
    */
-  function createAccount(string _name) public {
+  function createAccount(string name) public {
     accounts[msg.sender] = Account({
       owner : msg.sender,
-      name : _name,
+      name : name,
       // TODO: recheck block.timestamp used for date here
       dateCreated : block.timestamp,
       listingIds: new uint[](0) // gives an array of 0 zeros
     });
-    emit EvCreateAccount(msg.sender, _name, block.timestamp);
+    emit EvCreateAccount(msg.sender, name, block.timestamp);
   }
 
   function hasAccount() public view returns (bool) {
@@ -172,17 +172,17 @@ contract EthBnB {
    * Creates a new listing for the message sender
    * and returns the Id of the created listing
    */
-  function createListing(string _location, uint _price, string _shortName, string _description) public {
+  function createListing(string location, uint price, string shortName, string desc) public {
     require(hasAccount(), "Must have an account before creating a listing");
     // Note: enforce a maximum number of listings per user?
 
     listings[nextListingId] = Listing({
       id : nextListingId,
       owner: msg.sender,
-      location: _location,
-      price: _price,
-      shortName: _shortName,
-      description: _description
+      location: location,
+      price: price,
+      shortName: shortName,
+      description: desc
     });
 
     accounts[msg.sender].listingIds.push(nextListingId);
@@ -216,10 +216,10 @@ contract EthBnB {
       return listings[listingId].price;
   }
 
-  function setListingPrice(uint listingId, uint _price) public {
+  function setListingPrice(uint listingId, uint price) public {
     checkListingId(listingId);
-    require(_price > 0, "Price must be > 0.");
-    listings[listingId].price = _price;
+    require(price > 0, "Price must be > 0.");
+    listings[listingId].price = price;
   }
 
   function getListingShortName(uint listingId) public view returns (string) {
@@ -227,9 +227,9 @@ contract EthBnB {
       return listings[listingId].shortName;
   }
 
-  function setListingShortName(uint listingId, string _shortName) public {
+  function setListingShortName(uint listingId, string name) public {
     checkListingId(listingId);
-    listings[listingId].shortName = _shortName;
+    listings[listingId].shortName = name;
   }
 
   function getListingDescription(uint listingId) public view returns (string){
@@ -237,9 +237,9 @@ contract EthBnB {
       return listings[listingId].description;
   }
 
-  function setListingDescription(uint listingId, string _description) public {
+  function setListingDescription(uint listingId, string desc) public {
     checkListingId(listingId);
-    listings[listingId].description = _description;
+    listings[listingId].description = desc;
   }
 
   function deleteListing(uint listingId) public {
