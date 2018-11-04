@@ -57,7 +57,7 @@ class EthManager_ extends Component {
     eth.MyContract = MyContract
     eth.contractInstance = contractInstance
 
-    // Call callback 
+    // Call callback
     this.props.refreshEth(eth)
 
     // Register event listeners
@@ -73,6 +73,7 @@ class EthManager_ extends Component {
   }
 
   registerEvents() {
+    // TODO: The event functions 'watch' and other need improving.
     log.debug("registerEvents", this.props)
     const self = this
     // Setup event listener for CreateAccountEv
@@ -88,12 +89,6 @@ class EthManager_ extends Component {
         for (var i = 0; i < r.length; i++) {
           self.props.addMessage({
             text: 'Adding new account: ' + r[i].args.from
-          })
-          self.props.addMessage({
-            text: 'Adding1 new account: ' + r[i].args.from
-          })
-          self.props.addMessage({
-            text: 'Adding2 new account: ' + r[i].args.from
           })
           self.props.createAccount(r[i].args)
         }
