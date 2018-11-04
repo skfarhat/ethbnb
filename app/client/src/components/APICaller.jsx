@@ -43,16 +43,22 @@ class APICaller_ extends Component {
     }
 
     if (!foundFunction) {
-      log.debug("Could not find", name, " in ", eth.abi)
+      log.debug("Could not find ", name, " in ", eth.abi)
     } else {
       const ethFunction = eth.contractInstance[name]
       const lastParam = {
         from: client.address,
-        gas: 100000
+        gas: 1000000
       }
-      // TODO: unpack the param 'inputs' into the ethFunction here.
-      var result = await ethFunction.sendTransaction(...inputs, lastParam)
-      log.debug("result of calling", name, "is ", result)
+      try {
+        log.debug("calling ", name, " with params ", inputs)
+        var result = await ethFunction.sendTransaction(...inputs, lastParam)
+        log.debug("result of calling", name, "is ", result)
+      }
+      catch(exc) {
+        alert("Failed to ethereum function " + name)
+        log.error(exc)
+      }
     }
   }
 

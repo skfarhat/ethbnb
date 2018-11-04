@@ -1,20 +1,43 @@
 import log from "../logger"
 import React, { Component } from 'react'
+import BigNumber from 'bignumber.js'
 
 
 class APICommand extends Component {
 
+  // Converts the user input value to the type expected by the API given the
+  // input type. This method is expected to be called by inputChanged.
+  convertInputValue(value, type) {
+    console.log(BigNumber)
+    if (type === "uint256")
+      return new BigNumber(value)
+    else
+      return value
+  }
+
   // Called when the input to a text field is changed
-  textInputChanged(evt, name) {
+  inputChanged(evt) {
     evt.preventDefault()
+    let inputElem = evt.target
     // Find the input field associated with the event target and
     // change the property 'value' in it.
     for (var i = 0; i < this.props.inputs.length; i++) {
       let input = this.props.inputs[i]
-      if (input.name === name) {
-        input.value = evt.target.value
+      if (input.name === inputElem.name) {
+        input.value = this.convertInputValue(evt.target.value, input.type)
       }
     }
+  }
+
+  // Returns true if the current implementation supports the input type provided
+  // input.type is checked against the supported input types
+  inputTypeIsSupported(input) {
+    const SUPPORTED_TYPES = ["uint256", "string"]
+    for (var i in SUPPORTED_TYPES) {
+      if (input.type === SUPPORTED_TYPES[i])
+        return true
+    }
+    return false
   }
 
   generateInputFields() {
@@ -26,7 +49,7 @@ class APICommand extends Component {
     let unsupportedInput = false
     for (var j = 0; j < inputs.length; j++) {
       var input = inputs[j]
-      if (input.type !== "uint256" && input.type !== "string") {
+      if ( !this.inputTypeIsSupported(input) ) {
         log.warn("Skipping input.type", input.type, ". Still unsupported.");
         unsupportedInput = true
         break
@@ -35,9 +58,10 @@ class APICommand extends Component {
         <div key={input.name}>
           <input
           type="text"
+          input-type={input.type}
           name={input.name}
           placeholder={input.name}
-          onChange={(evt) => this.textInputChanged(evt, input.name)} />
+          onChange={(evt) => this.inputChanged(evt)} />
         </div>
       )
     }
