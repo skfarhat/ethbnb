@@ -9,6 +9,13 @@ var Web3 = require("web3")
 var web3
 const PROVIDER_STR = 'http://localhost:8545'
 
+const ethEvents = {
+  EvCreateAccount: {
+    action: 'createAccount',
+    message: 'Adding new account'
+  }
+}
+
 const mapStateToProps = (state) => {
   return {
     eth: state.eth,
@@ -25,6 +32,7 @@ const mapDispatchToProps = (dispatch) => {
 }
 
 class EthManager_ extends Component {
+
   constructor(props) {
     log.debug("EthManager_")
     super(props)
@@ -73,36 +81,30 @@ class EthManager_ extends Component {
   }
 
   registerEvents() {
-    // TODO: The event functions 'watch' and other need improving.
     log.debug("registerEvents", this.props)
     const self = this
-    // Setup event listener for CreateAccountEv
-    var ContractInstance = this.props.eth.contractInstance
-    var createAccountEv = ContractInstance.EvCreateAccount()
-
-    const ev = (error, result) => {
-      if (error) {
-        log.error(error)
-      } else if (result) {
-        log.debug("result is", result)
-        const r = (result.constructor === Array) ? result : [result]
-        for (var i = 0; i < r.length; i++) {
-          self.props.addMessage({
-            text: 'Adding new account: ' + r[i].args.from
-          })
-          self.props.createAccount(r[i].args)
+    for (var eventName in ethEvents) {
+      let {action, message} = ethEvents[eventName]
+      let eventConstruct = this.props.eth.contractInstance[eventName]
+      const ev = (error, result) => {
+        if (error) {
+          log.error(error)
+        } else if (result) {
+          const r = (result.constructor === Array) ? result : [result]
+          for (var i = 0; i < r.length; i++) {
+            self.props[action](r[i].args) // Execute UI action related to the EthEvent
+            self.props.addMessage({ // Add message to MessageBoard
+              text: message
+            })
+          }
         }
       }
+      eventConstruct().watch(ev) // Get all future events
+      eventConstruct({}, { // Get all past events
+        fromBlock: 0,
+        toBlock: 'latest'
+      }).get(ev)
     }
-
-    // Get all future events
-    createAccountEv.watch(ev)
-
-    // Get all past events
-    ContractInstance.EvCreateAccount({}, {
-      fromBlock: 0,
-      toBlock: 'latest'
-    }).get(ev);
   }
 
   render() {
