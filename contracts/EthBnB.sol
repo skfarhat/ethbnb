@@ -94,7 +94,8 @@ contract EthBnB {
   // =======================================================================
 
   event Log(string functionName, string msg);
-  event EvCreateAccount(address from, string name, uint dateCreated);
+  event CreateAccountEvent(address from, string name, uint dateCreated);
+  event CreateListingEvent(address from, uint listingId);
   event CreateEvent(string functionName, uint id, string more);
   event DeleteEvent(string functionName, uint id, string more);
 
@@ -142,7 +143,7 @@ contract EthBnB {
       dateCreated : block.timestamp,
       listingIds: new uint[](0) // gives an array of 0 zeros
     });
-    emit EvCreateAccount(msg.sender, name, block.timestamp);
+    emit CreateAccountEvent(msg.sender, name, block.timestamp);
   }
 
   function hasAccount() public view returns (bool) {
@@ -184,11 +185,8 @@ contract EthBnB {
       shortName: shortName,
       description: desc
     });
-
     accounts[msg.sender].listingIds.push(nextListingId);
-
-    emit CreateEvent("createListing", nextListingId, "");
-
+    emit CreateListingEvent(msg.sender, nextListingId);
     nextListingId++;
   }
 
@@ -221,6 +219,17 @@ contract EthBnB {
     require(price > 0, "Price must be > 0.");
     listings[listingId].price = price;
   }
+
+ function getListingLocation(uint listingId) public view returns (string) {
+      checkListingId(listingId);
+      return listings[listingId].location;
+  }
+
+  function setListingLocation(uint listingId, string location) public {
+    checkListingId(listingId);
+    listings[listingId].location = location;
+  }
+
 
   function getListingShortName(uint listingId) public view returns (string) {
       checkListingId(listingId);

@@ -8,7 +8,6 @@ class APICommand extends Component {
   // Converts the user input value to the type expected by the API given the
   // input type. This method is expected to be called by inputChanged.
   convertInputValue(value, type) {
-    console.log(BigNumber)
     if (type === "uint256")
       return new BigNumber(value)
     else

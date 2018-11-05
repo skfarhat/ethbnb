@@ -1,7 +1,5 @@
 import log from "../logger"
-import { 
-  REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, ADD_MESSAGE
-} from "../constants/action-types.js"
+import { REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE } from "../constants/action-types.js"
 
 const initialState = {
   MAX_CLIENTS: 3,
@@ -17,7 +15,7 @@ const getClients = (eth, state) => {
     clients.push({
       "address": eth.accounts[i],
       "account": null,
-      "listings": null
+      "listings": {}
     })
   }
   return clients
@@ -25,16 +23,15 @@ const getClients = (eth, state) => {
 
 const updateClientWithAddr = (clients, addr, action) => {
   return clients.map((client, index) => {
-    if (client.address === action.payload.from) {
+    if (client.address === addr) {
       return {
-        ...client, 
-        account: action.payload
+        ...client,
+        account: action.payload.value
       }
-    }
-    else {
+    } else {
       return client
     }
-  }) 
+  })
 }
 
 const rootReducer = (state = initialState, action) => {
@@ -49,16 +46,40 @@ const rootReducer = (state = initialState, action) => {
       };
     }
     case SELECT_CLIENT: {
-      return {...state, selectedClient: action.payload}
+      return {
+        ...state,
+        selectedClient: action.payload
+      }
     }
     case CREATE_ACCOUNT: {
-      log.debug("CREATE_ACCOUNT", action.payload.from)
-      const clients = updateClientWithAddr(state.clients, action.payload.from, action)
+      log.debug("CREATE_ACCOUNT", action.payload.value.from)
+      const clients = updateClientWithAddr(state.clients, action.payload.value.from, action)
+      return {
+        ...state,
+        clients: clients
+      }
+    }
+    case CREATE_LISTING: {
+      log.debug("CREATE_LISTING", action.payload)
+      const listing = action.payload.value
+      let clients = state.clients.map((client, index) => {
+        if (client.address === action.payload.value.from) {
+          return {
+            ...client,
+            listings: {...client.listings, [listing.id]: listing}
+          }
+        } else {
+          return client
+        }
+      })
       return {...state, clients: clients}
     }
     case ADD_MESSAGE: {
       log.debug('ADD_MESSAGE', action.payload)
-      return {...state, messages: state.messages.concat(action.payload)}
+      return {
+        ...state,
+        messages: state.messages.concat(action.payload)
+      }
     }
     default: {
       log.debug("default")

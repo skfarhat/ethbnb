@@ -14,15 +14,12 @@ const mapStateToProps = state => {
 class ConnectedClientsManager extends Component {
   render() {
     log.debug("ClientsManager:: render", this.props)
-
     let all_clients = this.props.clients.map((client, index) =>
     <Client
         key={index}
         clientId={index}
         selected={this.props.selectedClient === index}
-        clientAddress={client.address}
-        clientAccount={client.account}
-        clientListings={client.listings}
+        client={client}
         />
     )
     return (
