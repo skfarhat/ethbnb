@@ -3,6 +3,13 @@ import React, { Component } from 'react'
 import BigNumber from 'bignumber.js'
 
 
+// React component 
+// 
+// Props: 
+// 
+//  abiFunction: the dict object extracted from the ABI. It denotes the name of the solidity function,
+//  its inputs, outputs, whether its constant. 
+//  
 class APICommand extends Component {
 
   // Converts the user input value to the type expected by the API given the
@@ -18,10 +25,11 @@ class APICommand extends Component {
   inputChanged(evt) {
     evt.preventDefault()
     let inputElem = evt.target
+    const inputs = this.props.abiFunction.inputs 
     // Find the input field associated with the event target and
     // change the property 'value' in it.
-    for (var i = 0; i < this.props.inputs.length; i++) {
-      let input = this.props.inputs[i]
+    for (var i = 0; i < inputs.length; i++) {
+      let input = inputs[i]
       if (input.name === inputElem.name) {
         input.value = this.convertInputValue(evt.target.value, input.type)
       }
@@ -40,7 +48,7 @@ class APICommand extends Component {
   }
 
   generateInputFields() {
-    let inputs = this.props.inputs
+    const inputs = this.props.abiFunction.inputs
     // Parse the inputs of this function and create a list of DOM elements
     let inputsDom = []
     // Set this to true if the function input parameter is unsupported and we don't want to include that function
@@ -64,12 +72,7 @@ class APICommand extends Component {
         </div>
       )
     }
-    this.inputsDom = React.createElement(
-      'div',
-      {},
-      inputsDom)
     this.buttonDisabled = unsupportedInput
-
     return inputsDom
   }
 
@@ -81,8 +84,8 @@ class APICommand extends Component {
       className="btn btn-default"
       type="button"
       disabled={this.buttonDisabled}
-      onClick={(evt) => this.props.handleButtonClick(evt, this.props.name, this.props.inputs)}>
-        {this.props.name}
+      onClick={(evt) => this.props.handleButtonClick(evt, this.props.abiFunction)}>
+        {this.props.abiFunction.name}
         </button>
         {this.generateInputFields()}
       </div>

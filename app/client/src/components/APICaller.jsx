@@ -21,6 +21,12 @@ const mapDispatchToProps = dispatch => {
 }
 
 class APICaller_ extends Component {
+  
+  constructor(props) {
+    super(props)
+    // Bind the callback function to allow it access to state and props
+    this.myHandleButtonClick = this.myHandleButtonClick.bind(this)
+  }
 
   // Called when the select (dropdown) changes.
   clientSelectChanged(evt) {
@@ -41,10 +47,13 @@ class APICaller_ extends Component {
     return foundFunction
   }
 
-  async myHandleButtonClick(evt, name, inputs, client, eth) {
-    log.debug("myHandleButtonClick", eth, name, inputs, client, eth)
+  async myHandleButtonClick(evt, apiCmd) {
     evt.preventDefault()
-    inputs = inputs.map(in1 => in1.value)
+
+    const name = apiCmd.name
+    const selectedClient = this.props.clients[this.props.selectedClient] // used for the 'from' param when issuing transaction
+    const eth = this.props.eth
+    const inputs = apiCmd.inputs.map(in1 => in1.value)
 
     // Find first function that matches name
     let foundFunction = this.findFunctionWithName(eth, name)
@@ -54,7 +63,7 @@ class APICaller_ extends Component {
     } else {
       const ethFunction = eth.contractInstance[name]
       const lastParam = {
-        from: client.address,
+        from: selectedClient.address,
         gas: 1000000
       }
       try {
@@ -108,9 +117,8 @@ class APICaller_ extends Component {
       },
         [<APICommand
         key={o.name}
-        name={o.name} // the name of the function
-        inputs={o.inputs} // the inputs to the function
-        handleButtonClick={ (evt, name, inputs) => this.myHandleButtonClick(evt, name, inputs, this.props.clients[this.props.selectedClient], this.props.eth)}
+        abiFunction={o}
+        handleButtonClick={(evt, self)=>this.myHandleButtonClick(evt, self)}
         parent={this}
         />]
       ))
