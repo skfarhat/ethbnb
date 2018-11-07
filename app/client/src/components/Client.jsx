@@ -80,7 +80,7 @@ class Client extends Component {
     const selectedClassName = this.props.selected ? "client-selected" : ""
     return (
       <div className="col client-div" data-client-id="{id}">
-        <h2 className={selectedClassName}> Client {id} </h2>
+        <h3 className={selectedClassName}> Client {id} </h3>
         <div key='address'>
           <em> Address </em>
           <span id="accountId"> {addr} </span>

@@ -23,7 +23,7 @@ class ConnectedClientsManager extends Component {
         />
     )
     return (
-      <div id="div-clients">
+      <div id="clients-div">
         <h2> Clients </h2>
         { all_clients }
       </div>
