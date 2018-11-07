@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
 import log from "../logger"
-import { selectClient } from "../actions/"
+import { selectClient, addMessage } from "../actions/"
 import APICommand from "./APICommand.js"
 
 const mapStateToProps = (state) => {
@@ -16,6 +16,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = dispatch => {
   return {
     selectClient: (index) => dispatch(selectClient(index)),
+    addMessage: (message) => dispatch(addMessage(message))
   }
 }
 
@@ -27,12 +28,8 @@ class APICaller_ extends Component {
     this.props.selectClient(val)
   }
 
-  async myHandleButtonClick(evt, name, inputs, client, eth) {
-    log.debug("myHandleButtonClick", eth, name, inputs, client, eth)
-    evt.preventDefault()
-    inputs = inputs.map(in1 => in1.value)
-
-    // Find first function that matches name
+  // Returns the first function in eth.abi that matches name, or null if not found. 
+  findFunctionWithName(eth, name) {
     let foundFunction = null
     for (var i = 0; i < eth.abi.length; i++) {
       var o = eth.abi[i]
@@ -41,6 +38,16 @@ class APICaller_ extends Component {
         break
       }
     }
+    return foundFunction
+  }
+
+  async myHandleButtonClick(evt, name, inputs, client, eth) {
+    log.debug("myHandleButtonClick", eth, name, inputs, client, eth)
+    evt.preventDefault()
+    inputs = inputs.map(in1 => in1.value)
+
+    // Find first function that matches name
+    let foundFunction = this.findFunctionWithName(eth, name)
 
     if (!foundFunction) {
       log.debug("Could not find ", name, " in ", eth.abi)
@@ -51,13 +58,15 @@ class APICaller_ extends Component {
         gas: 1000000
       }
       try {
-        log.debug("calling ", name, " with params ", inputs)
-        var result = await ethFunction.sendTransaction(...inputs, lastParam)
-        log.debug("result of calling", name, "is ", result)
+        await ethFunction.sendTransaction(...inputs, lastParam)
+        const message = 'Transaction ' + name + ' has been submitted.'
+        this.props.addMessage({text: message})
+        log.debug(message)
       }
       catch(exc) {
-        alert("Failed to ethereum function " + name)
-        log.error(exc)
+        const message = "Failed to ethereum function " + name
+        this.props.addMessage({text: message})
+        log.error(message)
       }
     }
   }
