@@ -47,13 +47,30 @@ class APICaller_ extends Component {
     return foundFunction
   }
 
+  // Returns a dictionary of input => value if all inputs have had their values set (not empty). 
+  // it does not check whether the values they have been set to conform to the type of the input).
+  // Returns null if any of the inputs has not been set. 
+  validateAndMapCommandInputs(inputs) {
+    const ret = inputs.map(in1 => in1.value)
+    for (var k in ret) {
+      if (!ret[k] || ret[k].length === 0) 
+        return null
+    }
+    return ret 
+  }
+
   async myHandleButtonClick(evt, apiCmd) {
     evt.preventDefault()
 
     const name = apiCmd.name
     const selectedClient = this.props.clients[this.props.selectedClient] // used for the 'from' param when issuing transaction
     const eth = this.props.eth
-    const inputs = apiCmd.inputs.map(in1 => in1.value)
+    const inputs = this.validateAndMapCommandInputs(apiCmd.inputs)
+    if (!inputs) {
+      alert("Missing inputs for function '" + name + "'")
+      return
+    }
+
 
     // Find first function that matches name
     let foundFunction = this.findFunctionWithName(eth, name)
@@ -67,13 +84,22 @@ class APICaller_ extends Component {
         gas: 1000000
       }
       try {
-        await ethFunction.sendTransaction(...inputs, lastParam)
-        const message = 'Transaction ' + name + ' has been submitted.'
+        let message = null 
+        // Here we check whether the function to execute is a constant one. 
+        // If so, we make a local 'call' and get the result immediately.
+        // If the function is state-changing, we issue a transaction. The result will later be brought back to us via an event. 
+        if (apiCmd.constant) {
+          const result = await ethFunction.call(...inputs, lastParam)
+          message = 'Local call ' + name + ' has been made. Result is: ' + result
+        } else {
+          await ethFunction.sendTransaction(...inputs, lastParam)  
+          message = 'Transaction ' + name + ' has been submitted.'
+        }
         this.props.addMessage({text: message})
         log.debug(message)
       }
       catch(exc) {
-        const message = "Failed to ethereum function " + name
+        const message = "Failed to execute ethereum function " + name
         this.props.addMessage({text: message})
         log.error(message)
       }
