@@ -37,7 +37,9 @@ class EthManager_ extends Component {
         callback: async (ethEvent) => {
           const account = ethEvent // TODO: make this consistent with CreateListingEvent
           this.props['createAccount'](account)
-          this.props['addMessage']({text: 'Adding new account'})
+          this.props['addMessage']({
+            text: 'Adding new account'
+          })
         }
       },
       CreateListingEvent: {
@@ -48,13 +50,16 @@ class EthManager_ extends Component {
         callback: async (ethEvent) => {
           log.debug("callback call CreateListingEvent made", ethEvent)
           const {from, listingId} = ethEvent
-          const callObj = {from: from, gas: 100000}
+          const callObj = {
+            from: from,
+            gas: 100000
+          }
           const shortName = await this.eth.contractInstance['getListingShortName'].call(listingId,
             callObj)
           const price = await this.eth.contractInstance['getListingPrice'].call(listingId,
             callObj)
           const location = await this.eth.contractInstance['getListingLocation'].call(listingId,
-          callObj)
+            callObj)
           const listing = {
             price: parseInt(price.toString()),
             from: from,
@@ -64,7 +69,9 @@ class EthManager_ extends Component {
           }
           // Raise action 'createListing'
           this.props['createListing'](listing)
-          this.props['addMessage']({text: 'ADding a new listing'})
+          this.props['addMessage']({
+            text: 'Adding a new listing'
+          })
         }
       }
     }
@@ -115,9 +122,8 @@ class EthManager_ extends Component {
 
   registerEvents() {
     log.debug("registerEvents", this.props)
-    const self = this
     for (var eventName in this.ethEvents) {
-      let {action, message, callback} = this.ethEvents[eventName]
+      let {callback} = this.ethEvents[eventName]
       let eventConstruct = this.props.eth.contractInstance[eventName]
       const ev = (error, result) => {
         log.debug("Eth event:: ", result)
