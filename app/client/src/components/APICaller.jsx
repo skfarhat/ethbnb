@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
 import log from "../logger"
-import { selectClient, addMessage } from "../actions/"
+import { selectClient, addMessage, addGasUsed } from "../actions/"
 import APICommand from "./APICommand.js"
 
 const mapStateToProps = (state) => {
@@ -9,19 +9,20 @@ const mapStateToProps = (state) => {
     eth: state.eth,
     clients: state.clients,
     abi: state.eth.abi,
-    selectedClient: state.selectedClient
+    selectedClientAddr: state.selectedClientAddr
   }
 }
 
 const mapDispatchToProps = dispatch => {
   return {
-    selectClient: (index) => dispatch(selectClient(index)),
+    selectClient: (addr) => dispatch(selectClient(addr)),
+    addGasUsed: (clientAddr, gas) => dispatch(addGasUsed(clientAddr, gas)),
     addMessage: (message) => dispatch(addMessage(message))
   }
 }
 
 class APICaller_ extends Component {
-  
+
   constructor(props) {
     super(props)
     // Bind the callback function to allow it access to state and props
@@ -30,8 +31,7 @@ class APICaller_ extends Component {
 
   // Called when the select (dropdown) changes.
   clientSelectChanged(evt) {
-    const val = parseInt(evt.target.value)
-    this.props.selectClient(val)
+    this.props.selectClient(evt.target.value)
   }
 
   // Returns the first function in eth.abi that matches name, or null if not found. 
@@ -53,24 +53,23 @@ class APICaller_ extends Component {
   validateAndMapCommandInputs(inputs) {
     const ret = inputs.map(in1 => in1.value)
     for (var k in ret) {
-      if (!ret[k] || ret[k].length === 0) 
+      if (!ret[k] || ret[k].length === 0)
         return null
     }
-    return ret 
+    return ret
   }
 
   async myHandleButtonClick(evt, apiCmd) {
     evt.preventDefault()
 
     const name = apiCmd.name
-    const selectedClient = this.props.clients[this.props.selectedClient] // used for the 'from' param when issuing transaction
+    const selectedClient = this.props.clients[this.props.selectedClientAddr] // used for the 'from' param when issuing transaction
     const eth = this.props.eth
     const inputs = this.validateAndMapCommandInputs(apiCmd.inputs)
     if (!inputs) {
       alert("Missing inputs for function '" + name + "'")
       return
     }
-
 
     // Find first function that matches name
     let foundFunction = this.findFunctionWithName(eth, name)
@@ -84,7 +83,7 @@ class APICaller_ extends Component {
         gas: 1000000
       }
       try {
-        let message = null 
+        let message = null
         // Here we check whether the function to execute is a constant one. 
         // If so, we make a local 'call' and get the result immediately.
         // If the function is state-changing, we issue a transaction. The result will later be brought back to us via an event. 
@@ -92,36 +91,32 @@ class APICaller_ extends Component {
           const result = await ethFunction.call(...inputs, lastParam)
           message = 'Local call ' + name + ' has been made. Result is: ' + result
         } else {
-          await ethFunction.sendTransaction(...inputs, lastParam)  
-          message = 'Transaction ' + name + ' has been submitted.'
+          const txHash = await ethFunction.sendTransaction(...inputs, lastParam)
+          console.log("the result from sendTrnasaction is", txHash)
+          message = 'Transaction ' + name + ' ' + txHash.substr(0, 5) + ' has been submitted.'
+          eth.web3.eth.getTransactionReceipt(txHash, (error, txObj) => {
+            if (error) {
+              log.error('Got error in getTransactionReceipt', error)
+            } else {
+              console.log("Got receipt ", txObj)
+              console.log("The gas used for that transaction was ", txObj.gasUsed)
+              this.props.addGasUsed(selectedClient.address, txObj.gasUsed)
+            }
+          })
         }
-        this.props.addMessage({text: message})
+        this.props.addMessage({
+          text: message
+        })
         log.debug(message)
-      }
-      catch(exc) {
+      } catch (exc) {
         const message = "Failed to execute ethereum function " + name
-        this.props.addMessage({text: message})
+        this.props.addMessage({
+          text: message
+        })
         log.error(message)
+        log.error('Actual exception message: ', exc)
       }
     }
-  }
-
-  // Called in render to generate a selector for clients
-  generateClientSelector() {
-    var optionElements = []
-    for (var i = 0; i < this.props.clients.length; i++) {
-      optionElements.push(
-        <option key={i} value={i}>{i}</option>)
-    }
-    let selectElem = React.createElement(
-      "select",
-      {
-        key: "client-selector",
-        onChange: (evt) => this.clientSelectChanged(evt)
-      },
-      [optionElements]
-    )
-    return selectElem
   }
 
   parseABIForFunctions() {
@@ -144,7 +139,7 @@ class APICaller_ extends Component {
         [<APICommand
         key={o.name}
         abiFunction={o}
-        handleButtonClick={(evt, self)=>this.myHandleButtonClick(evt, self)}
+        handleButtonClick={(evt, self) => this.myHandleButtonClick(evt, self)}
         parent={this}
         />]
       ))
@@ -155,12 +150,11 @@ class APICaller_ extends Component {
   render() {
     log.debug("APICaller: render")
     let h2UI = <h2 key="title"> API </h2>
-    let selectorUI = this.generateClientSelector()
     let abiCommands = this.parseABIForFunctions()
     let content = React.createElement(
       'div',
       {},
-      [h2UI, selectorUI, abiCommands]
+      [h2UI, abiCommands]
     )
     return (content)
   }

@@ -73,17 +73,21 @@ class Account extends Component {
 class Client extends Component {
   render() {
     log.debug("Client:: render()", this.props)
-    const id = this.props.clientId
-    const {addr, account, listings} = this.props.client
+    const {address, account, listings, gasUsed} = this.props.client
 
     // If the props.selected is true, then we add the class 'client-selected' to header
-    const selectedClassName = this.props.selected ? "client-selected" : ""
+    const selectedClassName = this.props.isSelected ? "client-selected" : ""
     return (
-      <div className="col client-div" data-client-id="{id}">
-        <h3 className={selectedClassName}> Client {id} </h3>
-        <div key='address'>
-          <em> Address </em>
-          <span id="accountId"> {addr} </span>
+      <div className={"col client-div " + selectedClassName} onClick={(evt)=> this.props.selectMeCallback(evt, address)}>
+        <div key='eth-general'>
+          <div>
+            <em> Address </em>
+            <span id="accountId"> {address} </span>
+          </div>
+          <div>
+            <em> Gas Used </em> 
+            <span> {gasUsed} </span>
+          </div>
         </div>
         <div key='account'>
           <Account act={account} />

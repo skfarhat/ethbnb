@@ -1,37 +1,38 @@
 import log from "../logger"
-import { REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE } from "../constants/action-types.js"
+import { REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE, ADD_GAS_USED } from "../constants/action-types.js"
 
 const initialState = {
   MAX_CLIENTS: 3,
-  selectedClient: 0,
+  selectedClientAddr: '0x0',
   messages: [],
-  clients: [],
+  clients: {},
   eth: {}
 }
 
 const getClients = (eth, state) => {
   let clients = []
   for (var i = 0; i < state.MAX_CLIENTS; i++) {
-    clients.push({
+    clients[eth.accounts[i]] = {
       "address": eth.accounts[i],
+      "gasUsed": 0,
       "account": null,
       "listings": {}
-    })
+    }
   }
   return clients
 }
 
 const updateClientWithAddr = (clients, addr, action) => {
-  return clients.map((client, index) => {
-    if (client.address === addr) {
-      return {
-        ...client,
+  const clone = {...clients}
+  for (var a in clone) {
+    if (a === addr) {
+      clone[a] = {
+        ...clone[a], 
         account: action.payload.value
       }
-    } else {
-      return client
     }
-  })
+  }
+  return clone
 }
 
 const rootReducer = (state = initialState, action) => {
@@ -48,7 +49,7 @@ const rootReducer = (state = initialState, action) => {
     case SELECT_CLIENT: {
       return {
         ...state,
-        selectedClient: action.payload
+        selectedClientAddr: action.payload
       }
     }
     case CREATE_ACCOUNT: {
@@ -62,17 +63,18 @@ const rootReducer = (state = initialState, action) => {
     case CREATE_LISTING: {
       log.debug("CREATE_LISTING", action.payload)
       const listing = action.payload.value
-      let clients = state.clients.map((client, index) => {
-        if (client.address === action.payload.value.from) {
-          return {
-            ...client,
-            listings: {...client.listings, [listing.id]: listing}
-          }
-        } else {
-          return client
+      let clone = {...state.clients}
+      for (var addr in clone) {
+        const client = clone[addr]
+        if (client.address === action.payload.value.from){
+          console.log("found one that matches")
+          client.listings[listing.id] = listing
         }
-      })
-      return {...state, clients: clients}
+      }
+      return {
+        ...state,
+        clients: clone
+      }
     }
     case ADD_MESSAGE: {
       log.debug('ADD_MESSAGE', action.payload)
@@ -80,6 +82,15 @@ const rootReducer = (state = initialState, action) => {
         ...state,
         messages: state.messages.concat(action.payload)
       }
+    }
+    case ADD_GAS_USED: {
+      // TODO: 
+      log.error("Incomplete implementation")
+      return state 
+      // return {
+      //   ...state,
+      //   clients: this.state.clients[action.payload.clientId]
+      // }
     }
     default: {
       log.debug("default")

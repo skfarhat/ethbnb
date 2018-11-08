@@ -10,6 +10,9 @@
     border-radius: 25px;
     padding: 15px;
     margin-bottom: 10px;
+    background-color: thistle;
+}
+.client-selected {
     background-color: lavender;
 }
 
@@ -22,9 +25,6 @@
 .mainTitle {
     width:100%;
     text-align:center;
-}
-h2.client-selected {
-    color: blue;
 }
 
 /* Message Board */ 
