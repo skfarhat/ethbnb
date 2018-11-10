@@ -1,6 +1,6 @@
 import log from '../../logger'
 import React, { Component } from 'react'
-import DictTable from './Tables'
+import DictTable from '../tables/DictTable'
 
 class Account extends Component {
 
@@ -10,17 +10,17 @@ class Account extends Component {
 
   render() {
     log.debug("Account:: render()", this.props)
-
-    if (this.props.act !== null && this.props.act !== undefined) {
-      this.props.act.dateCreated = this.bigNumberToDate(this.props.act.dateCreated)
-      return (
-        <DictTable
-        data={this.props.act}
-        />
-      )
-    } else {
-      return (<div> <em> No account information. </em> </div>)
+    // Convert dateCreated property from BigNumber to string
+    let data = {}
+    if (this.props.data) {
+        data = {
+            ...this.props.data,
+            dateCreated: this.bigNumberToDate(this.props.data.dateCreated)
+        }
     }
+    return (
+        <DictTable data={data} title="BnB Account"/>
+      )
   }
 }
 export default Account

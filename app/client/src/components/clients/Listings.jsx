@@ -1,10 +1,10 @@
 import log from '../../logger'
 import React, { Component } from 'react'
-import DefaultTable from './Tables'
+import DefaultTable from '../tables/DefaultTable'
 
 class Listings extends Component {
   render() {
-    log.debug("Listings::render()", this.props.listings)
+    log.debug("Listings::render()", this.props.data)
     const columns = [{
       Header: 'ID',
       accessor: 'id'
@@ -15,21 +15,13 @@ class Listings extends Component {
       Header: 'Price',
       accessor: 'price'
     }]
-    const data = (!this.props.listings || !this.props.listings.length) ? [] : this.props.listings
     return (
-      <div> 
-      Sup sup 
-      </div> 
-      )
-    // return (
-    //   <DefaultTable
-    //   data={data}
-    //   columns={columns}
-    //   defaultPageSize={4}
-    //   showPaginationBottom={false}
-    //   noDataText="No listings"
-    //   />
-    // )
+      <DefaultTable
+      title="Listings"
+      data={this.props.data}
+      columns={columns}
+      />
+    )
   }
 }
 export default Listings
