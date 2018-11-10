@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import EthManager from "./EthManager.jsx"
-import ClientsManager from "./ClientsManager.jsx"
+import ClientsManager from "./clients/ClientsManager.jsx"
 import APICaller from "./APICaller.jsx"
 import MessageBoard from "./MessageBoard.jsx"
 import log from "../logger"
