@@ -28,6 +28,7 @@ class ConnectedClientsManager extends Component {
   render() {
     log.debug("ClientsManager:: render", this.props)
     const allClients = []
+    let i = 0 
     for (var addr in this.props.clients) {
       const client = this.props.clients[addr]
       console.log("pushing ", client)
@@ -35,6 +36,7 @@ class ConnectedClientsManager extends Component {
         <Client
         key={addr}
         client={client}
+        clientId={i++}
         isSelected={this.props.selectedClientAddr === addr}
         selectMeCallback={(evt, clientAddr)=>this.selectClient(evt, clientAddr)}
         />
