@@ -1,5 +1,6 @@
 import log from '../../logger'
 import React, { Component } from 'react'
+import DictTable from './Tables'
 
 class Account extends Component {
 
@@ -9,25 +10,13 @@ class Account extends Component {
 
   render() {
     log.debug("Account:: render()", this.props)
+
     if (this.props.act !== null && this.props.act !== undefined) {
+      this.props.act.dateCreated = this.bigNumberToDate(this.props.act.dateCreated)
       return (
-        <div>
-          <table border="1">
-          <tbody>
-          <tr>
-          <td colSpan="2"> <b> Account </b> </td>
-          </tr>
-            <tr>
-              <td> Name </td>
-              <td> {this.props.act.name} </td>
-            </tr>
-            <tr>
-              <td> Date Created </td>
-              <td> {this.bigNumberToDate(this.props.act.dateCreated)} </td>
-            </tr>
-          </tbody>
-          </table>
-        </div>
+        <DictTable
+        data={this.props.act}
+        />
       )
     } else {
       return (<div> <em> No account information. </em> </div>)

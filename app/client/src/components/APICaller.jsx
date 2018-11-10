@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from "react-redux";
 import log from "../logger"
 import { selectClient, addMessage, addGasUsed } from "../actions/"
-import APICommand from "./APICommand.js"
+import APICommand from "./APICommand"
 
 const mapStateToProps = (state) => {
   return {

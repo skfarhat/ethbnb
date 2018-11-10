@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
-import EthManager from "./EthManager.jsx"
-import ClientsManager from "./clients/ClientsManager.jsx"
-import APICaller from "./APICaller.jsx"
-import MessageBoard from "./MessageBoard.jsx"
+import EthManager from "./EthManager"
+import ClientsManager from "./clients/ClientsManager"
+import APICaller from "./APICaller"
+import MessageBoard from "./MessageBoard"
 import log from "../logger"
 import "../css/bootstrap-4.1.0.min.css"
 import 'react-table/react-table.css'

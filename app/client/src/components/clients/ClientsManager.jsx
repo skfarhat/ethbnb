@@ -2,7 +2,7 @@ import React, { Component } from "react"
 import { connect } from "react-redux"
 import log from "../../logger"
 import { selectClient } from "../../actions/"
-import Client from "./Client.jsx"
+import Client from "./Client"
 
 const mapStateToProps = state => {
   return {
