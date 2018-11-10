@@ -1,41 +1,6 @@
-import log from "../logger"
-import React, { Component } from 'react';
-
-class Listing extends Component {
-  render() {
-    log.debug("Listing", this.props.listingId)
-    return (
-      <tr key={this.props.listing.id.toString()}>
-      <td>{this.props.listing.id}</td>
-      <td>{this.props.listing.shortName}</td>
-      <td>{this.props.listing.price}</td>
-      <td>{this.props.listing.location}</td>
-      </tr>
-    )
-  }
-}
-
-class Listings extends Component {
-  render() {
-    log.debug("Listings::render()", this.props.listings)
-    if (this.props.listings === null || this.props.listings === undefined || this.props.listings.length === 0)
-      return (<div> <em> No listings. </em> </div>)
-    let listings = []
-    for (var i in this.props.listings) {
-      const listing = this.props.listings[i]
-      listings.push(<Listing key={listing.id} listing={listing} />)
-    }
-    return (
-      <table border="1">
-      <tbody>
-        <tr><td colSpan="4"><b>Listings</b></td></tr>
-        <tr><td>id</td><td>Name</td><td>Price</td><td>Location</td></tr>
-        {listings}
-      </tbody>
-      </table>
-    )
-  }
-}
+import log from '../logger'
+import React, { Component } from 'react'
+import Listings from './Listings'
 
 class Account extends Component {
 
@@ -78,7 +43,7 @@ class Client extends Component {
     // If the props.selected is true, then we add the class 'client-selected' to header
     const selectedClassName = this.props.isSelected ? "client-selected" : ""
     return (
-      <div className={"col client-div " + selectedClassName} onClick={(evt)=> this.props.selectMeCallback(evt, address)}>
+      <div className={"col client-div " + selectedClassName} onClick={(evt) => this.props.selectMeCallback(evt, address)}>
         <div key='eth-general'>
           <div>
             <em> Address </em>

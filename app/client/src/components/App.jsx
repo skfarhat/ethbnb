@@ -5,6 +5,7 @@ import APICaller from "./APICaller.jsx"
 import MessageBoard from "./MessageBoard.jsx"
 import log from "../logger"
 import "../css/bootstrap-4.1.0.min.css"
+import 'react-table/react-table.css'
 import '../main.css'
 
 class App extends Component {
