@@ -92,14 +92,13 @@ class APICaller_ extends Component {
           message = 'Local call ' + name + ' has been made. Result is: ' + result
         } else {
           const txHash = await ethFunction.sendTransaction(...inputs, lastParam)
-          console.log("the result from sendTrnasaction is", txHash)
           message = 'Transaction ' + name + ' ' + txHash.substr(0, 5) + ' has been submitted.'
           eth.web3.eth.getTransactionReceipt(txHash, (error, txObj) => {
             if (error) {
               log.error('Got error in getTransactionReceipt', error)
             } else {
-              console.log("Got receipt ", txObj)
-              console.log("The gas used for that transaction was ", txObj.gasUsed)
+              log.debug("Got receipt ", txObj)
+              log.debug("The gas used for that transaction was ", txObj.gasUsed)
               this.props.addGasUsed(selectedClient.address, txObj.gasUsed)
             }
           })

@@ -31,7 +31,6 @@ class ConnectedClientsManager extends Component {
     let i = 0 
     for (var addr in this.props.clients) {
       const client = this.props.clients[addr]
-      console.log("pushing ", client)
       allClients.push(
         <Client
         key={addr}

@@ -6,7 +6,6 @@ import DefaultTable from './DefaultTable'
 // The second column contains the property value
 class DictTable extends Component {
   render() {
-    console.log('DictTable hey dude', this.props)
     const data = []
     if (this.props.data) {
       for (var key in this.props.data) {

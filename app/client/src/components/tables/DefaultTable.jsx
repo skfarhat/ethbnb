@@ -3,7 +3,6 @@ import ReactTable from 'react-table'
 
 class DefaultTable extends Component {
   render() {
-    console.log('DefaultTable', this.props)
     const title = (this.props.title) ? <h5> {this.props.title} </h5> : ""
     return (
       <div>
