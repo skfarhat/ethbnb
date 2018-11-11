@@ -2,6 +2,7 @@ import React, { Component } from "react"
 import log from "../logger"
 import { connect } from "react-redux"
 import TruffleContract from 'truffle-contract'
+import EthEventListener from './EthEventListener'
 import "../loadAbi.js"
 import { refreshEth, createAccount, addMessage, createListing } from "../actions/"
 
@@ -18,10 +19,12 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    refreshEth: (eth) => dispatch(refreshEth(eth)),
-    createAccount: (account) => dispatch(createAccount(account)),
-    createListing: (listing) => dispatch(createListing(listing)),
-    addMessage: (message) => dispatch(addMessage(message))
+    dispatchMethods: {
+      refreshEth: (eth) => dispatch(refreshEth(eth)),
+      createAccount: (account) => dispatch(createAccount(account)),
+      createListing: (listing) => dispatch(createListing(listing)),
+      addMessage: (message) => dispatch(addMessage(message))
+    }
   }
 }
 
@@ -31,57 +34,17 @@ class EthManager_ extends Component {
     log.debug("EthManager_")
     super(props)
 
-    this.ethEvents = {
-      CreateAccountEvent: {
-        message: 'Adding new account',
-        callback: async (ethEvent) => {
-          const account = ethEvent // TODO: make this consistent with CreateListingEvent
-          this.props['createAccount'](account)
-          this.props['addMessage']({
-            text: 'Adding new account'
-          })
-        }
-      },
-      CreateListingEvent: {
-        message: 'Adding new listing',
-        // When an event is raised saying a listing was created, we use the listing id from the
-        // event to get all the details about the listing. We do that by making Eth calls
-        // using call.
-        callback: async (ethEvent) => {
-          log.debug("callback call CreateListingEvent made", ethEvent)
-          const {from, listingId} = ethEvent
-          const callObj = {
-            from: from,
-            gas: 100000
-          }
-          const shortName = await this.eth.contractInstance['getListingShortName'].call(listingId,
-            callObj)
-          const price = await this.eth.contractInstance['getListingPrice'].call(listingId,
-            callObj)
-          const location = await this.eth.contractInstance['getListingLocation'].call(listingId,
-            callObj)
-          const listing = {
-            price: parseInt(price.toString()),
-            from: from,
-            id: parseInt(listingId.toString()),
-            shortName: shortName,
-            location: location
-          }
-          // Raise action 'createListing'
-          this.props['createListing'](listing)
-          this.props['addMessage']({
-            text: 'Adding a new listing'
-          })
-        }
-      }
-    }
+    // The event listener will be instantiated when this.setupEth() completes
+    // and registerEvents() will be invoked on the resulting object
+    this.eventListener = null
+    
     // We start making connection to Ethereum Network
     this.setupEth()
 
   }
 
   async setupEth() {
-    log.debug("setupEth")
+    log.debug("EthManager:: setupEth() start")
     this.eth = {}
 
     if (typeof web3 !== 'undefined') {
@@ -106,10 +69,12 @@ class EthManager_ extends Component {
     this.eth.contractInstance = contractInstance
 
     // Call callback
-    this.props.refreshEth(this.eth)
+    this.props.dispatchMethods.refreshEth(this.eth)
 
-    // Register event listeners
-    this.registerEvents()
+    // Create EventListener and call registerEvents
+    this.eventListener = new EthEventListener(contractInstance, this.props.dispatchMethods)
+    this.eventListener.registerEvents()
+    log.debug("EthManager:: setupEth() done")
   }
 
   getClientObjFromAddress(addr) {
@@ -118,34 +83,6 @@ class EthManager_ extends Component {
         return this.props.clients[i]
     }
     return null
-  }
-
-  registerEvents() {
-    log.debug("registerEvents", this.props)
-    for (var eventName in this.ethEvents) {
-      let {callback} = this.ethEvents[eventName]
-      let eventConstruct = this.props.eth.contractInstance[eventName]
-      const ev = (error, result) => {
-        log.debug("Eth event:: ", result)
-        if (error) {
-          log.error(error)
-        } else if (result) {
-          const r = (result.constructor === Array) ? result : [result]
-          for (var i = 0; i < r.length; i++) {
-            if (callback)
-              callback(r[i].args)
-          }
-        }
-      }
-      // BUG: There's something not quite right here.
-      //      I'm getting duplicates, so one of them has to go. Keeping the watch one for the
-      //      being.
-      eventConstruct().watch(ev) // Get all future events
-      eventConstruct({}, { // Get all past events
-        fromBlock: 0,
-        toBlock: 'latest'
-      }).get(ev)
-    }
   }
 
   render() {
