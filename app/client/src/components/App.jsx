@@ -14,8 +14,8 @@ class App extends Component {
     return (
       <div className="container">
       <h1 className="mainTitle"> EthBnb </h1>
+      <EthManager />
       <div className="row">
-          <EthManager />
           <div className="container-col col-lg-2"> 
             <MessageBoard /> 
           </div>

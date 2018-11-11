@@ -1,11 +1,11 @@
 # TODO
 
-* Make 'log' and constants global (use window)
+* Continuation: check whether the ipfs.add() of files is really succeeding and persiting the added data. 
+* Allow clients to upload photos related to a listing - photos will be stored on another server - but verified thru bchain.
 * Move ethereum method calling mechanism from APICaller to somewhere else. Let APICaller worry about the display of the component on the screen. 
 
 ## TODO LATER
 
-* Allow clients to upload photos related to a listing - photos will be stored on another server - but verified thru bchain.
 * Link client wallets to the application.
 * Move to web3 v1.0.0 
 
