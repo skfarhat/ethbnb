@@ -1,15 +1,16 @@
 # TODO
 
-* [HIGH PRIORITY] Generalise event listening in EthManager to allow new events. It's currently hardcoded.
 * Ensure no APICommand can be launched when there is no client selected.
 * Improve styling of APICommands
 * Take care of informing the user when a transaction fails (because of some violation to the smart-contract)
 * [BUG]: entering a letter in input field that expects uint crashes the app directly. Shouldn't be like this.
+* Make 'log' global (use window)
 
 ## TODO LATER
 
 * Allow clients to upload photos related to a listing - photos will be stored on another server - but verified thru bchain.
 * Link client wallets to the application.
+* Move to web3 v1.0.0 
 
 ## LOW PRIORITY
 
@@ -27,3 +28,4 @@
 * Get response for functions getName(), getShortName() on MessageBoard or anywhere else.
 * Refactor, create a React component called Table.
 * Implement reducer ADD_GAS_USER: Show on the UI, the amount of gas consumed by each client
+* Refactor EventListening/EthManager

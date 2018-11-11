@@ -1,6 +1,5 @@
 import log from "../logger"
 
-
 // Manages the handling of the contract's emitted events by: 
 // 
 // (1) Making local ethereum calls to fetch latest: creations, deletions, updates..
@@ -16,7 +15,6 @@ class EthEventListener {
     this.dispatchMethods = dispatchMethods
     this.ethEvents = {
       CreateAccountEvent: {
-        message: 'Adding new account',
         callback: async (ethEvent) => {
           const {from} = ethEvent
           const account = await this.fetchAccountObject(from)
@@ -27,7 +25,6 @@ class EthEventListener {
         }
       },
       CreateListingEvent: {
-        message: 'Adding new listing',
         // When an event is raised saying a listing was created, we use the listing id from the
         // event to get all the details about the listing. We do that by making Eth calls
         // using call.
