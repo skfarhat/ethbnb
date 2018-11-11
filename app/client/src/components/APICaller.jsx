@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from "react-redux";
 import log from "../logger"
-import { selectClient, addMessage, addGasUsed } from "../actions/"
+import { selectClient, addMessage } from "../actions/"
 import APICommand from "./APICommand"
 
 const mapStateToProps = (state) => {
@@ -16,7 +16,6 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = dispatch => {
   return {
     selectClient: (addr) => dispatch(selectClient(addr)),
-    addGasUsed: (clientAddr, gas) => dispatch(addGasUsed(clientAddr, gas)),
     addMessage: (message) => dispatch(addMessage(message))
   }
 }
@@ -95,11 +94,9 @@ class APICaller_ extends Component {
           message = 'Transaction ' + name + ' ' + txHash.substr(0, 5) + ' has been submitted.'
           eth.web3.eth.getTransactionReceipt(txHash, (error, txObj) => {
             if (error) {
-              log.error('Got error in getTransactionReceipt', error)
+              this.props.addMessage({text: 'Got error in getTransactionReceipt' + error, data: error})
             } else {
-              log.debug("Got receipt ", txObj)
-              log.debug("The gas used for that transaction was ", txObj.gasUsed)
-              this.props.addGasUsed(selectedClient.address, txObj.gasUsed)
+              this.props.addMessage({text: 'Transaction ' + txObj.trasnsactionHash.substr(0,5) + ' used ' + txObj.gasUsed})
             }
           })
         }

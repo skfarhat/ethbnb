@@ -1,13 +1,10 @@
 # TODO
 
 * [HIGH PRIORITY] Generalise event listening in EthManager to allow new events. It's currently hardcoded.
-* Refactor, create a React component called Table.
-* Implement reducer ADD_GAS_USER: Show on the UI, the amount of gas consumed by each client
 * Ensure no APICommand can be launched when there is no client selected.
 * Improve styling of APICommands
 * Take care of informing the user when a transaction fails (because of some violation to the smart-contract)
 * [BUG]: entering a letter in input field that expects uint crashes the app directly. Shouldn't be like this.
-* REFACTOR: let state have web3, contractInstance and others at its root. Basically collapse them into root state.
 
 ## TODO LATER
 
@@ -28,3 +25,5 @@
 * Inform user when request was submitted (on MessageBoard for the time being)
 * Adjust App layout. More columns
 * Get response for functions getName(), getShortName() on MessageBoard or anywhere else.
+* Refactor, create a React component called Table.
+* Implement reducer ADD_GAS_USER: Show on the UI, the amount of gas consumed by each client

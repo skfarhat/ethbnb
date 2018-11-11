@@ -7,9 +7,8 @@ import EthAccount from './EthAccount'
 class Client extends Component {
   render() {
     log.debug("Client:: render()", this.props)
-    const {address, listings, gasUsed} = this.props.client
+    const {address, listings} = this.props.client
     const ethAccountData = {
-      gasUsed: gasUsed,
       address: address
     }
     // If the props.selected is true, then we add the class 'client-selected' to header

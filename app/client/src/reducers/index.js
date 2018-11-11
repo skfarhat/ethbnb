@@ -1,5 +1,5 @@
 import log from "../logger"
-import { REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE, ADD_GAS_USED } from "../constants/action-types.js"
+import { REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE } from "../constants/action-types.js"
 
 const initialState = {
   MAX_CLIENTS: 3,
@@ -14,7 +14,6 @@ const getClients = (eth, state) => {
   for (var i = 0; i < state.MAX_CLIENTS; i++) {
     clients[eth.accounts[i]] = {
       "address": eth.accounts[i],
-      "gasUsed": 0,
       "account": null,
       "listings": {}
     }
@@ -82,15 +81,6 @@ const rootReducer = (state = initialState, action) => {
         ...state,
         messages: state.messages.concat(action.payload)
       }
-    }
-    case ADD_GAS_USED: {
-      // TODO: 
-      log.error("Incomplete implementation")
-      return state 
-      // return {
-      //   ...state,
-      //   clients: this.state.clients[action.payload.clientId]
-      // }
     }
     default: {
       log.debug("default")

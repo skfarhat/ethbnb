@@ -1,5 +1,5 @@
 import {
-    REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE, ADD_GAS_USED
+    REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE
 } from "../constants/action-types.js"
 
 export const refreshEth = (eth) => ({type: REFRESH_ETH, payload: eth})
@@ -12,4 +12,3 @@ export const addMessage = (message) => ({type: ADD_MESSAGE, payload: message})
 // and where 'value' determines the new value that the peroperty should be updated to.
 export const createAccount = (account) => ({type: CREATE_ACCOUNT, payload: {name: 'account', value: account}})
 export const createListing = (listing) => ({type: CREATE_LISTING, payload: {name: 'listing', value: listing}})
-export const addGasUsed = (clientId, gasUsed) => ({type: ADD_GAS_USED, payload: {clientId: clientId, gasUsed: gasUsed}})
