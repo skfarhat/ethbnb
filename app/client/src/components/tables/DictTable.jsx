@@ -16,10 +16,10 @@ class DictTable extends Component {
       }
     }
     const columns = [{
-      Header: '',
+      Header: 'Key',
       accessor: 'key'
     }, {
-      Header: '',
+      Header: 'Value',
       accessor: 'value'
     }]
     return (
