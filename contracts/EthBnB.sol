@@ -94,10 +94,16 @@ contract EthBnB {
   // =======================================================================
 
   event Log(string functionName, string msg);
-  event CreateAccountEvent(address from, string name, uint dateCreated);
+
+  /* Account Events */ 
+  event CreateAccountEvent(address from);
+  event UpdateAccountEvent(address from); 
+  event DeleteAccountEvent(address from); 
+
+  /* Listing Events */ 
   event CreateListingEvent(address from, uint listingId);
-  event CreateEvent(string functionName, uint id, string more);
-  event DeleteEvent(string functionName, uint id, string more);
+  event UpdateListingEvent(address from, uint listingId); 
+  event DeleteListingEvent(address from, uint listingId);
 
   /**
    *
@@ -143,23 +149,29 @@ contract EthBnB {
       dateCreated : block.timestamp,
       listingIds: new uint[](0) // gives an array of 0 zeros
     });
-    emit CreateAccountEvent(msg.sender, name, block.timestamp);
+    emit CreateAccountEvent(msg.sender);
   }
 
   function hasAccount() public view returns (bool) {
-    if (accounts[msg.sender].owner == msg.sender) {
-      emit Log("hasAccount", "they are equal");
-    }
-    else {
-      emit Log("hasAccount", "they are not equal");
-    }
     return accounts[msg.sender].owner == msg.sender;
   }
 
-  function getName() public view returns (string) {
-      require(accounts[msg.sender].owner == msg.sender, "No account found.");
+  function getAccountName() public view returns (string) {
+      require(hasAccount(), "No associated account found.");
       return accounts[msg.sender].name;
   }
+
+  function getAccountDateCreated() public view returns (uint) {
+    require(hasAccount(), "No associated account found."); 
+    return accounts[msg.sender].dateCreated;
+  }
+
+  // TODO: when implementing: 
+  // prevent account deletion when there are listings associated or something
+  //
+  // function deleteAccount() public {
+  // 
+  // }
 
   // LISTING
   // -----------------------------------------------------------------------
@@ -186,8 +198,8 @@ contract EthBnB {
       description: desc
     });
     accounts[msg.sender].listingIds.push(nextListingId);
-    emit CreateListingEvent(msg.sender, nextListingId);
     nextListingId++;
+    emit CreateListingEvent(msg.sender, nextListingId-1);
   }
 
   /**
@@ -207,6 +219,7 @@ contract EthBnB {
         listings[listingId].unavailable[date] = true;
       }
     }
+    emit UpdateListingEvent(msg.sender, listingId); 
   }
 
   function getListingPrice(uint listingId) public view returns (uint) {
@@ -218,6 +231,7 @@ contract EthBnB {
     checkListingId(listingId);
     require(price > 0, "Price must be > 0.");
     listings[listingId].price = price;
+    emit UpdateListingEvent(msg.sender, listingId); 
   }
 
  function getListingLocation(uint listingId) public view returns (string) {
@@ -228,8 +242,8 @@ contract EthBnB {
   function setListingLocation(uint listingId, string location) public {
     checkListingId(listingId);
     listings[listingId].location = location;
+    emit UpdateListingEvent(msg.sender, listingId); 
   }
-
 
   function getListingShortName(uint listingId) public view returns (string) {
       checkListingId(listingId);
@@ -239,6 +253,7 @@ contract EthBnB {
   function setListingShortName(uint listingId, string name) public {
     checkListingId(listingId);
     listings[listingId].shortName = name;
+    emit UpdateListingEvent(msg.sender, listingId); 
   }
 
   function getListingDescription(uint listingId) public view returns (string){
@@ -249,13 +264,14 @@ contract EthBnB {
   function setListingDescription(uint listingId, string desc) public {
     checkListingId(listingId);
     listings[listingId].description = desc;
+    emit UpdateListingEvent(msg.sender, listingId); 
   }
 
   function deleteListing(uint listingId) public {
     checkListingId(listingId);
     // TODO: check that there are no pending bookings, before deteleting
     delete listings[listingId];
-    emit DeleteEvent("deleteListing", listingId, "");
+    emit DeleteListingEvent(msg.sender, listingId); 
   }
 
   function checkListingId(uint listingId) view private {
