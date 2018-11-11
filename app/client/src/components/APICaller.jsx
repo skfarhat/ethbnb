@@ -94,9 +94,14 @@ class APICaller_ extends Component {
           message = 'Transaction ' + name + ' ' + txHash.substr(0, 5) + ' has been submitted.'
           eth.web3.eth.getTransactionReceipt(txHash, (error, txObj) => {
             if (error) {
-              this.props.addMessage({text: 'Got error in getTransactionReceipt' + error, data: error})
+              this.props.addMessage({
+                text: 'Got error in getTransactionReceipt' + error,
+                data: error
+              })
             } else {
-              this.props.addMessage({text: 'Transaction ' + txObj.trasnsactionHash.substr(0,5) + ' used ' + txObj.gasUsed})
+              this.props.addMessage({
+                text: 'Transaction ' + txObj.trasnsactionHash.substr(0, 5) + ' used ' + txObj.gasUsed
+              })
             }
           })
         }
@@ -145,14 +150,13 @@ class APICaller_ extends Component {
 
   render() {
     log.debug("APICaller: render")
-    let h2UI = <h2 key="title"> API </h2>
-    let abiCommands = this.parseABIForFunctions()
-    let content = React.createElement(
-      'div',
-      {},
-      [h2UI, abiCommands]
+    return (
+      <div> 
+      <h2 key="title"> API </h2>
+      <p> Selected client: {this.props.selectedClientAddr.substr(0, 7)} </p>
+      {this.parseABIForFunctions()}
+      </div>
     )
-    return (content)
   }
 }
 
