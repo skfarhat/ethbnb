@@ -101,7 +101,7 @@ class APICaller_ extends Component {
               })
             } else {
               this.props.addMessage({
-                text: 'Transaction ' + txObj.trasnsactionHash.substr(0, 5) + ' used ' + txObj.gasUsed
+                text: 'Transaction ' + txObj.transactionHash.substr(0, 5) + ' used ' + txObj.gasUsed
               })
             }
           })
