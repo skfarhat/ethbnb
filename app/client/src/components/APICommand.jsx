@@ -9,6 +9,7 @@ import BigNumber from 'bignumber.js'
 // 
 //  abiFunction: the dict object extracted from the ABI. It denotes the name of the solidity function,
 //  its inputs, outputs, whether its constant. 
+//  isDisabled: boolean value indicating if this APICommand should be disabled
 //  
 class APICommand extends Component {
 
@@ -83,7 +84,7 @@ class APICommand extends Component {
       key="button"
       className="btn btn-default"
       type="button"
-      disabled={this.buttonDisabled}
+      disabled={this.buttonDisabled || this.props.isDisabled}
       onClick={(evt) => this.props.handleButtonClick(evt, this.props.abiFunction)}>
         {this.props.abiFunction.name}
         </button>

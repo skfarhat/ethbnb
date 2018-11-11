@@ -4,7 +4,7 @@
 * Improve styling of APICommands
 * Take care of informing the user when a transaction fails (because of some violation to the smart-contract)
 * [BUG]: entering a letter in input field that expects uint crashes the app directly. Shouldn't be like this.
-* Make 'log' global (use window)
+* Make 'log' and constants global (use window)
 
 ## TODO LATER
 

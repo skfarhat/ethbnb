@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import log from "../logger"
 import { selectClient, addMessage } from "../actions/"
 import APICommand from "./APICommand"
+import { NONE_ADDRESS } from "../constants/global.js"
 
 const mapStateToProps = (state) => {
   return {
@@ -140,6 +141,7 @@ class APICaller_ extends Component {
         [<APICommand
         key={o.name}
         abiFunction={o}
+        isDisabled={this.props.selectedClientAddr === NONE_ADDRESS}
         handleButtonClick={(evt, self) => this.myHandleButtonClick(evt, self)}
         parent={this}
         />]

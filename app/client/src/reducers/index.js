@@ -1,9 +1,10 @@
 import log from "../logger"
 import { REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE } from "../constants/action-types.js"
+import { MAX_CLIENTS, NONE_ADDRESS } from "../constants/global.js"
 
 const initialState = {
-  MAX_CLIENTS: 3,
-  selectedClientAddr: '0x0',
+  MAX_CLIENTS: MAX_CLIENTS,
+  selectedClientAddr: NONE_ADDRESS,
   messages: [],
   clients: {},
   eth: {}
@@ -22,11 +23,13 @@ const getClients = (eth, state) => {
 }
 
 const updateClientWithAddr = (clients, addr, action) => {
-  const clone = {...clients}
+  const clone = {
+    ...clients
+  }
   for (var a in clone) {
     if (a === addr) {
       clone[a] = {
-        ...clone[a], 
+        ...clone[a],
         account: action.payload.value
       }
     }
@@ -62,10 +65,12 @@ const rootReducer = (state = initialState, action) => {
     case CREATE_LISTING: {
       log.debug("CREATE_LISTING", action.payload)
       const listing = action.payload.value
-      let clone = {...state.clients}
+      let clone = {
+        ...state.clients
+      }
       for (var addr in clone) {
         const client = clone[addr]
-        if (client.address === action.payload.value.from){
+        if (client.address === action.payload.value.from) {
           console.log("found one that matches")
           client.listings[listing.id] = listing
         }
