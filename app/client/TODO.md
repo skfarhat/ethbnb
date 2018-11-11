@@ -1,10 +1,7 @@
 # TODO
 
-* Ensure no APICommand can be launched when there is no client selected.
-* Improve styling of APICommands
-* Take care of informing the user when a transaction fails (because of some violation to the smart-contract)
-* [BUG]: entering a letter in input field that expects uint crashes the app directly. Shouldn't be like this.
 * Make 'log' and constants global (use window)
+* Move ethereum method calling mechanism from APICaller to somewhere else. Let APICaller worry about the display of the component on the screen. 
 
 ## TODO LATER
 
@@ -29,3 +26,6 @@
 * Refactor, create a React component called Table.
 * Implement reducer ADD_GAS_USER: Show on the UI, the amount of gas consumed by each client
 * Refactor EventListening/EthManager
+* Ensure no APICommand can be launched when there is no client selected.
+* Improve styling of APICommands
+* [FIXED BUG]: entering a letter in input field that expects uint crashes the app directly. Shouldn't be like this.

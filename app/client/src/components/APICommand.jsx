@@ -26,13 +26,19 @@ class APICommand extends Component {
   inputChanged(evt) {
     evt.preventDefault()
     let inputElem = evt.target
+    const newVal = (evt.target.value.length === 0) ? "0" : evt.target.value
     const inputs = this.props.abiFunction.inputs
     // Find the input field associated with the event target and
     // change the property 'value' in it.
     for (var i = 0; i < inputs.length; i++) {
       let input = inputs[i]
       if (input.name === inputElem.name) {
-        input.value = this.convertInputValue(evt.target.value, input.type)
+        try {
+          input.value = this.convertInputValue(newVal, input.type)
+          inputElem.classList.remove("is-invalid")
+        } catch (e) {
+          inputElem.classList.add("is-invalid")
+        }
       }
     }
   }
