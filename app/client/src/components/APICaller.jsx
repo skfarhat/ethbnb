@@ -133,19 +133,15 @@ class APICaller_ extends Component {
       // Skip non-functions
       if (o.type !== "function")
         continue
-      // TODO: replace the inputs here with EthButton which will need to take a handler for the function too.
-      ret.push(React.createElement('div', {
-        id: 'rightSideAPI',
-        key: o.name,
-      },
-        [<APICommand
+      ret.push(
+        <APICommand
         key={o.name}
         abiFunction={o}
         isDisabled={this.props.selectedClientAddr === NONE_ADDRESS}
         handleButtonClick={(evt, self) => this.myHandleButtonClick(evt, self)}
         parent={this}
-        />]
-      ))
+        />
+      )
     }
     return ret
   }
@@ -153,7 +149,7 @@ class APICaller_ extends Component {
   render() {
     log.debug("APICaller: render")
     return (
-      <div> 
+      <div className="apiCaller"> 
       <h2 key="title"> API </h2>
       <p> Selected client: {this.props.selectedClientAddr.substr(0, 7)} </p>
       {this.parseABIForFunctions()}

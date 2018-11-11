@@ -15,12 +15,17 @@
 .client-selected {
     background-color: lavender;
 }
-
-#rightSideAPI {
-    overflow: scroll;
+.apiCaller {
+    text-align: center;
 }
 .apiCommand {
-    margin:5px auto 5px;
+    margin:30px auto 0px;
+}
+.apiCommand button {
+    min-width: 200px;
+}
+.apiCommand input {
+    margin:2px;
 }
 .mainTitle {
     width:100%;

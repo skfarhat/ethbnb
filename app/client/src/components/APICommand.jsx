@@ -26,7 +26,7 @@ class APICommand extends Component {
   inputChanged(evt) {
     evt.preventDefault()
     let inputElem = evt.target
-    const inputs = this.props.abiFunction.inputs 
+    const inputs = this.props.abiFunction.inputs
     // Find the input field associated with the event target and
     // change the property 'value' in it.
     for (var i = 0; i < inputs.length; i++) {
@@ -48,36 +48,39 @@ class APICommand extends Component {
     return false
   }
 
-  generateInputFields() {
-    const inputs = this.props.abiFunction.inputs
-    // Parse the inputs of this function and create a list of DOM elements
-    let inputsDom = []
+  // Return a DOM of input elements based on the ABI functions provided
+  generateInputFields(inputs) {
     // Set this to true if the function input parameter is unsupported and we don't want to include that function
     // as an API button.
     let unsupportedInput = false
+    // Populated with the inputs and return
+    let ret = []
     for (var j = 0; j < inputs.length; j++) {
       var input = inputs[j]
-      if ( !this.inputTypeIsSupported(input) ) {
+      if (!this.inputTypeIsSupported(input)) {
         log.warn("Skipping input.type", input.type, ". Still unsupported.");
         unsupportedInput = true
         break
       }
-      inputsDom.push(
-        <div key={input.name}>
-          <input
-          type="text"
-          input-type={input.type}
-          name={input.name}
-          placeholder={input.name}
-          onChange={(evt) => this.inputChanged(evt)} />
-        </div>
+      ret.push(
+        <input
+        type="text"
+        key={input.name}
+        input-type={input.type}
+        name={input.name}
+        className="form-control"
+        aria-describedby={input.name + "Help"}
+        placeholder={input.name + " (" + input.type + ")"}
+        onChange={(evt) => this.inputChanged(evt)}
+        />
       )
     }
     this.buttonDisabled = unsupportedInput
-    return inputsDom
+    return ret
   }
 
   render() {
+    const func = this.props.abiFunction
     return (
       <div className="apiCommand">
         <button
@@ -86,9 +89,10 @@ class APICommand extends Component {
       type="button"
       disabled={this.buttonDisabled || this.props.isDisabled}
       onClick={(evt) => this.props.handleButtonClick(evt, this.props.abiFunction)}>
-        {this.props.abiFunction.name}
+        {func.name}
         </button>
-        {this.generateInputFields()}
+        <small className="form-text text-muted"> { (func.constant) ? "This function is constant" : "" } </small>
+        {this.generateInputFields(func.inputs)}
       </div>
       );
   }
