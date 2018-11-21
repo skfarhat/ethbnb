@@ -1,10 +1,11 @@
 import React, { Component } from "react"
+import buffer from 'buffer'
 import log from "../logger"
 import { connect } from "react-redux"
 import TruffleContract from 'truffle-contract'
 import EthEventListener from './EthEventListener'
 import ipfs from './IPFS'
-import buffer from 'buffer'
+import IPFSImage from './IPFSImage'
 import "../loadAbi.js"
 
 import { refreshEth, createAccount, addMessage, createListing } from "../actions/"
@@ -37,9 +38,16 @@ class EthManager_ extends Component {
     log.debug("EthManager_")
     super(props)
 
+    // Setup local state to this component
+    this.state = {
+      ipfsHash: null
+    }
+
     // The event listener will be instantiated when this.setupEth() completes
     // and registerEvents() will be invoked on the resulting object
     this.eventListener = null
+
+    this.uploadPicture = this.uploadPicture.bind(this)
 
     // We start making connection to Ethereum Network
     this.setupEth()
@@ -80,24 +88,30 @@ class EthManager_ extends Component {
     log.debug("EthManager:: setupEth() done")
   }
 
+  // Uploads the image to IPFS and modifies the state with the returned hash
   async uploadPicture(evt) {
+    console.log("EthManager:: uploadPicture")
+    const self = this
     const reader = new FileReader();
+    // Get the uploaded file image
+    const photo = document.getElementById("image-file");
+    const file = photo.files[0]
     reader.onloadend = function() {
       const buf = buffer.Buffer(reader.result) // Convert data into buffer
+      console.log(reader.result)
       try {
         ipfs.files.add(buf, (err, result) => { // Upload buffer to IPFS
           if (err || !result) {
             console.error(err)
           } else {
+            console.log(result)
             const hash = result[0].hash
-            ipfs.files.cat(hash, (err, data) => {
-              const blob = new Blob([data], {
-                type: "image/png"
-              })
-              const url = window.URL.createObjectURL(blob)
-              const img = document.getElementById('ItemPreview')
-              img.src = url
+            console.log("Changing state ", self.state)
+            self.setState({
+              ipfsHash: hash,
+              file: file
             })
+            console.log("Changed state ", self.state)
           }
         })
       } catch (err) {
@@ -105,9 +119,7 @@ class EthManager_ extends Component {
       }
     }
 
-    // Get the uploaded file image
-    const photo = document.getElementById("image-file");
-    reader.readAsArrayBuffer(photo.files[0]); // Read Provided File
+    reader.readAsArrayBuffer(file); // Read Provided File
   }
 
   getClientObjFromAddress(addr) {
@@ -119,6 +131,7 @@ class EthManager_ extends Component {
   }
 
   render() {
+    console.log("Rendering EthBnb, IPFSImage hash=", this.state.ipfsHash)
     return (
       <div className="row" hidden={false}>
       <input
@@ -129,7 +142,7 @@ class EthManager_ extends Component {
       name="Add file to IPFS"
       />
       <div>
-      <img width="200px" id="ItemPreview" src="" />
+      <IPFSImage hash={this.state.ipfsHash} name={this.state.imageName}/>
       <button
       className="btn btn-default"
       onClick={(evt) => {
