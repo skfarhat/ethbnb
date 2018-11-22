@@ -3,7 +3,7 @@ import ipfs from './IPFS'
 import log from "../logger"
 
 class IPFSImage extends Component {
-  state = {}
+  state={}
 
   static getDerivedStateFromProps(nextProps, prevState) {
     // Store hash in state so we can compare when props change.
@@ -12,17 +12,17 @@ class IPFSImage extends Component {
       return {
         hash: nextProps.hash,
         file: nextProps.file
-      };
+      }
     }
     // No state update necessary
-    return null;
+    return null
   }
 
   componentDidUpdate(prevProps) {
     log.debug("IPFSImage:: componentDidUpdate")
     if (prevProps.hash !== this.props.hash) {
       // At this point, we're in the "commit" phase, so it's safe to load the new data.
-      this.loadUserData(this.props.hash);
+      this.loadUserData(this.props.hash)
     }
   }
 
@@ -38,10 +38,10 @@ class IPFSImage extends Component {
   // Return the extension for the given file object
   getExtensionFromFile(file) {
     if (file) {
-        return file.name.split('.').pop();
+      return file.name.split('.').pop()
     } else {
-        log.warn('getExtensionFromFile called without a file')
-        return null
+      log.warn('getExtensionFromFile called without a file')
+      return null
     }
   }
 
@@ -63,4 +63,5 @@ class IPFSImage extends Component {
     }
   }
 }
+
 export default IPFSImage

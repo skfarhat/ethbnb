@@ -17,7 +17,6 @@ class App extends Component {
         <div className="container">
           <Navigation />
           <EthManager />
-          <h1 className="mainTitle"> EthBnb </h1>
           <Route exact path="/" component={AdminPage} />
           <Route exact path="/listings" component={ListingsPage} />
       </div>

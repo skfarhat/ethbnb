@@ -1,7 +1,7 @@
-.container { 
+.container {
     max-width: 95%;
 }
-.container-col h2 { 
+.container-col h2 {
     text-align:center;
 }
 
@@ -27,18 +27,14 @@
 .apiCommand input {
     margin:2px;
 }
-.mainTitle {
-    width:100%;
-    text-align:center;
-}
 
-/* Message Board */ 
+/* Message Board */
 #message-board {
     background-color:lightgrey;
     border-color:black;
     border-width: 1px;
-    border-radius: 5px; 
-    border-style: solid; 
+    border-radius: 5px;
+    border-style: solid;
     max-height: 400px;
     overflow: scroll;
 }

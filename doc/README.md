@@ -8,15 +8,20 @@
 * Might have to force "npm install web3@0.20.6 --save". Make sure the right version is in use,
 otherwise we could get the CORS bug.
 
+## About Sublime Plugins
+
+* esformatter: (`cmd+alt+f`): reindents code
+* eslint
+
 ## DApp
 
-### Setting up IPFS on the host system 
+### Setting up IPFS on the host system
 
-Setup the desktop client (good for visualising files stored on the locally-run daemon). As far as I can see, if IPFS was not installed, IPFS desktop will take care of installing it. 
+Setup the desktop client (good for visualising files stored on the locally-run daemon). As far as I can see, if IPFS was not installed, IPFS desktop will take care of installing it.
 
 ```
 ## This is because `brew install openssl` will install but not make available
-## the libraries for linkage. 
+## the libraries for linkage.
 ln -s /usr/local/opt/openssl/include/openssl /usr/local/include
 
 git clone https://github.com/ipfs-shipyard/ipfs-desktop.git
@@ -33,15 +38,15 @@ cd <project-root>/app/client/
 ## Run ganache-cli or the Ganache desktop app
 ## ...
 
-## The below will compile, migrate the contract and create a loadAbi.js file 
+## The below will compile, migrate the contract and create a loadAbi.js file
 ## that will be used by the client code
 ./client_setup.sh
 
 ## Start the React client app
-npm start 
+npm start
 ```
 
---- 
+---
 
 ## Run tests
 

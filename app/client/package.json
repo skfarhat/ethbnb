@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "buffer": "^5.2.1",
+    "chalk": "^2.4.1",
     "ipfs-api": "^26.1.2",
     "loglevel": "^1.6.1",
     "loglevel-plugin-prefix": "^0.8.4",

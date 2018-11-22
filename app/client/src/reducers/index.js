@@ -1,22 +1,23 @@
-import log from "../logger"
-import { REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE } from "../constants/action-types.js"
-import { MAX_CLIENTS, NONE_ADDRESS } from "../constants/global.js"
+import log from '../logger'
+import { REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE } from '../constants/action-types'
+import { MAX_CLIENTS, NONE_ADDRESS } from '../constants/global'
 
 const initialState = {
   MAX_CLIENTS: MAX_CLIENTS,
   selectedClientAddr: NONE_ADDRESS,
   messages: [],
   clients: {},
-  eth: {}
+  listings: {},
+  eth: {},
 }
 
 const getClients = (eth, state) => {
-  let clients = []
+  const clients = []
   for (var i = 0; i < state.MAX_CLIENTS; i++) {
     clients[eth.accounts[i]] = {
-      "address": eth.accounts[i],
-      "account": null,
-      "listings": {}
+      address: eth.accounts[i],
+      account: null,
+      listings: {},
     }
   }
   return clients
@@ -24,13 +25,13 @@ const getClients = (eth, state) => {
 
 const updateClientWithAddr = (clients, addr, action) => {
   const clone = {
-    ...clients
+    ...clients,
   }
   for (var a in clone) {
     if (a === addr) {
       clone[a] = {
         ...clone[a],
-        account: action.payload.value
+        account: action.payload.value,
       }
     }
   }
@@ -38,57 +39,56 @@ const updateClientWithAddr = (clients, addr, action) => {
 }
 
 const rootReducer = (state = initialState, action) => {
-  log.debug("rootReducer", action, state)
+  log.debug('rootReducer', action, state)
   switch (action.type) {
     case REFRESH_ETH: {
       const eth = action.payload
       return {
         ...state,
         eth: action.payload,
-        clients: getClients(eth, state)
-      };
+        clients: getClients(eth, state),
+      }
     }
     case SELECT_CLIENT: {
       return {
         ...state,
-        selectedClientAddr: action.payload
+        selectedClientAddr: action.payload,
       }
     }
     case CREATE_ACCOUNT: {
-      log.debug("CREATE_ACCOUNT", action.payload.value.from)
+      log.debug('CREATE_ACCOUNT', action.payload.value.from)
       const clients = updateClientWithAddr(state.clients, action.payload.value.from, action)
       return {
         ...state,
-        clients: clients
+        clients: clients,
       }
     }
     case CREATE_LISTING: {
-      log.debug("CREATE_LISTING", action.payload)
+      log.debug('CREATE_LISTING', action.payload)
       const listing = action.payload.value
-      let clone = {
-        ...state.clients
+      const clone = {
+        ...state.clients,
       }
       for (var addr in clone) {
         const client = clone[addr]
         if (client.address === action.payload.value.from) {
-          console.log("found one that matches")
           client.listings[listing.id] = listing
         }
       }
       return {
         ...state,
-        clients: clone
+        clients: clone,
       }
     }
     case ADD_MESSAGE: {
       log.debug('ADD_MESSAGE', action.payload)
       return {
         ...state,
-        messages: state.messages.concat(action.payload)
+        messages: state.messages.concat(action.payload),
       }
     }
     default: {
-      log.debug("default")
+      log.debug('default')
       return state
     }
   }

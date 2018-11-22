@@ -1,0 +1,6 @@
+{
+  // you can still override any setting from the preset if needed
+  "indent": {
+    "value": "  "
+  }
+}

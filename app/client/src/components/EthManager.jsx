@@ -1,46 +1,41 @@
-import React, { Component } from "react"
-import buffer from 'buffer'
-import log from "../logger"
-import { connect } from "react-redux"
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
 import TruffleContract from 'truffle-contract'
+import buffer from 'buffer'
+import log from '../logger'
+import '../loadAbi'
+import { refreshEth, createAccount, addMessage, createListing, } from '../actions'
 import EthEventListener from './EthEventListener'
 import ipfs from './IPFS'
 import IPFSImage from './IPFSImage'
-import "../loadAbi.js"
 
-import { refreshEth, createAccount, addMessage, createListing } from "../actions/"
+const Web3 = require('web3')
 
-var Web3 = require("web3")
-var web3
+let web3
 const PROVIDER_STR = 'http://localhost:8545'
 
-const mapStateToProps = (state) => {
-  return {
-    eth: state.eth,
-    clients: state.clients
-  }
-}
+const mapStateToProps = state => ({
+  eth: state.eth,
+  clients: state.clients,
+})
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    dispatchMethods: {
-      refreshEth: (eth) => dispatch(refreshEth(eth)),
-      createAccount: (account) => dispatch(createAccount(account)),
-      createListing: (listing) => dispatch(createListing(listing)),
-      addMessage: (message) => dispatch(addMessage(message))
-    }
-  }
-}
+const mapDispatchToProps = dispatch => ({
+  dispatchMethods: {
+    refreshEth: eth => dispatch(refreshEth(eth)),
+    createAccount: account => dispatch(createAccount(account)),
+    createListing: listing => dispatch(createListing(listing)),
+    addMessage: message => dispatch(addMessage(message)),
+  },
+})
 
 class EthManager_ extends Component {
-
   constructor(props) {
-    log.debug("EthManager_")
+    log.debug('EthManager_')
     super(props)
 
     // Setup local state to this component
     this.state = {
-      ipfsHash: null
+      ipfsHash: null,
     }
 
     // The event listener will be instantiated when this.setupEth() completes
@@ -51,18 +46,17 @@ class EthManager_ extends Component {
 
     // We start making connection to Ethereum Network
     this.setupEth()
-
   }
 
   async setupEth() {
-    log.debug("EthManager:: setupEth() start")
+    log.debug('EthManager:: setupEth() start')
     this.eth = {}
 
     if (typeof web3 !== 'undefined') {
-      web3 = new Web3(web3.currentProvider);
+      web3 = new Web3(web3.currentProvider)
     } else {
       // Set the provider you want from Web3.providers
-      web3 = new Web3(new Web3.providers.HttpProvider(PROVIDER_STR));
+      web3 = new Web3(new Web3.providers.HttpProvider(PROVIDER_STR))
     }
     log.debug(web3.version)
 
@@ -85,18 +79,25 @@ class EthManager_ extends Component {
     // Create EventListener and call registerEvents
     this.eventListener = new EthEventListener(contractInstance, this.props.dispatchMethods)
     this.eventListener.registerEvents()
-    log.debug("EthManager:: setupEth() done")
+    log.debug('EthManager:: setupEth() done')
+  }
+
+  getClientObjFromAddress(addr) {
+    for (let i = 0; i < this.props.clients.length; i++) {
+      if (this.props.clients[i].address === addr) return this.props.clients[i]
+    }
+    return null
   }
 
   // Uploads the image to IPFS and modifies the state with the returned hash
   async uploadPicture(evt) {
-    console.log("EthManager:: uploadPicture")
+    console.log('EthManager:: uploadPicture')
     const self = this
-    const reader = new FileReader();
+    const reader = new FileReader()
     // Get the uploaded file image
-    const photo = document.getElementById("image-file");
+    const photo = document.getElementById('image-file')
     const file = photo.files[0]
-    reader.onloadend = function() {
+    reader.onloadend = () => {
       const buf = buffer.Buffer(reader.result) // Convert data into buffer
       console.log(reader.result)
       try {
@@ -106,52 +107,43 @@ class EthManager_ extends Component {
           } else {
             console.log(result)
             const hash = result[0].hash
-            console.log("Changing state ", self.state)
+            console.log('Changing state ', self.state)
             self.setState({
               ipfsHash: hash,
-              file: file
+              file,
             })
-            console.log("Changed state ", self.state)
+            console.log('Changed state ', self.state)
           }
         })
       } catch (err) {
         console.log('Exception thrown with error ', err)
       }
     }
-
-    reader.readAsArrayBuffer(file); // Read Provided File
-  }
-
-  getClientObjFromAddress(addr) {
-    for (var i = 0; i < this.props.clients.length; i++) {
-      if (this.props.clients[i].address === addr)
-        return this.props.clients[i]
-    }
-    return null
+    reader.readAsArrayBuffer(file) // Read Provided File
   }
 
   render() {
-    console.log("Rendering EthBnb, IPFSImage hash=", this.state.ipfsHash)
+    console.log('Rendering EthBnb, IPFSImage hash=', this.state.ipfsHash)
     return (
       <div className="row" hidden={false}>
-      <input
+        <input
       id="image-file"
       key="button"
       className="btn btn-default"
       type="file"
       name="Add file to IPFS"
       />
-      <div>
-      <IPFSImage hash={this.state.ipfsHash} name={this.state.imageName}/>
-      <button
+        <div>
+          <IPFSImage hash={this.state.ipfsHash} name={this.state.imageName} />
+          <button
       className="btn btn-default"
       onClick={(evt) => {
         this.uploadPicture(evt)
       }}
       >
       Get image
-      </button>
-      </div>
+          </button>
+        </div>
       </div>
     )
   }
