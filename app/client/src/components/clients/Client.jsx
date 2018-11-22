@@ -1,5 +1,5 @@
-import log from '../../logger'
 import React, { Component } from 'react'
+import log from '../../logger'
 import Listings from './Listings'
 import Account from './Account'
 import EthAccount from './EthAccount'

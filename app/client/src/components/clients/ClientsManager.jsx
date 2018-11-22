@@ -1,8 +1,8 @@
-import React, { Component } from "react"
-import { connect } from "react-redux"
-import log from "../../logger"
-import { selectClient } from "../../actions/"
-import Client from "./Client"
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import log from '../../logger'
+import { selectClient } from '../../actions/'
+import Client from './Client'
 
 const mapStateToProps = state => {
   return {
@@ -28,7 +28,7 @@ class ConnectedClientsManager extends Component {
   render() {
     log.debug("ClientsManager:: render", this.props)
     const allClients = []
-    let i = 0 
+    let i = 0
     for (var addr in this.props.clients) {
       const client = this.props.clients[addr]
       allClients.push(

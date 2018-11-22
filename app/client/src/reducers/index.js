@@ -69,7 +69,7 @@ const rootReducer = (state = initialState, action) => {
       const clone = {
         ...state.clients,
       }
-      for (var addr in clone) {
+      for (const addr in Object.keys(clone)){
         const client = clone[addr]
         if (client.address === action.payload.value.from) {
           client.listings[listing.id] = listing
