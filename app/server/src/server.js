@@ -63,15 +63,15 @@ const readAllCreateListingEvents = async () => {
 }
 
 readAllCreateListingEvents().then((result) => {
-  console.log('the results returned are ', result)
-  console.log('expected to be null for now')
+  console.log('Nothing done here.')
 }).catch((err) => {
   console.log('Caught an errror', err)
 })
 
+app.get('/listings', (req, res) => {
+  res.json(store.listings)
+})
 
-const PORT = 3001
-
-app.listen(PORT, () => {
-  console.log(`Express server listening on port ${PORT}`)
+app.listen(constants.PORT, () => {
+  console.log(`Express server listening on port ${constants.PORT}`)
 })
