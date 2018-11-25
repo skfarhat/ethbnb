@@ -12,6 +12,19 @@ pragma solidity ^0.4.22;
 */
 contract EthBnB {
 
+  /** 
+  * @title Represents a single image which is owned by someone. 
+  */
+  struct Image {
+    /** IPFS hash */ 
+    string ipfsHash;
+    /** Image title */ 
+    string title;
+    /** Image's upload timestamp */ 
+    uint256 uploadedOn;
+  }
+
+
   struct Booking {
 
     uint id;
@@ -40,6 +53,8 @@ contract EthBnB {
     string description;
 
     string location;
+
+    Image mainImage; 
 
     /**
      * stores all bookings for this Listing with
@@ -95,20 +110,26 @@ contract EthBnB {
 
   event Log(string functionName, string msg);
 
-  /* Account Events */ 
+  /* Account Events */
   event CreateAccountEvent(address from);
-  event UpdateAccountEvent(address from); 
-  event DeleteAccountEvent(address from); 
+  event UpdateAccountEvent(address from);
+  event DeleteAccountEvent(address from);
 
-  /* Listing Events */ 
+  /* Listing Events */
   event CreateListingEvent(address from, uint listingId);
-  event UpdateListingEvent(address from, uint listingId); 
+  event UpdateListingEvent(address from, uint listingId);
   event DeleteListingEvent(address from, uint listingId);
 
   /**
    *
    */
   uint nextListingId = 1;
+
+  /**
+   * A list of all listing ids
+   */
+  uint[] listingIds;
+
 
   /**
    *
@@ -162,19 +183,26 @@ contract EthBnB {
   }
 
   function getAccountDateCreated() public view returns (uint) {
-    require(hasAccount(), "No associated account found."); 
+    require(hasAccount(), "No associated account found.");
     return accounts[msg.sender].dateCreated;
   }
 
-  // TODO: when implementing: 
+  // TODO: when implementing:
   // prevent account deletion when there are listings associated or something
   //
   // function deleteAccount() public {
-  // 
+  //
   // }
 
   // LISTING
   // -----------------------------------------------------------------------
+
+  /**
+   * Returns a list of listing Ids
+   */
+  function getAllListings() public view returns (uint[]) {
+    return listingIds;
+  }
 
   function getMyListingIds() public view returns (uint[]) {
       require(accounts[msg.sender].owner == msg.sender, "No account found.");
@@ -195,11 +223,24 @@ contract EthBnB {
       location: location,
       price: price,
       shortName: shortName,
-      description: desc
+      description: desc, 
+      mainImage: Image({ipfsHash: "", title: "", uploadedOn: 0})
     });
     accounts[msg.sender].listingIds.push(nextListingId);
+    listingIds.push(nextListingId);
     nextListingId++;
     emit CreateListingEvent(msg.sender, nextListingId-1);
+  }
+
+  function getListingMainImage(uint listingId) public view returns (string) {
+    checkListingId(listingId); 
+    return listings[listingId].mainImage.ipfsHash; 
+  }
+
+  function setListingMainImage(uint listingId, string ipfsHash, string title) public {
+    checkListingId(listingId); 
+    listings[listingId].mainImage = Image({ipfsHash: ipfsHash, title: title, uploadedOn: block.timestamp});
+    emit UpdateListingEvent(msg.sender, listingId); 
   }
 
   /**
@@ -219,7 +260,7 @@ contract EthBnB {
         listings[listingId].unavailable[date] = true;
       }
     }
-    emit UpdateListingEvent(msg.sender, listingId); 
+    emit UpdateListingEvent(msg.sender, listingId);
   }
 
   function getListingPrice(uint listingId) public view returns (uint) {
@@ -231,7 +272,7 @@ contract EthBnB {
     checkListingId(listingId);
     require(price > 0, "Price must be > 0.");
     listings[listingId].price = price;
-    emit UpdateListingEvent(msg.sender, listingId); 
+    emit UpdateListingEvent(msg.sender, listingId);
   }
 
  function getListingLocation(uint listingId) public view returns (string) {
@@ -242,7 +283,7 @@ contract EthBnB {
   function setListingLocation(uint listingId, string location) public {
     checkListingId(listingId);
     listings[listingId].location = location;
-    emit UpdateListingEvent(msg.sender, listingId); 
+    emit UpdateListingEvent(msg.sender, listingId);
   }
 
   function getListingShortName(uint listingId) public view returns (string) {
@@ -253,7 +294,7 @@ contract EthBnB {
   function setListingShortName(uint listingId, string name) public {
     checkListingId(listingId);
     listings[listingId].shortName = name;
-    emit UpdateListingEvent(msg.sender, listingId); 
+    emit UpdateListingEvent(msg.sender, listingId);
   }
 
   function getListingDescription(uint listingId) public view returns (string){
@@ -264,14 +305,14 @@ contract EthBnB {
   function setListingDescription(uint listingId, string desc) public {
     checkListingId(listingId);
     listings[listingId].description = desc;
-    emit UpdateListingEvent(msg.sender, listingId); 
+    emit UpdateListingEvent(msg.sender, listingId);
   }
 
   function deleteListing(uint listingId) public {
     checkListingId(listingId);
     // TODO: check that there are no pending bookings, before deteleting
     delete listings[listingId];
-    emit DeleteListingEvent(msg.sender, listingId); 
+    emit DeleteListingEvent(msg.sender, listingId);
   }
 
   function checkListingId(uint listingId) view private {

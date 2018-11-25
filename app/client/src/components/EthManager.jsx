@@ -61,7 +61,7 @@ class EthManager_ extends Component {
     log.debug(web3.version)
 
     // Load ABI into contract
-    const abiArray = window.abiArray // get it from somewhere
+    const abiArray = window.contractDetails.jsonInterface // get it from somewhere
     const MyContract = TruffleContract(abiArray)
     MyContract.setProvider(web3.currentProvider)
     const contractInstance = await MyContract.deployed()
@@ -90,7 +90,7 @@ class EthManager_ extends Component {
   }
 
   // Uploads the image to IPFS and modifies the state with the returned hash
-  async uploadPicture(evt) {
+  async uploadPicture() {
     console.log('EthManager:: uploadPicture')
     const self = this
     const reader = new FileReader()
@@ -137,8 +137,8 @@ class EthManager_ extends Component {
           <IPFSImage hash={this.state.ipfsHash} name={this.state.imageName} />
           <button
       className="btn btn-default"
-      onClick={(evt) => {
-        this.uploadPicture(evt)
+      onClick={() => {
+        this.uploadPicture()
       }}
       >
       Get image
