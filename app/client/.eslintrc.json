@@ -1,15 +1,1 @@
-{
-    "extends": "airbnb",
-    "plugins": ["react"],
-
-      "rules" : {
-        "semi": ["error", "never"],
-        "no-console": 0,
-        "quotes": [2, "single"],
-        "strict": [2, "never"],
-        "react/jsx-uses-react": 2,
-        "react/jsx-uses-vars": 2,
-        "react/react-in-jsx-scope": 2,
-        "prefer-destructuring": 0
-  }
-}
+../.eslintrc.json

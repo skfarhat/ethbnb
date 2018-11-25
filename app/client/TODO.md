@@ -1,13 +1,15 @@
 # TODO
 
-* Continuation: check whether the ipfs.add() of files is really succeeding and persiting the added data. 
+* Ensure all state changing functions in the smart-contract emit events.
 * Allow clients to upload photos related to a listing - photos will be stored on another server - but verified thru bchain.
-* Move ethereum method calling mechanism from APICaller to somewhere else. Let APICaller worry about the display of the component on the screen. 
+* Display all listings in Listings page with pictures
+* Write a sample data file that generates test-data on the blockchain. Eases some of the manual testing required. 
 
 ## TODO LATER
 
+* Move ethereum method calling mechanism from APICaller to somewhere else. Let APICaller worry about the display of the component on the screen.
 * Link client wallets to the application.
-* Move to web3 v1.0.0 
+* Move to web3 v1.0.0
 
 ## LOW PRIORITY
 
@@ -29,3 +31,4 @@
 * Ensure no APICommand can be launched when there is no client selected.
 * Improve styling of APICommands
 * [FIXED BUG]: entering a letter in input field that expects uint crashes the app directly. Shouldn't be like this.
+* Continuation: check whether the ipfs.add() of files is really succeeding and persiting the added data.

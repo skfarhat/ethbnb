@@ -123,7 +123,6 @@ class EthManager_ extends Component {
   }
 
   render() {
-    console.log('Rendering EthBnb, IPFSImage hash=', this.state.ipfsHash)
     return (
       <div className="row" hidden={false}>
         <input

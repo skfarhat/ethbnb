@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
 import log from '../../logger'
 import ClientsManager from '../clients/ClientsManager'
 import APICaller from '../APICaller'

@@ -3,17 +3,19 @@ import { REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE
 import { MAX_CLIENTS, NONE_ADDRESS } from '../constants/global'
 
 const initialState = {
-  MAX_CLIENTS: MAX_CLIENTS,
+  MAX_CLIENTS,
   selectedClientAddr: NONE_ADDRESS,
   messages: [],
   clients: {},
-  listings: {},
+  server: {
+    listings: {},
+  },
   eth: {},
 }
 
 const getClients = (eth, state) => {
   const clients = []
-  for (var i = 0; i < state.MAX_CLIENTS; i++) {
+  for (let i = 0; i < state.MAX_CLIENTS; i += 1) {
     clients[eth.accounts[i]] = {
       address: eth.accounts[i],
       account: null,
@@ -60,7 +62,7 @@ const rootReducer = (state = initialState, action) => {
       const clients = updateClientWithAddr(state.clients, action.payload.value.from, action)
       return {
         ...state,
-        clients: clients,
+        clients,
       }
     }
     case CREATE_LISTING: {
@@ -69,7 +71,7 @@ const rootReducer = (state = initialState, action) => {
       const clone = {
         ...state.clients,
       }
-      for (const addr in Object.keys(clone)){
+      for (var addr in clone){
         const client = clone[addr]
         if (client.address === action.payload.value.from) {
           client.listings[listing.id] = listing
