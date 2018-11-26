@@ -120,9 +120,9 @@ contract EthBnB {
   event DeleteAccountEvent(address from);
 
   /* Listing Events */
-  event CreateListingEvent(address from, uint listingId);
-  event UpdateListingEvent(address from, uint listingId);
-  event DeleteListingEvent(address from, uint listingId);
+  event CreateListingEvent(address from, uint lid);
+  event UpdateListingEvent(address from, uint lid);
+  event DeleteListingEvent(address from, uint lid);
 
   /**
    *

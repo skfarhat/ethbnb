@@ -30,8 +30,8 @@ class EthEventListener {
         // using call.
         callback: async (ethEvent) => {
           log.debug("callback call CreateListingEvent made", ethEvent)
-          const {from, listingId} = ethEvent
-          const listing = await this.fetchListingObject(from, listingId)
+          const {from, lid} = ethEvent
+          const listing = await this.fetchListingObject(from, lid)
 
           // Raise action 'createListing'
           this.dispatchMethods['createListing'](listing)
@@ -61,25 +61,25 @@ class EthEventListener {
 
   // Given a listingId, this method will fetch the listing's properties and convert them to 
   // their appropriate types (BigNumber to integers...)
-  async fetchListingObject(from, listingId) {
+  async fetchListingObject(from, lid) {
     const callObj = {
       from: from,
       gas: 100000
     }
-    const shortName = await this.contractInstance['getListingShortName'].call(listingId,
+    const shortName = await this.contractInstance['getListingShortName'].call(lid,
       callObj)
-    const price = await this.contractInstance['getListingPrice'].call(listingId,
+    const price = await this.contractInstance['getListingPrice'].call(lid,
       callObj)
-    const location = await this.contractInstance['getListingLocation'].call(listingId,
+    const location = await this.contractInstance['getListingLocation'].call(lid,
       callObj)
-    const mainImageHash = await this.contractInstance['getListingMainImageHash'].call(listingId,
+    const mainImageHash = await this.contractInstance['getListingMainImageHash'].call(lid,
       callObj)
-    const mainImageExtension = await this.contractInstance['getListingMainImageExtension'].call(listingId,
+    const mainImageExtension = await this.contractInstance['getListingMainImageExtension'].call(lid,
       callObj)
     return {
       from,
       price: parseInt(price.toString(), 10),
-      id: parseInt(listingId.toString(), 10),
+      id: parseInt(lid.toString(), 10),
       shortName,
       location,
       mainImageHash,

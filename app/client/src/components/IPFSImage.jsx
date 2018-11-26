@@ -40,7 +40,7 @@ class IPFSImage extends Component {
   render() {
     return (
       <div>
-        <img width="200px" id="ItemPreview" src={this.state.url} alt="Not loaded" />
+        <img width="200px" id="ItemPreview" src={this.state.url} alt="Image not loaded" />
       </div>
     )
   }
