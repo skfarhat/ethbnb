@@ -1,5 +1,7 @@
 pragma solidity ^0.4.22;
 
+// TODO: change listingId param to lid. Shorter, better. 
+
 /**
 *
 * Listings:
@@ -18,6 +20,8 @@ contract EthBnB {
   struct Image {
     /** IPFS hash */ 
     string ipfsHash;
+    /** Image extension (png, jpeg)*/ 
+    string extension; 
     /** Image title */ 
     string title;
     /** Image's upload timestamp */ 
@@ -224,7 +228,7 @@ contract EthBnB {
       price: price,
       shortName: shortName,
       description: desc, 
-      mainImage: Image({ipfsHash: "", title: "", uploadedOn: 0})
+      mainImage: Image({ipfsHash: "", title: "", uploadedOn: 0, extension: ""})
     });
     accounts[msg.sender].listingIds.push(nextListingId);
     listingIds.push(nextListingId);
@@ -232,14 +236,19 @@ contract EthBnB {
     emit CreateListingEvent(msg.sender, nextListingId-1);
   }
 
-  function getListingMainImage(uint listingId) public view returns (string) {
+  function getListingMainImageExtension(uint listingId) public view returns (string) {
+    checkListingId(listingId); 
+    return listings[listingId].mainImage.extension; 
+  }
+
+  function getListingMainImageHash(uint listingId) public view returns (string) {
     checkListingId(listingId); 
     return listings[listingId].mainImage.ipfsHash; 
   }
 
-  function setListingMainImage(uint listingId, string ipfsHash, string title) public {
+  function setListingMainImage(uint listingId, string ipfsHash, string title, string extension) public {
     checkListingId(listingId); 
-    listings[listingId].mainImage = Image({ipfsHash: ipfsHash, title: title, uploadedOn: block.timestamp});
+    listings[listingId].mainImage = Image({ipfsHash: ipfsHash, title: title, uploadedOn: block.timestamp, extension: extension});
     emit UpdateListingEvent(msg.sender, listingId); 
   }
 

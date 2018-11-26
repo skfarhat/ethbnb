@@ -72,7 +72,9 @@ class EthEventListener {
       callObj)
     const location = await this.contractInstance['getListingLocation'].call(listingId,
       callObj)
-    const mainImage = await this.contractInstance['getListingMainImage'].call(listingId,
+    const mainImageHash = await this.contractInstance['getListingMainImageHash'].call(listingId,
+      callObj)
+    const mainImageExtension = await this.contractInstance['getListingMainImageExtension'].call(listingId,
       callObj)
     return {
       from,
@@ -80,7 +82,8 @@ class EthEventListener {
       id: parseInt(listingId.toString(), 10),
       shortName,
       location,
-      mainImage,
+      mainImageHash,
+      mainImageExtension
     }
   }
 

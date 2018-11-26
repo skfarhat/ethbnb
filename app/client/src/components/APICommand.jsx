@@ -22,6 +22,16 @@ const convertInputValue = (value, type) => {
   return value
 }
 
+// Return the extension for the given file object
+const getExtensionFromFile = (file) => {
+  if (file) {
+    return file.name.split('.').pop()
+  }
+  log.warn('getExtensionFromFile called without a file')
+  return null
+}
+
+
 // React component
 //
 // Props:
@@ -61,12 +71,17 @@ class APICommand extends Component {
             console.error(err)
           } else {
             const ipfsHash = result[0].hash
+            const extension = getExtensionFromFile(file)
+
             // Set the ipfsHash value in abiFunction
-            const abiInput = self.findInputFromAbiFunction('ipfsHash')
-            abiInput.value = ipfsHash
+            const abiInputForIPFSHash = self.findInputFromAbiFunction('ipfsHash')
+            const abiInputForExtension = self.findInputFromAbiFunction('extension')
+
+            abiInputForIPFSHash.value = ipfsHash
+            abiInputForExtension.value = extension
             self.setState({
               ipfsHash,
-              file,
+              extension,
             })
           }
         })
@@ -115,7 +130,7 @@ class APICommand extends Component {
     for (let j = 0; j < inputs.length; j += 1) {
       const input = inputs[j]
       if (!inputTypeIsSupported(input)) {
-        log.warn('Skipping input.type', input.type, '. Still unsupported.')
+        log.warn('Skipping input.type', input.type, '.Still unsupported.')
         unsupportedInput = true
         break
       } else if (input.name.toLowerCase().indexOf('ipfshash') > -1) {
@@ -123,18 +138,29 @@ class APICommand extends Component {
           <div key="ipfs-upload" className="ipfs-image-upload">
             <input
               id={this.props.abiFunction.name}
-              key="button" type="file" onChange={this.ipfsImageUpload} 
+              key="button"
+              type="file"
+              onChange={this.ipfsImageUpload}
             />
-            <p key="p">{this.state.ipfsHash}</p>
-          </div>
+            <p key="p2">{this.state.ipfsHash}</p>
+            <p key="p1">Extension: {this.state.extension}</p>
+          </div>,
         )
       } else {
+        // 'extension' inputs are disabled because we infer them from the uploaded image
+        // directly. Web user need not worry/input anything.
+        const isDisabled = input.name.indexOf('extension') > -1
         ret.push(
           <input
-            type="text" key={input.name} input-type={input.type} name={input.name}
-            className="form-control" aria-describedby={`${input.name}Help`}
+            type="text"
+            key={input.name}
+            input-type={input.type}
+            name={input.name}
+            className="form-control"
+            aria-describedby={`${input.name}Help`}
             placeholder={`${input.name} (${input.type})`}
             onChange={evt => this.inputChanged(evt)}
+            disabled={isDisabled}
           />,
         )
       }

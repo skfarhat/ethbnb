@@ -7,7 +7,8 @@ const { contractAddress, jsonInterface } = require('./loadAbi')
 const listingFunctions = {
   getListingPrice: 'price',
   getListingShortName: 'shortName',
-  getListingMainImage: 'mainImage',
+  getListingMainImageHash: 'mainImageHash',
+  getListingMainImageExtension: 'mainImageExtension',
 }
 
 // Data store

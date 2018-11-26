@@ -44,7 +44,6 @@ const updateClientWithAddr = (clients, addr, action) => {
 }
 
 const rootReducer = (state = initialState, action) => {
-  log.debug('rootReducer', action, state)
   switch (action.type) {
     case REFRESH_ETH: {
       const eth = action.payload
@@ -86,7 +85,6 @@ const rootReducer = (state = initialState, action) => {
       }
     }
     case ADD_MESSAGE: {
-      log.debug('ADD_MESSAGE', action.payload)
       return {
         ...state,
         messages: state.messages.concat(action.payload),

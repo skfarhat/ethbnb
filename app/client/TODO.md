@@ -1,9 +1,10 @@
 # TODO
 
-* Ensure all state changing functions in the smart-contract emit events.
-* Allow clients to upload photos related to a listing - photos will be stored on another server - but verified thru bchain.
-* Display all listings in Listings page with pictures
+* Server node should listen to events and updates its data structs to better serve the clients.
+i.e. it should be actively listening for new events, not just get the old ones. 
 * Write a sample data file that generates test-data on the blockchain. Eases some of the manual testing required. 
+* Setup Jenkins for continuous integration - run code lint checks and whatever else can be run. (e.g. smart-contract testing).
+* Allow clients to upload photos related to a listing - photos will be stored on another server - but verified thru bchain.
 
 ## TODO LATER
 
@@ -32,3 +33,5 @@
 * Improve styling of APICommands
 * [FIXED BUG]: entering a letter in input field that expects uint crashes the app directly. Shouldn't be like this.
 * Continuation: check whether the ipfs.add() of files is really succeeding and persiting the added data.
+* Ensure all state changing functions in the smart-contract emit events. 
+* Display all listings in Listings page with pictures
