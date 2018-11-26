@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 import EthManager from './EthManager'
+import ServerNodeManager from './ServerNodeManager'
 import log from '../logger'
 import AdminPage from './pages/AdminPage'
 import ListingsPage from './pages/ListingsPage'
@@ -17,6 +18,7 @@ class App extends Component {
       <Router>
         <div className="container">
           <Navigation />
+          <ServerNodeManager />
           <EthManager />
           <Route exact path="/" component={AdminPage} />
           <Route exact path="/listings" component={ListingsPage} />

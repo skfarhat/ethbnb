@@ -1,5 +1,7 @@
 import log from '../logger'
-import { REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE } from '../constants/action-types'
+import {
+  REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE, GET_ALL_LISTINGS,
+} from '../constants/action-types'
 import { MAX_CLIENTS, NONE_ADDRESS } from '../constants/global'
 
 const initialState = {
@@ -9,6 +11,7 @@ const initialState = {
   clients: {},
   server: {
     listings: {},
+    // listings: { 1: { shortName: 'sami', id: '1' }, 2: { id: '2', shortName: 'marwan' } },
   },
   eth: {},
 }
@@ -29,7 +32,7 @@ const updateClientWithAddr = (clients, addr, action) => {
   const clone = {
     ...clients,
   }
-  for (var a in clone) {
+  for (const a in clone) {
     if (a === addr) {
       clone[a] = {
         ...clone[a],
@@ -71,7 +74,7 @@ const rootReducer = (state = initialState, action) => {
       const clone = {
         ...state.clients,
       }
-      for (var addr in clone){
+      for (const addr in clone) {
         const client = clone[addr]
         if (client.address === action.payload.value.from) {
           client.listings[listing.id] = listing
@@ -87,6 +90,15 @@ const rootReducer = (state = initialState, action) => {
       return {
         ...state,
         messages: state.messages.concat(action.payload),
+      }
+    }
+    case GET_ALL_LISTINGS: {
+      log.debug('GET_ALL_LISTINGS', action.payload)
+      const serverObj = { ...state.server }
+      serverObj.listings = { ...action.payload }
+      return {
+        ...state,
+        server: serverObj,
       }
     }
     default: {

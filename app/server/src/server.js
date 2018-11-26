@@ -68,8 +68,13 @@ readAllCreateListingEvents().then((result) => {
 }).catch((err) => {
   console.log('Caught an errror', err)
 })
-
-app.get('/listings', (req, res) => {
+app.use((req, res, next) => {
+  // Website you wish to allow to connect
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
+  next()
+})
+app.get('/api/listings', (req, res) => {
+  console.log('Serving content on /api/listings/')
   res.json(store.listings)
 })
 

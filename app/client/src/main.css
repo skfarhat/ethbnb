@@ -44,3 +44,14 @@
 #message-board p {
     margin:0px;
 }
+/* ListingsPage */ 
+.grid-item {
+  float: left;
+  width: 200px;
+  height: 200px;
+  background: #e6e5e4;
+  border: 2px solid #b6b5b4;
+}
+
+/*.grid-item--width2 { width: 120px; }*/
+/*.grid-item--height2 { height: 120px; }*/
