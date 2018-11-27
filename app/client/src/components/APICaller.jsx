@@ -21,7 +21,7 @@ class APICaller_ extends Component {
   constructor(props) {
     super(props)
     // Bind the callback function to allow it access to state and props
-    this.myHandleButtonClick = this.myHandleButtonClick.bind(this)
+    this.apiCommandTriggered = this.apiCommandTriggered.bind(this)
   }
 
   // Called when the select (dropdown) changes.
@@ -54,65 +54,71 @@ class APICaller_ extends Component {
     return ret
   }
 
-  async myHandleButtonClick(evt, apiCmd) {
-    evt.preventDefault()
-
-    const name = apiCmd.name
-    const selectedClient = this.props.clients[this.props.selectedClientAddr] // used for the 'from' param when issuing transaction
-    const eth = this.props.eth
+  async runAPICommand(eth, apiCmd, from) {
+    // Used in transactions and local eth calls
+    const lastParam = {
+      from,
+      gas: 1000000,
+    }
+    const { name, constant } = apiCmd
     const inputs = this.validateAndMapCommandInputs(apiCmd.inputs)
     if (!inputs) {
-      alert(`Missing inputs for function '${name}'`)
-      return
+      return new Error('runAPICommand failed due to invalid inputs in apiCmd.')
     }
-
-    // Find first function that matches name
-    const foundFunction = this.findFunctionWithName(eth, name)
-
-    if (!foundFunction) {
-      log.debug('Could not find ', name, ' in ', eth.abi)
-    } else {
-      const ethFunction = eth.contractInstance[name]
-      const lastParam = {
-        from: selectedClient.address,
-        gas: 1000000,
+    if (!this.findFunctionWithName(eth, name)) {
+      return new Error('runAPICommand failed due to invalid function name in apiCmd.')
+    }
+    try {
+      const func = eth.contractInstance[name]
+      // Here we check whether the function to execute is a constant one.
+      // If so, we make a local 'call' and get the result immediately.
+      // If the function is state-changing, we issue a transaction.
+      // The result will later be brought back to us via an event.
+      if (constant) {
+        return func.call(...inputs, lastParam)
       }
-      try {
-        let message = null
-        // Here we check whether the function to execute is a constant one.
-        // If so, we make a local 'call' and get the result immediately.
-        // If the function is state-changing, we issue a transaction. The result will later be brought back to us via an event.
-        if (apiCmd.constant) {
-          const result = await ethFunction.call(...inputs, lastParam)
-          message = `Local call ${name} has been made. Result is: ${result}`
-        } else {
-          const txHash = await ethFunction.sendTransaction(...inputs, lastParam)
-          message = `Transaction ${name} ${txHash.substr(0, 5)} has been submitted.`
-          eth.web3.eth.getTransactionReceipt(txHash, (error, txObj) => {
-            if (error) {
-              this.props.addMessage({
-                text: `Got error in getTransactionReceipt${error}`,
-                data: error,
-              })
-            } else {
-              this.props.addMessage({
-                text: `Transaction ${txObj.transactionHash.substr(0, 5)} used ${txObj.gasUsed}`,
-              })
-            }
-          })
-        }
-        this.props.addMessage({
-          text: message,
-        })
-        log.debug(message)
-      } catch (exc) {
-        const message = `Failed to execute ethereum function ${name}`
-        this.props.addMessage({
-          text: message,
-        })
-        log.error(message)
-        log.error('Actual exception message: ', exc)
+      return func.sendTransaction(...inputs, lastParam)
+    } catch (err) {
+      return err
+    }
+  }
+
+  async apiCommandTriggered(evt, apiCmd) {
+    evt.preventDefault()
+    const {
+      eth, addMessage, selectedClientAddr,
+    } = this.props
+
+    try {
+      const result = await this.runAPICommand(eth, apiCmd, selectedClientAddr)
+      if (!apiCmd.hasOwnProperty('constant')) {
+        log.error('Invalid apiCmd object does not have field "constant" set.')
+        return
       }
+      if (apiCmd.constant) {
+        addMessage({
+          text: `Local call ${apiCmd.name} has been made. Result is: ${result}`,
+        })
+      } else {
+        const txHash = result
+        addMessage({
+          text: `Transaction ${apiCmd.name} ${txHash.substr(0, 5)} has been submitted.`,
+        })
+        eth.web3.eth.getTransactionReceipt(txHash, (err, txObj) => {
+          if (err) {
+            addMessage({
+              text: `Got error in getTransactionReceipt${err}`,
+              data: err,
+            })
+          } else {
+            addMessage({
+              text: `Transaction ${txObj.transactionHash.substr(0, 5)} used ${txObj.gasUsed}`,
+            })
+          }
+        })
+      }
+    } catch (err) {
+      log.error('runAPICommand failed.', err)
     }
   }
 
@@ -133,7 +139,7 @@ class APICaller_ extends Component {
             key={o.name}
             abiFunction={o}
             isDisabled={this.props.selectedClientAddr === NONE_ADDRESS}
-            handleButtonClick={(evt, self) => this.myHandleButtonClick(evt, self)}
+            handleButtonClick={(evt, self) => this.apiCommandTriggered(evt, self)}
           />,
         )
       }
