@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import buffer from 'buffer'
 import BigNumber from 'bignumber.js'
 import log from '../logger'
-import ipfs from './IPFS'
+import { ipfs, ipfsFileUpload } from './IPFS'
 
 
 // Returns true if the current implementation supports the input type provided
@@ -53,43 +53,26 @@ class APICommand extends Component {
 
   // Uploads the image to IPFS and modifies the state with the returned hash
   async ipfsImageUpload() {
-    console.log('APICommand:: ipfsImageUpload')
     const self = this
-    const reader = new FileReader()
     // Get the uploaded file image
     const photo = document.getElementById(self.props.abiFunction.name)
     const file = photo.files[0]
-    console.log(file)
-    reader.onloadend = () => {
-      // Convert data into buffer
-      const buf = buffer.Buffer(reader.result)
-      console.log(reader.result)
-      try {
-        // Upload buffer to IPFS
-        ipfs.files.add(buf, (err, result) => {
-          if (err || !result) {
-            console.error(err)
-          } else {
-            const ipfsHash = result[0].hash
-            const extension = getExtensionFromFile(file)
-
-            // Set the ipfsHash value in abiFunction
-            const abiInputForIPFSHash = self.findInputFromAbiFunction('ipfsHash')
-            const abiInputForExtension = self.findInputFromAbiFunction('extension')
-
-            abiInputForIPFSHash.value = ipfsHash
-            abiInputForExtension.value = extension
-            self.setState({
-              ipfsHash,
-              extension,
-            })
-          }
-        })
-      } catch (err) {
-        console.log('Exception thrown with error ', err)
-      }
+    try {
+      const ipfsHash = await ipfsFileUpload(file)
+      const extension = getExtensionFromFile(file)
+      // Set the ipfsHash value in abiFunction
+      const abiInputForIPFSHash = self.findInputFromAbiFunction('ipfsHash')
+      const abiInputForExtension = self.findInputFromAbiFunction('extension')
+      abiInputForIPFSHash.value = ipfsHash
+      abiInputForExtension.value = extension
+      self.setState({
+        ipfsHash,
+        extension,
+      })
+    } catch (err) {
+      console.log('could not run ipfsFileUpload', err)
+      log.error(err)
     }
-    reader.readAsArrayBuffer(file) // Read Provided File
   }
 
   // Return the input with the given name from this.abiFunction
@@ -143,7 +126,10 @@ class APICommand extends Component {
               onChange={this.ipfsImageUpload}
             />
             <p key="p2">{this.state.ipfsHash}</p>
-            <p key="p1">Extension: {this.state.extension}</p>
+            <p key="p1">
+Extension:
+              {this.state.extension}
+            </p>
           </div>,
         )
       } else {

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import ipfs from './IPFS'
+import { ipfs } from './IPFS'
 import log from '../logger'
 
 class IPFSImage extends Component {
@@ -24,7 +24,7 @@ class IPFSImage extends Component {
   loadUserData(hash) {
     const self = this
     if (!hash) {
-      log.error('Error: invalid hash provided to loadUserData')
+      log.error('IPFSImage:: invalid hash provided to loadUserData')
     } else {
       ipfs.files.cat(hash, (err, data) => {
         const blob = new Blob([data], {
