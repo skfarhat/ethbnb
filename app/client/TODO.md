@@ -1,8 +1,9 @@
 # TODO
 
-* Write a sample data file that generates test-data on the blockchain. Eases some of the manual testing required.
+* Improve error handling and edge cases: 
+-   server 3001 unreachable: show relevant error message 
+-   ganache not switched on: show relevant error message
 * Setup Jenkins for continuous integration - run code lint checks and whatever else can be run. (e.g. smart-contract testing).
-* Allow clients to upload photos related to a listing - photos will be stored on another server - but verified thru bchain.
 * Figure out why IPFS desktop doesn't show uploaded files.
 
 ## TODO LATER
@@ -36,3 +37,4 @@
 * Display all listings in Listings page with pictures
 * Server node should listen to events and updates its data structs to better serve the clients.
 i.e. it should be actively listening for new events, not just get the old ones.
+* Write a sample data file that generates test-data on the blockchain. Eases some of the manual testing required.

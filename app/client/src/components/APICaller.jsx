@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import log from '../logger'
 import { selectClient, addMessage } from '../actions'
+import TestDataLoader from './TestDataLoader'
 import APICommand from './APICommand'
 import { NONE_ADDRESS } from '../constants/global'
 
@@ -11,6 +12,18 @@ const mapStateToProps = state => ({
   abi: state.eth.abi,
   selectedClientAddr: state.selectedClientAddr,
 })
+
+// Returns a dictionary of input => value if all inputs have had their values set (not empty).
+// it does not check whether the values they have been set to conform to the type of the input).
+// Returns null if any of the inputs has not been set.
+const validateAndMapCommandInputs = (inputs) => {
+  const ret = inputs.map(in1 => in1.value)
+  for (const k in ret) {
+    console.log(k, ret[k])
+    if (!ret[k] || ret[k].length === 0) return null
+  }
+  return ret
+}
 
 const mapDispatchToProps = dispatch => ({
   selectClient: addr => dispatch(selectClient(addr)),
@@ -42,18 +55,6 @@ class APICaller_ extends Component {
     return foundFunction
   }
 
-  // Returns a dictionary of input => value if all inputs have had their values set (not empty).
-  // it does not check whether the values they have been set to conform to the type of the input).
-  // Returns null if any of the inputs has not been set.
-  validateAndMapCommandInputs(inputs) {
-    const ret = inputs.map(in1 => in1.value)
-    for (const k in ret) {
-      console.log(k, ret[k])
-      if (!ret[k] || ret[k].length === 0) return null
-    }
-    return ret
-  }
-
   async runAPICommand(eth, apiCmd, from) {
     // Used in transactions and local eth calls
     const lastParam = {
@@ -61,7 +62,7 @@ class APICaller_ extends Component {
       gas: 1000000,
     }
     const { name, constant } = apiCmd
-    const inputs = this.validateAndMapCommandInputs(apiCmd.inputs)
+    const inputs = validateAndMapCommandInputs(apiCmd.inputs)
     if (!inputs) {
       return new Error('runAPICommand failed due to invalid inputs in apiCmd.')
     }
@@ -125,11 +126,11 @@ class APICaller_ extends Component {
   parseABIForFunctions() {
     // We will return this after populating
     const ret = []
+    const { abi } = this.props
+    if (!abi) return ret
 
-    if (!this.props.abi) return ret
-
-    for (let i = 0; i < this.props.abi.length; i++) {
-      const o = this.props.abi[i]
+    for (let i = 0; i < abi.length; i += 1) {
+      const o = abi[i]
       // Skip non-functions
       if (o.type !== 'function') {
         continue
@@ -148,17 +149,17 @@ class APICaller_ extends Component {
   }
 
   render() {
+    const { eth, clients } = this.props
     log.debug('APICaller: render')
     return (
       <div className="apiCaller">
         <h2 key="title"> API </h2>
         <p>
-          {' '}
 Selected client:
           {this.props.selectedClientAddr.substr(0, 7)}
           {' '}
-
         </p>
+        <TestDataLoader dispatchRunAPICommand={(data, clientAddr) => this.runAPICommand(eth, data, clientAddr)} />
         {this.parseABIForFunctions()}
       </div>
     )

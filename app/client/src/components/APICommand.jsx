@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
-import buffer from 'buffer'
 import BigNumber from 'bignumber.js'
 import log from '../logger'
-import { ipfs, ipfsFileUpload } from './IPFS'
-
+import { ipfsFileUpload } from './IPFS'
+import { getExtensionFromFile } from './Utils'
 
 // Returns true if the current implementation supports the input type provided
 // input.type is checked against the supported input types
@@ -21,16 +20,6 @@ const convertInputValue = (value, type) => {
   if (type === 'uint256') return new BigNumber(value)
   return value
 }
-
-// Return the extension for the given file object
-const getExtensionFromFile = (file) => {
-  if (file) {
-    return file.name.split('.').pop()
-  }
-  log.warn('getExtensionFromFile called without a file')
-  return null
-}
-
 
 // React component
 //

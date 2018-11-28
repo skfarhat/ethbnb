@@ -20,7 +20,7 @@ class ServerNodeManager extends Component {
         log.debug(self.props)
         self.props.dispatchMethods.getAllListings(listingsData)
       })
-      .catch(err => log.error('ERROR: request error', err))
+      .catch(err => log.error(`ServerNodeManager:: failed to connect to ${SERVER_NODE_URL}`, err))
   }
 
   render() {

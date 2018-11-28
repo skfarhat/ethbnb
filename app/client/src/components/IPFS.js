@@ -24,7 +24,8 @@ const ipfsFileUpload = async (file) => {
         reject(err)
       }
     }
-    reader.readAsArrayBuffer(file) // Read Provided File
+    // Read Provided File
+    reader.readAsArrayBuffer(file) 
   }))
 }
 
