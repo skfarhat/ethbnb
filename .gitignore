@@ -1,3 +1,8 @@
 app/client/js/loadAbi.js
 *loadAbi.js*
 app/server/dist
+coverage/
+coverage.json
+doc/Architecture.md
+doc/Resources.md
+doc/TODO.md
