@@ -1,0 +1,26 @@
+{
+  "name": "ethbnb",
+  "version": "0.1.0",
+  "description": "",
+  "directories": {
+    "doc": "doc",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skfarhat/ethbnb.git"
+  },
+  "author": "Sami Farhat",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/skfarhat/ethbnb/issues"
+  },
+  "homepage": "https://github.com/skfarhat/ethbnb#readme",
+  "devDependencies": {
+    "solidity-coverage": "^0.5.11",
+    "truffle-assertions": "^0.7.2"
+  }
+}
