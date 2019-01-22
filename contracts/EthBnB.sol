@@ -1,6 +1,6 @@
 pragma solidity ^0.4.22;
 
-// TODO: change listingId param to lid. Shorter, better. 
+// TODO: change listingId param to lid. Shorter, better.
 
 /**
 *
@@ -14,17 +14,17 @@ pragma solidity ^0.4.22;
 */
 contract EthBnB {
 
-  /** 
-  * @title Represents a single image which is owned by someone. 
+  /**
+  * @title Represents a single image which is owned by someone.
   */
   struct Image {
-    /** IPFS hash */ 
+    /** IPFS hash */
     string ipfsHash;
-    /** Image extension (png, jpeg)*/ 
-    string extension; 
-    /** Image title */ 
+    /** Image extension (png, jpeg)*/
+    string extension;
+    /** Image title */
     string title;
-    /** Image's upload timestamp */ 
+    /** Image's upload timestamp */
     uint256 uploadedOn;
   }
 
@@ -58,7 +58,7 @@ contract EthBnB {
 
     string location;
 
-    Image mainImage; 
+    Image mainImage;
 
     /**
      * stores all bookings for this Listing with
@@ -120,12 +120,12 @@ contract EthBnB {
   event DeleteAccountEvent(address from);
 
   /* Listing Events */
-  event CreateListingEvent(address from, uint lid);
-  event UpdateListingEvent(address from, uint lid);
-  event DeleteListingEvent(address from, uint lid);
+  event CreateListingEvent(address from, uint id);
+  event UpdateListingEvent(address from, uint id);
+  event DeleteListingEvent(address from, uint id);
 
   /**
-   *
+   * Listings will have incrementing Ids starting from 1
    */
   uint nextListingId = 1;
 
@@ -227,7 +227,7 @@ contract EthBnB {
       location: location,
       price: price,
       shortName: shortName,
-      description: desc, 
+      description: desc,
       mainImage: Image({ipfsHash: "", title: "", uploadedOn: 0, extension: ""})
     });
     accounts[msg.sender].listingIds.push(nextListingId);
@@ -237,19 +237,19 @@ contract EthBnB {
   }
 
   function getListingMainImageExtension(uint listingId) public view returns (string) {
-    checkListingId(listingId); 
-    return listings[listingId].mainImage.extension; 
+    checkListingId(listingId);
+    return listings[listingId].mainImage.extension;
   }
 
   function getListingMainImageHash(uint listingId) public view returns (string) {
-    checkListingId(listingId); 
-    return listings[listingId].mainImage.ipfsHash; 
+    checkListingId(listingId);
+    return listings[listingId].mainImage.ipfsHash;
   }
 
   function setListingMainImage(uint listingId, string ipfsHash, string title, string extension) public {
-    checkListingId(listingId); 
+    checkListingId(listingId);
     listings[listingId].mainImage = Image({ipfsHash: ipfsHash, title: title, uploadedOn: block.timestamp, extension: extension});
-    emit UpdateListingEvent(msg.sender, listingId); 
+    emit UpdateListingEvent(msg.sender, listingId);
   }
 
   /**
@@ -330,7 +330,7 @@ contract EthBnB {
 
     // make sure listing exists and properly associated with account
     require(listings[listingId].id != 0, "No such listing found.");
-    require(listings[listingId].owner == msg.sender, "Only the owner of a listing can make it available/unavailable.");
+    require(listings[listingId].owner == msg.sender, "Only the owner of a listing make changes to it.");
   }
 
 }
