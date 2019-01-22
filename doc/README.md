@@ -21,6 +21,23 @@ npm run watch-ts
 npm run watch-node
 ```
 
+
+
+## Jenkins 
+
+Starting Jenkins: On my mac run `start_jenkins` on the command line 
+
+Build steps: 
+```
+set +x
+echo "Checking that smart-contract compiles"
+truffle compile 
+
+if [ $? -ne 0]; then 
+echo "Failed to compile smart-contract"
+fi 
+```
+
 ## Sublime Setup
 
 * Package eslint-formatter. Use `cmd+K+E` to fix 
