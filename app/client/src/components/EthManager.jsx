@@ -9,8 +9,9 @@ import {
 import EthEventListener from './EthEventListener'
 
 const Web3 = require('web3')
-let web3
+
 const PROVIDER_STR = 'http://localhost:8545'
+let web3
 
 const mapStateToProps = state => ({
   eth: state.eth,
@@ -41,6 +42,7 @@ class EthManager extends Component {
 
   async setupEth() {
     log.debug('EthManager:: setupEth() start')
+    const { dispatchMethods } = this.props
     this.eth = {}
 
     if (typeof web3 !== 'undefined') {
@@ -65,10 +67,10 @@ class EthManager extends Component {
     this.eth.contractInstance = contractInstance
 
     // Call callback
-    this.props.dispatchMethods.refreshEth(this.eth)
+    dispatchMethods.refreshEth(this.eth)
 
     // Create EventListener and call registerEvents
-    this.eventListener = new EthEventListener(contractInstance, this.props.dispatchMethods)
+    this.eventListener = new EthEventListener(contractInstance, dispatchMethods)
     this.eventListener.registerEvents()
     log.debug('EthManager:: setupEth() done')
   }
