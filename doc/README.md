@@ -1,5 +1,6 @@
 # README
 
+
 ## Server-Client interaction
 
 The server is designed to be another Eth node that reads the state of the blockchain and serves client requests by providing a more convenient and faster API. The server MUST NOT be relied upon for correctness of the data. The client having received a response from the server can verify those results against their local copy of the blockchain. For example, a client making a `GET /listings` call will get a JSON response from the server with all the listings, each listing will have a URL pointing to the image associated with this listing. The image is not stored on the blockchain, its hash is. Therefore, the client **is able** to verify that the image received through the server has a hash matching the image referenced in the blockchain (i.e. the server is no lying, or compromised).
@@ -78,3 +79,8 @@ _These have not been tested recently, `truffle test` might fail_
 
 In terminal 1: `ganache-cli`
 In terminal 2: `truffle test`
+
+
+## Packages 
+
+`npm install -g babel-eslint`

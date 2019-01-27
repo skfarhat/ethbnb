@@ -2,9 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import log from '../logger'
 
-const mapStateToProps = state => ({
-  messages: state.messages,
-})
+const mapStateToProps = state => ({ messages: state.messages })
 
 class Message extends Component {
   render() {

@@ -35,9 +35,7 @@ class APICommand extends Component {
   constructor(props) {
     super(props)
     this.ipfsImageUpload = this.ipfsImageUpload.bind(this)
-    this.state = {
-      ipfsHash: null,
-    }
+    this.state = { ipfsHash: null }
   }
 
   // Uploads the image to IPFS and modifies the state with the returned hash

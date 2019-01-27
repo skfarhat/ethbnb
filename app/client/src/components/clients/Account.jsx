@@ -1,26 +1,28 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import log from '../../logger'
 import DictTable from '../tables/DictTable'
 
 function bigNumberToDate(bigNumber) {
-  return new Date(parseInt(bigNumber.toString()) * 1000).toString()
+  return new Date(parseInt(bigNumber.toString(), 10) * 1000).toString()
 }
 
 class Account extends Component {
-
   render() {
     log.debug('Account:: render()', this.props)
+    const { data: propsData } = this.props
     // Convert dateCreated property from BigNumber to string
     let data = {}
-    if (this.props.data) {
+    if (propsData) {
       data = {
-        ...this.props.data,
-        dateCreated: bigNumberToDate(this.props.data.dateCreated)
+        ...propsData,
+        dateCreated: bigNumberToDate(propsData.dateCreated),
       }
     }
     return (
-      <DictTable data={data} title="BnB Account"/>
+      <DictTable data={data} title="BnB Account" />
     )
   }
 }
+Account.propTypes = { data: PropTypes.object }
 export default Account

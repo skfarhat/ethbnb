@@ -86,9 +86,7 @@ class APICaller_ extends Component {
 
   async apiCommandTriggered(evt, apiCmd) {
     evt.preventDefault()
-    const {
-      eth, addMessage, selectedClientAddr,
-    } = this.props
+    const { eth, addMessage, selectedClientAddr } = this.props
 
     try {
       const result = await this.runAPICommand(eth, apiCmd, selectedClientAddr)
@@ -97,14 +95,10 @@ class APICaller_ extends Component {
         return
       }
       if (apiCmd.constant) {
-        addMessage({
-          text: `Local call ${apiCmd.name} has been made. Result is: ${result}`,
-        })
+        addMessage({ text: `Local call ${apiCmd.name} has been made. Result is: ${result}` })
       } else {
         const txHash = result
-        addMessage({
-          text: `Transaction ${apiCmd.name} ${txHash.substr(0, 5)} has been submitted.`,
-        })
+        addMessage({ text: `Transaction ${apiCmd.name} ${txHash.substr(0, 5)} has been submitted.` })
         eth.web3.eth.getTransactionReceipt(txHash, (err, txObj) => {
           if (err) {
             addMessage({
@@ -112,9 +106,7 @@ class APICaller_ extends Component {
               data: err,
             })
           } else {
-            addMessage({
-              text: `Transaction ${txObj.transactionHash.substr(0, 5)} used ${txObj.gasUsed}`,
-            })
+            addMessage({ text: `Transaction ${txObj.transactionHash.substr(0, 5)} used ${txObj.gasUsed}` })
           }
         })
       }

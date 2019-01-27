@@ -5,19 +5,19 @@ import log from '../logger'
 class IPFSImage extends Component {
   constructor(props) {
     super(props)
-    this.state = {
-      url: null,
-    }
+    this.state = { url: null }
   }
 
   componentDidMount() {
-    this.loadUserData(this.props.hash)
+    const { hash } = this.props
+    this.loadUserData(hash)
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.hash !== this.props.hash) {
+    const { hash } = this.props
+    if (prevProps.hash !== hash) {
       // At this point, we're in the "commit" phase, so it's safe to load the new data.
-      this.loadUserData(this.props.hash)
+      this.loadUserData(hash)
     }
   }
 
@@ -27,20 +27,17 @@ class IPFSImage extends Component {
       log.error('IPFSImage:: invalid hash provided to loadUserData')
     } else {
       ipfs.files.cat(hash, (err, data) => {
-        const blob = new Blob([data], {
-          type: `image/${self.props.ext}`,
-        })
-        self.setState({
-          url: window.URL.createObjectURL(blob),
-        })
+        const blob = new Blob([data], { type: `image/${self.props.ext}` })
+        self.setState({ url: window.URL.createObjectURL(blob) })
       })
     }
   }
 
   render() {
+    const { url } = this.state
     return (
       <div>
-        <img width="200px" id="ItemPreview" src={this.state.url} alt="Image not loaded" />
+        <img width="200px" id="ItemPreview" src={url} alt="Image not loaded" />
       </div>
     )
   }

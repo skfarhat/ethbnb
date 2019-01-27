@@ -3,9 +3,7 @@ import { connect } from 'react-redux'
 import TruffleContract from 'truffle-contract'
 import log from '../logger'
 import '../loadAbi'
-import {
-  refreshEth, createAccount, addMessage, createListing,
-} from '../actions'
+import { refreshEth, createAccount, addMessage, createListing } from '../actions'
 import EthEventListener from './EthEventListener'
 
 const Web3 = require('web3')

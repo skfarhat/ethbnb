@@ -5,9 +5,7 @@ import { getExtensionFromFile, fileObjectFromImgDOM } from './Utils'
 import { ipfsFileUpload } from './IPFS'
 import log from '../logger'
 
-const mapStateToProps = state => ({
-  clients: state.clients,
-})
+const mapStateToProps = state => ({ clients: state.clients })
 
 const testData = [
   {

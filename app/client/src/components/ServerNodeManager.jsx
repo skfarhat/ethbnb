@@ -5,11 +5,7 @@ import { SERVER_NODE_URL } from '../constants/global'
 import { getAllListings } from '../actions'
 
 
-const mapDispatchToProps = dispatch => ({
-  dispatchMethods: {
-    getAllListings: listings => dispatch(getAllListings(listings)),
-  },
-})
+const mapDispatchToProps = dispatch => ({ dispatchMethods: { getAllListings: listings => dispatch(getAllListings(listings)) } })
 
 class ServerNodeManager extends Component {
   componentDidMount() {

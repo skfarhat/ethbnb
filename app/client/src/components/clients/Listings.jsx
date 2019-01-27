@@ -1,25 +1,25 @@
-import log from '../../logger'
 import React, { Component } from 'react'
+import log from '../../logger'
 import DefaultTable from '../tables/DefaultTable'
 
 class Listings extends Component {
   render() {
-    log.debug("Listings::render()", this.props.data)
+    log.debug('Listings::render()', this.props.data)
     const columns = [{
       Header: 'ID',
-      accessor: 'id'
+      accessor: 'id',
     }, {
       Header: 'Name',
-      accessor: 'shortName'
+      accessor: 'shortName',
     }, {
       Header: 'Price',
-      accessor: 'price'
+      accessor: 'price',
     }]
     return (
       <DefaultTable
-      title="Listings"
-      data={this.props.data}
-      columns={columns}
+        title="Listings"
+        data={this.props.data}
+        columns={columns}
       />
     )
   }

@@ -8,9 +8,7 @@ import '../../../node_modules/react-grid-layout/css/styles.css'
 import '../../../node_modules/react-resizable/css/styles.css'
 
 
-const mapStateToProps = state => ({
-  listings: state.server.listings,
-})
+const mapStateToProps = state => ({ listings: state.server.listings })
 
 class ListingsPage extends Component {
   render() {
