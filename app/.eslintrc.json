@@ -11,6 +11,12 @@
         "react/jsx-uses-vars": 2,
         "react/prefer-stateless-function": [0],
         "react/react-in-jsx-scope": 2,
-        "prefer-destructuring": 0
+        "prefer-destructuring": 0, 
+        "object-curly-newline": ["error", {
+            "ObjectExpression": { "multiline": true},
+            "ObjectPattern": { "multiline": true },
+            "ImportDeclaration": "never",
+            "ExportDeclaration": { "multiline": true, "minProperties": 3 }
+        }]
   }
 }
