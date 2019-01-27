@@ -120,9 +120,9 @@ contract EthBnB {
   event DeleteAccountEvent(address from);
 
   /* Listing Events */
-  event CreateListingEvent(address from, uint id);
-  event UpdateListingEvent(address from, uint id);
-  event DeleteListingEvent(address from, uint id);
+  event CreateListingEvent(address from, uint lid);
+  event UpdateListingEvent(address from, uint lid);
+  event DeleteListingEvent(address from, uint lid);
 
   /**
    * Listings will have incrementing Ids starting from 1
@@ -202,12 +202,15 @@ contract EthBnB {
   // -----------------------------------------------------------------------
 
   /**
-   * Returns a list of listing Ids
+   * Returns a list of all listings
    */
   function getAllListings() public view returns (uint[]) {
     return listingIds;
   }
 
+  /**
+   * Returns a list of all of the message sender's listings
+   */ 
   function getMyListingIds() public view returns (uint[]) {
       require(accounts[msg.sender].owner == msg.sender, "No account found.");
       return accounts[msg.sender].listingIds;
