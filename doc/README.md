@@ -21,22 +21,12 @@ npm run watch-ts
 npm run watch-node
 ```
 
-
-
 ## Jenkins 
 
-Starting Jenkins: On my mac run `start_jenkins` on the command line 
+* Start Jenkins: On my mac run `start_jenkins` on the command line
+* `JenkinsFile` located in root project defines all build steps
+* Require plugins: HTML Report Publisher
 
-Build steps: 
-```
-set +x
-echo "Checking that smart-contract compiles"
-truffle compile 
-
-if [ $? -ne 0]; then 
-echo "Failed to compile smart-contract"
-fi 
-```
 
 ## Sublime Setup
 
@@ -59,6 +49,10 @@ cd ipfs-desktop
 npm install
 npm start
 ```
+
+## Sequence Diagrams 
+
+PlantUML: http://plantuml.com/
 
 ## Running client
 

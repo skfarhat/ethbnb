@@ -1,0 +1,24 @@
+@startuml
+
+actor Client
+participant "Server\nethbnb.com" as Server
+box "Eth" #LightBlue
+  participant "EthNode\nlocalhost:8545" as EthNode
+  database Blockchain
+end box
+
+
+== EthNodeInit ==
+EthNode -> EthNode: Startup
+EthNode <-> Blockchain: Sync
+== Server ==
+Server -> EthNode: Connect
+Server <- EthNode: Read events\nPopulate internal DB
+Server -> Server: Setup port:5050\n/api/
+Server -> Server: Setup port:80
+== ClientInit ==
+Client -> Server: GET:80
+Server -> Client: Serve .html, .js files
+Client -> Server: GET:5050/api/listings
+Server -> Client: Return listings json
+@enduml
