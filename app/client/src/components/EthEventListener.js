@@ -61,24 +61,18 @@ class EthEventListener {
       from,
       gas: 100000,
     }
-    const shortName = await this.contractInstance.getListingShortName.call(lid,
-      callObj)
     const price = await this.contractInstance.getListingPrice.call(lid,
       callObj)
     const location = await this.contractInstance.getListingLocation.call(lid,
       callObj)
-    const mainImageHash = await this.contractInstance.getListingMainImageHash.call(lid,
-      callObj)
-    const mainImageExtension = await this.contractInstance.getListingMainImageExtension.call(lid,
-      callObj)
+    const country = await this.contractInstance.getListingCountry.call(lid, callObj)
+
     return {
       from,
       price: parseInt(price.toString(), 10),
       id: parseInt(lid.toString(), 10),
-      shortName,
-      location,
-      mainImageHash,
-      mainImageExtension,
+      country: parseInt(country.toString(), 10), 
+      location: location,
     }
   }
 

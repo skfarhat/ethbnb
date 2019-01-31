@@ -243,6 +243,11 @@ contract EthBnB {
     emit UpdateListingEvent(msg.sender, listingId);
   }
 
+  function getListingCountry(uint listingId) public view returns (Country) {
+    checkListingId(listingId); 
+    return listings[listingId].country; 
+  }
+  
   function getListingPrice(uint listingId) public view returns (uint) {
     checkListingId(listingId);
     return listings[listingId].price;
