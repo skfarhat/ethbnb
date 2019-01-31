@@ -10,7 +10,7 @@ The server is designed to be another Eth node that reads the state of the blockc
 * Setup `npm install -g ganache-cli`.
 * Run `ganache-cli` in terminal or open Ganache mac application for good GUI view.
 * Run `truffle migrate --reset` in another.
-* Might have to force "npm install web3@0.20.6 --save". Make sure the right version is in use,
+* IF `CORS` error is seen again. Run `npm install web3@0.20.6 --save`, then restart client with `npm start`. 
 otherwise we could get the CORS bug
 * Start IPFS desktop.
 
