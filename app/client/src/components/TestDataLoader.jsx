@@ -23,9 +23,9 @@ const testData = [
   {
     name: 'createListing',
     inputs: [
-      { value: new BigNumber(226/* GB */), name: 'country' },
+      { value: '226'/* GB */, name: 'country' },
       { value: 'London', name: 'location' },
-      { value: new BigNumber(1000), name: 'price' },
+      { value: '1000', name: 'price' },
     ],
     constant: false,
     clientIndex: 0,
@@ -33,9 +33,9 @@ const testData = [
   {
     name: 'createListing',
     inputs: [
-      { value: new BigNumber(73/* FR */), name: 'country' },
+      { value: '73'/* FR */, name: 'country' },
       { value: 'Paris', name: 'location' },
-      { value: new BigNumber(20000), name: 'price' },
+      { value: '20000', name: 'price' },
     ],
     constant: false,
     clientIndex: 0,
@@ -43,9 +43,9 @@ const testData = [
   {
     name: 'createListing',
     inputs: [
-      { value: new BigNumber(226/* GB */), name: 'country' },
+      { value: '226'/* GB */, name: 'country' },
       { value: 'Cambridge', name: 'location' },
-      { value: new BigNumber(3500), name: 'price' },
+      { value: '3500', name: 'price' },
     ],
     constant: false,
     clientIndex: 1,

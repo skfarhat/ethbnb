@@ -22,5 +22,8 @@
   "devDependencies": {
     "solidity-coverage": "^0.5.11",
     "truffle-assertions": "^0.7.2"
+  },
+  "dependencies": {
+    "truffle-contract": "^4.0.4"
   }
 }

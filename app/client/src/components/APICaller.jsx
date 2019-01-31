@@ -19,7 +19,6 @@ const mapStateToProps = state => ({
 const validateAndMapCommandInputs = (inputs) => {
   const ret = inputs.map(in1 => in1.value)
   for (const k in ret) {
-    console.log(k, ret[k])
     if (!ret[k] || ret[k].length === 0) return null
   }
   return ret
@@ -147,7 +146,8 @@ class APICaller_ extends Component {
       <div className="apiCaller">
         <h2 key="title"> API </h2>
         <p>
-Selected client:
+          {' '}
+          Selected client:
           {this.props.selectedClientAddr.substr(0, 7)}
           {' '}
         </p>
