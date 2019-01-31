@@ -128,35 +128,6 @@
       }
     })
 
-    /** 
-     * Test get/set description and shortName
-     */ 
-    it("Listing: get/set description and shortName", async() => {
-      var bnb = await EthBnB.deployed()
-
-      try {
-        var res = await bnb.getMyListingIds({from : accounts[0]})      
-        var listingId = res[0]
-
-        // Setters
-        var newDescription = "Description NEW"
-        var newShortName = "ShortName NEW"
-        await bnb.setListingDescription(listingId, newDescription, {from: accounts[0]})
-        await bnb.setListingShortName(listingId, newShortName, {from: accounts[0]})
-
-        // Getters
-        var actualDescription = await bnb.getListingDescription(listingId, {from: accounts[0]})
-        var actualShortName = await bnb.getListingShortName(listingId, {from: accounts[0]})
-
-        assert.equal(actualShortName, newShortName, "ShortNames don't match")
-        assert.equal(actualDescription, newDescription, "Descriptions don't match")
-
-      }
-      catch(error) {
-        console.log(error)
-        assert(false, "shortname/description getter or setter should not have thrown an exception")
-      }
-    })
 
     // /** 
     //  * Test delete
