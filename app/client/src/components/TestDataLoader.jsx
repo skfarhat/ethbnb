@@ -23,26 +23,32 @@ const testData = [
   {
     name: 'createListing',
     inputs: [
+      { value: new BigNumber(226/* GB */), name: 'country' },
       { value: 'London', name: 'location' },
       { value: new BigNumber(1000), name: 'price' },
-      { value: 'Devonshire house', name: 'shortName' },
-      { value: 'Very close to the train station.', name: 'description' },
     ],
     constant: false,
     clientIndex: 0,
   },
   {
-    name: 'setListingMainImage',
-    // 'file' field denotes the id of the DOM element as well as the filename
-    file: 'img1',
+    name: 'createListing',
     inputs: [
-      { value: new BigNumber(1), name: 'listingId' },
-      { value: null, name: 'ipfsHash' },
-      { value: 'My main image', name: 'title' },
-      { value: null, name: 'extension' },
+      { value: new BigNumber(73/* FR */), name: 'country' },
+      { value: 'Paris', name: 'location' },
+      { value: new BigNumber(20000), name: 'price' },
     ],
     constant: false,
     clientIndex: 0,
+  },
+  {
+    name: 'createListing',
+    inputs: [
+      { value: new BigNumber(226/* GB */), name: 'country' },
+      { value: 'Cambridge', name: 'location' },
+      { value: new BigNumber(3500), name: 'price' },
+    ],
+    constant: false,
+    clientIndex: 1,
   },
 ]
 

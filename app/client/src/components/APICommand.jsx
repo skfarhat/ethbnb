@@ -7,7 +7,7 @@ import { getExtensionFromFile } from './Utils'
 // Returns true if the current implementation supports the input type provided
 // input.type is checked against the supported input types
 const inputTypeIsSupported = (input) => {
-  const SUPPORTED_TYPES = ['uint256', 'string']
+  const SUPPORTED_TYPES = ['uint256', 'uint8', 'uint16', 'string']
   for (const i in SUPPORTED_TYPES) {
     if (input.type === SUPPORTED_TYPES[i]) return true
   }
@@ -16,9 +16,10 @@ const inputTypeIsSupported = (input) => {
 
 // Converts the user input value to the type expected by the API given the
 // input type. This method is expected to be called by inputChanged.
-const convertInputValue = (value, type) => {
-  if (type === 'uint256') return new BigNumber(value)
-  return value
+// v = value, t = type
+const convertInputValue = (v, t) => {
+  if (t in ['uint256', 'uint8', 'uint16']) return new BigNumber(v)
+  return v
 }
 
 // React component
