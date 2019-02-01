@@ -24,6 +24,6 @@
     "truffle-assertions": "^0.7.2"
   },
   "dependencies": {
-    "truffle-contract": "^4.0.4"
+    "truffle-contract": "^3.0.6"
   }
 }
