@@ -13,6 +13,7 @@
         "react/prefer-stateless-function": [0],
         "react/react-in-jsx-scope": 2,
         "prefer-destructuring": 0, 
+        "no-restricted-syntax": ["error", "WithStatement", "BinaryExpression[operator='in']"],
         "object-curly-newline": ["error", {
             "ObjectExpression": { "multiline": true},
             "ObjectPattern": { "multiline": true },

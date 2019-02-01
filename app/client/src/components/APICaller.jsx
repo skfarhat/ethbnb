@@ -38,7 +38,8 @@ class APICaller_ extends Component {
 
   // Called when the select (dropdown) changes.
   clientSelectChanged(evt) {
-    this.props.selectClient(evt.target.value)
+    const { selectClient } = this.props
+    selectClient(evt.target.value)
   }
 
   // Returns the first function in eth.abi that matches name, or null if not found.
