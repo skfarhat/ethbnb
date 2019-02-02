@@ -1,5 +1,6 @@
 const Web3 = require('web3')
 const constants = require('./globals.const')
+const Listing = require('./models/Listing')
 const { contractAddress, jsonInterface } = require('./loadAbi')
 const abi = jsonInterface.abi
 
@@ -41,14 +42,23 @@ module.exports = function (store) {
       store.listingsByCountry[country].push(listing)
     }
   }
+  /** Create a listing model and save it to Mongo */ 
+  const addListingToDatabase = async (listing) => {
+    logger.silly('addListingToDatbase')
+    const { country, lid} = listing
+    const listingModel = new Listing(listing)
+    let res = await Listing.findOneAndUpdate({lid: listing.lid}, listing, {upsert:true});
+    console.log('the result is ', res)
+  }
 
+  // Given a listing 'id' and 'from' address, this function reads 
+  // all of a listing's fields from the blockchain. 
   const fetchAndReturnListing = async (lid, from) => {
     const l = {
       lid, from
     }
     for (const field in listingFunctions) {
       const funcName = listingFunctions[field]
-
       let res = undefined
       try {
         res = await contract.methods[funcName](lid).call({from,})
@@ -66,6 +76,7 @@ module.exports = function (store) {
     // Create Listing object and insert it in store
     const listing = await fetchAndReturnListing(lid, from)
     addListingToStore(listing)
+    await addListingToDatabase(listing)
   }
 
   const updateListingEventHanlder = (events) => {
