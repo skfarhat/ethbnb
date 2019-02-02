@@ -1,6 +1,7 @@
 const app = require('./app')
 
 require('./globals')()
+var Listings = require('./models/Listing')
 
 const constants = {
   PORT: 3001,
@@ -37,15 +38,20 @@ app.use((req, res, next) => {
   next()
 })
 
-app.get('/api/listings', (req, res) => {
+app.get('/api/listings', async (req, res) => {
   logger.info('Serving content on /api/listings/', store.listings)
-  res.json(store.listings)
+  const allListings = await Listings.find({})
+  res.json(allListings)
 })
 
-app.get('/api/listings/country/:country', (req, res) => {
+app.get('/api/listings/country/:country', async (req, res) => {
+  let response = null
   const { country } = req.params
+  try { c = parseInt(country) }
+  catch(e) { logger.error('Failed to parse country to integer') }
+  response = await Listings.find({country: country})
   logger.info('Serving content on /api/listings/country/' + country)
-  res.json(store.listingsByCountry[country])
+  res.json(response)
 })
 
 app.listen(constants.PORT, () => {
