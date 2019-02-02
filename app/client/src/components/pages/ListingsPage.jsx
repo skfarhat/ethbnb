@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import GridLayout from 'react-grid-layout'
 import log from '../../logger'
-import IPFSImage from '../IPFSImage'
+import ListingMini from './ListingMini'
 import '../../../node_modules/react-grid-layout/css/styles.css'
 import '../../../node_modules/react-resizable/css/styles.css'
 
@@ -22,8 +22,13 @@ class ListingsPage extends Component {
       const l = self.props.listings[key]
       doms.push((
         <div key={i}>
-          {l.shortName}
-          <IPFSImage hash={l.mainImageHash} ext={l.mainImageExtension} />
+          <ListingMini
+            key={i}
+            title={l.title}
+            price={l.price}
+            location={l.location}
+            country={l.country}
+          />
         </div>
       ))
       layout.push({

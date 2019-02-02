@@ -55,3 +55,9 @@
 
 /*.grid-item--width2 { width: 120px; }*/
 /*.grid-item--height2 { height: 120px; }*/
+
+/** See ListingMini.jsx */ 
+.listing-mini {
+    background-color: magenta;
+    width: 500px;
+}
