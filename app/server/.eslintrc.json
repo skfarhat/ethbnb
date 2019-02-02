@@ -1,1 +1,17 @@
-../.eslintrc.json
+{
+    "parser": "eslint",
+      "rules" : {
+        "semi": ["error", "never"],
+        "no-console": 0,
+        "quotes": [2, "single"],
+        "strict": [2, "never"],
+        "prefer-destructuring": 0, 
+        "no-restricted-syntax": ["error", "WithStatement", "BinaryExpression[operator='in']"],
+        "object-curly-newline": ["error", {
+            "ObjectExpression": { "multiline": true},
+            "ObjectPattern": { "multiline": true },
+            "ImportDeclaration": "never",
+            "ExportDeclaration": { "multiline": true, "minProperties": 3 }
+        }]
+  }
+}

@@ -1,5 +1,17 @@
 const app = require('./app')
-const constants = require('./globals.const')
+
+require('./globals')()
+
+const constants = {
+  PORT: 3001,
+  PROVIDER_HTTP: 'http://localhost:8545',
+  PROVIDER_WS: 'ws://localhost:8545',
+  db: {
+    db_name: 'ethbnb', 
+    host: 'localhost', 
+    port: 27017,    
+  },
+}
 
 // Data store
 const store = {
@@ -8,6 +20,13 @@ const store = {
 }
 
 const EthEvents = require('./EthEvents')(store)
+
+// Setup database
+const Database = require('./database')
+const database = new Database(constants.db)
+
+// Async call 
+database.connect()
 
 // Async call
 EthEvents.registerEvents()
@@ -19,16 +38,16 @@ app.use((req, res, next) => {
 })
 
 app.get('/api/listings', (req, res) => {
-  console.log('Serving content on /api/listings/', store.listings)
+  logger.info('Serving content on /api/listings/', store.listings)
   res.json(store.listings)
 })
 
 app.get('/api/listings/country/:country', (req, res) => {
   const { country } = req.params
-  console.log('Serving content on /api/listings/country/' + country)
+  logger.info('Serving content on /api/listings/country/' + country)
   res.json(store.listingsByCountry[country])
 })
 
 app.listen(constants.PORT, () => {
-  console.log(`Express server listening on port ${constants.PORT}`)
+  logger.info(`Express server listening on port ${constants.PORT}`)
 })

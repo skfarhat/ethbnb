@@ -53,7 +53,7 @@ module.exports = function (store) {
       try {
         res = await contract.methods[funcName](lid).call({from,})
       } catch(err) {
-        console.log('Error: Failed to call function ', funcName, 'Received error: ', err)
+        logger.error('Error: Failed to call function ', funcName, 'Received error: ', err)
       }
       l[field] = res  
     }
@@ -61,7 +61,7 @@ module.exports = function (store) {
   }
 
   const createListingEventHandler = async (event) => {
-    console.log('createListingEventHandler')
+    logger.silly('createListingEventHandler')
     const { lid, from } = event.returnValues
     // Create Listing object and insert it in store
     const listing = await fetchAndReturnListing(lid, from)
@@ -82,13 +82,13 @@ module.exports = function (store) {
       console.log('Error: in eventDispatcher', err)
       return
     }  
-    console.log('result', result)
+    logger.debug('result', result)
     const events = (result.constructor === Array) ? result : [result]
     for (const i in events) {
       const event = events[i]
       const eventName = event.event
-      console.log('eventName', eventName)
-      console.log('eventName', eventCallbacks[eventName])
+      logger.debug('eventName', eventName)
+      logger.debug('eventName', eventCallbacks[eventName])
       eventCallbacks[eventName](event)
     }
   }
@@ -102,7 +102,7 @@ module.exports = function (store) {
     // The callback 'eventDispatcher' is used for each event that arrives.
     registerEvents: async () => {
       Object.keys(eventCallbacks).forEach((eventName) => {
-        console.log('Registering event: ', eventName)
+        logger.silly('Registering event: ', eventName)
         contract.events[eventName]({}, eventDispatcher)
         // Search the contract events for the hash in the event logs and show matching events.
         contract.getPastEvents(eventName, {
