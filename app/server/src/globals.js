@@ -12,4 +12,14 @@
 module.exports = () => {
   global.format = require('string-format')
   global.logger = require('./logger')
+  global.constants = {
+    PORT: 3001,
+    PROVIDER_HTTP: 'http://localhost:8545',
+    PROVIDER_WS: 'ws://localhost:8545',
+    db: {
+      db_name: 'ethbnb', 
+      host: 'localhost', 
+      port: 27017,    
+    },
+  }
 }

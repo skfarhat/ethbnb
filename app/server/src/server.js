@@ -3,16 +3,7 @@ const app = require('./app')
 require('./globals')()
 var Listings = require('./models/Listing')
 
-const constants = {
-  PORT: 3001,
-  PROVIDER_HTTP: 'http://localhost:8545',
-  PROVIDER_WS: 'ws://localhost:8545',
-  db: {
-    db_name: 'ethbnb', 
-    host: 'localhost', 
-    port: 27017,    
-  },
-}
+const constants = global.constants 
 
 // Data store
 const store = {

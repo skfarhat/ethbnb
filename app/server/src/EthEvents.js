@@ -1,14 +1,10 @@
 const Web3 = require('web3')
-const constants = require('./globals.const')
 const Listing = require('./models/Listing')
 const { contractAddress, jsonInterface } = require('./loadAbi')
 const abi = jsonInterface.abi
 
-// TODO: encompass all in store, or make store accessible to all those that need
-//       it.
-
 // Show web3 where it needs to look for the Ethereum node.
-const web3 = new Web3(new Web3.providers.WebsocketProvider(constants.PROVIDER_WS))
+const web3 = new Web3(new Web3.providers.WebsocketProvider(global.constants.PROVIDER_WS))
 // Load ABI, then contract
 const contract = new web3.eth.Contract(abi, contractAddress)
 
