@@ -5,13 +5,7 @@ var Listings = require('./models/Listing')
 
 const constants = global.constants 
 
-// Data store
-const store = {
-  listings: {},
-  listingsByCountry: {}, 
-}
-
-const EthEvents = require('./EthEvents')(store)
+const bchain_to_db = require('./bchain_to_db')()
 
 // Setup database
 const Database = require('./database')
@@ -21,7 +15,7 @@ const database = new Database(constants.db)
 database.connect()
 
 // Async call
-EthEvents.registerEvents()
+bchain_to_db.sync()
 
 // Allow CORS
 app.use((req, res, next) => {
@@ -29,8 +23,19 @@ app.use((req, res, next) => {
   next()
 })
 
+app.post('/api/listings/:lid/', async (req, res) => {
+  // https://ethereum.stackexchange.com/questions/35486/how-to-verify-metamask-account-holder-is-the-real-owner-of-the-address
+  // TODO: verify the user is the actual listing owner 
+  // var sig = getSignature() 
+  // const util = require('ethereumjs-util');
+  // const sig = util.fromRpcSig('<signature from front end>');
+  // const publicKey = util.ecrecover(util.sha3('test'), sig.v, sig.r, sig.s);
+  // const address = util.pubToAddress(publicKey).toString('hex');
+  // res.json({ message: 'Nothing done.' })
+})
+
 app.get('/api/listings', async (req, res) => {
-  logger.info('Serving content on /api/listings/', store.listings)
+  logger.info('Serving content on /api/listings/')
   const allListings = await Listings.find({})
   res.json(allListings)
 })
@@ -38,8 +43,13 @@ app.get('/api/listings', async (req, res) => {
 app.get('/api/listings/country/:country', async (req, res) => {
   let response = null
   const { country } = req.params
-  try { c = parseInt(country) }
-  catch(e) { logger.error('Failed to parse country to integer') }
+  try { 
+    c = parseInt(country) 
+  } catch(e) { 
+    logger.error('Failed to parse country to integer') 
+    res.json(response)
+    return
+  }
   response = await Listings.find({country: country})
   logger.info('Serving content on /api/listings/country/' + country)
   res.json(response)
