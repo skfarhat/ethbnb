@@ -2,11 +2,11 @@
 // Sami Farhat
 // 
 // Add testData to chain, then sync with database and insert metadata: 
-//    $ node init_data.js --chain_init=true
+//    $ node data_manage.js --chain_init=true
 // 
 // Sync chain data with database, then add metadata defined here. 
-//    $ node init_data.js --chain_init=false
-//    $ node init_data.js
+//    $ node data_manage.js --chain_init=false
+//    $ node data_manage.js
 //    
 
 // ============================================================
@@ -35,7 +35,7 @@ const BN = web3.utils.BN
 let accounts = null 
 const listingMetadata = {
   1: {
-    title: 'London Vitorian House', 
+    title: 'London Victorian House', 
     description: `Good sized, basic double room in a 3 bed Shared flat situated in the heart of Holborn, 
     East Central London. The flat comprises of a fitted kitchen and a shared bathroom.`, 
   }, 
@@ -95,30 +95,45 @@ const testData = [
 // FUNCTIONS
 // ============================================================
 
+// Database clear 
+const database_clear = async () => {
+  logger.info('Clearing database')
+  await Listings.deleteMany({})
+  logger.info('Finished clearing database')
+}
+
+// Database print2
+const database_print = async () => {
+  logger.info('Database')
+  console.log('--------------------------------------------')
+  console.log(await Listings.find({}))
+  console.log('--------------------------------------------')
+}
+
 // Find metadata associated with the given 'listing' and insert into the database
-const add_metadata_to_listing = (listing) => {
+const add_metadata_to_listing = async (listing) => {
   let { lid } = listing
   try {
     lid = parseInt(lid)
-    // if (typeof(lid) !== 'int') {
-    //   console.log('ALERT lid - should be converted')
-    // }
-    // console.log(typeof(lid))
-    // console.log(lid)
-    console.log(lid)
-    console.log(listingMetadata)
-    const metadata = listingMetadata[lid]
-    console.log('metadata', metadata)
+    const listingModel = await Listings.findOne({lid})
+    console.log('model found is', listingModel)
+    if (lid in listingMetadata) {
+      const metadata = listingMetadata[lid]
+      console.log('metadata', metadata)
+      // listingModel.set(metadata)
+      await Listings.findOneAndUpdate({lid}, metadata)
+      await Listings.save()  
+    }
+    
   } catch (err) {
-    console.log('Failed to convert lid to integer')
-    console.log(err)
+    console.log('Failed with', err)
   }
 }
 
 // Callback on listing database insert (when bchain_to_db.js inserts a chain entry to database)
-const dbListingInsertCallback = (listing) => {
-  // console.log('Entry inserted into database ', listing)
-  // add_metadata_to_listing(listing)
+const dbListingInsertCallback = async (listing) => {
+  console.log('Entry inserted into database ', listing)
+  await add_metadata_to_listing(listing)
 }
 
 const addressFromClientIndex = (index) => {
@@ -155,24 +170,41 @@ const run = async () => {
   // If chain_init=true initialise the blockchain with data
   const args = minimist(process.argv.slice(2))
   const chain_init = ('chain_init' in args) ? args.chain_init === 'true' : false
-
-  let res = null
+  const db_clear = ('db_clear' in args) ? args.db_clear === 'true' : false 
 
   // Connect to database so that we can insert metadata in there 
   const database = new Database(global.constants.db)
   if (false === await database.connectSync()) {
-    logger.error('Failed to connect?', res)
-    return 
+    logger.error('Failed to connect')
+    process.exit(1)
   }
 
-  accounts = await web3.eth.getAccounts()
-  
-  // Inserts data on the chain to the database
-  bchain_to_db.sync(dbListingInsertCallback)
+  // Clear database and exit if 'db_clear=true'
+  if (db_clear) {
+    await database_clear()
+    process.exit(0)
+  } else {
+    accounts = await web3.eth.getAccounts() 
+    // Synchronises data on-chain with database
+    bchain_to_db.sync(dbListingInsertCallback)
 
-  // Initialise blockchain with data if the command line flag 'chain_data' is set 
-  if (chain_init === true) {
-    await add_test_data_to_blockchain()
+    // Add test data to chain if 'chain_init === true'
+    if (chain_init === true) {
+      await add_test_data_to_blockchain()
+    }
+
+    // -------------------------
+    // PRINT DATABASE 
+    // -------------------------
+    await database_print()
+
+    // -------------------------
+    // EXIT
+    // -------------------------
+    logger.info('Exiting in 5 seconds')
+    await sleep(5000)  
+    process.exit(0)
+
   }
 }
 
