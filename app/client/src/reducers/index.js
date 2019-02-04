@@ -9,10 +9,7 @@ const initialState = {
   selectedClientAddr: NONE_ADDRESS,
   messages: [],
   clients: {},
-  server: {
-    listings: {},
-    // listings: { 1: { shortName: 'sami', id: '1' }, 2: { id: '2', shortName: 'marwan' } },
-  },
+  server: { listings: {} },
   eth: {},
 }
 
@@ -29,9 +26,7 @@ const getClients = (eth, state) => {
 }
 
 const updateClientWithAddr = (clients, addr, action) => {
-  const clone = {
-    ...clients,
-  }
+  const clone = { ...clients }
   for (const a in clone) {
     if (a === addr) {
       clone[a] = {
@@ -70,9 +65,7 @@ const rootReducer = (state = initialState, action) => {
     case CREATE_LISTING: {
       log.debug('CREATE_LISTING', action.payload)
       const listing = action.payload.value
-      const clone = {
-        ...state.clients,
-      }
+      const clone = { ...state.clients }
       for (const addr in clone) {
         const client = clone[addr]
         if (client.address === action.payload.value.from) {
