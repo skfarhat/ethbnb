@@ -58,6 +58,6 @@
 
 /** See ListingMini.jsx */ 
 .listing-mini {
-    background-color: magenta;
-    width: 500px;
+    /*background-color: magenta;*/
+    max-width: 500px;
 }

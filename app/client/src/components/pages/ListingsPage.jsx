@@ -1,13 +1,16 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
-import GridLayout from 'react-grid-layout'
+// import GridLayout from 'react-grid-layout'
+import RGL, { WidthProvider } from "react-grid-layout";
+
 import log from '../../logger'
 import ListingMini from './ListingMini'
 import '../../../node_modules/react-grid-layout/css/styles.css'
 import '../../../node_modules/react-resizable/css/styles.css'
 
 
+const ReactGridLayout = WidthProvider(RGL);
 const mapStateToProps = state => ({ listings: state.server.listings })
 
 class ListingsPage extends Component {
@@ -31,20 +34,24 @@ class ListingsPage extends Component {
           />
         </div>
       ))
+      // console.log('pushing ', i)
+      const x = i % COLS
+      const y = parseInt(i / COLS)
+      console.log('pushing ', x, y)
       layout.push({
         i: i.toString(),
         x: i % COLS,
         y: i / COLS,
-        w: 3,
-        h: 3,
+        w: 1,
+        h: 1,
       })
       i += 1
     })
 
     return (
-      <GridLayout className="layout" layout={layout} cols={COLS} rowHeight={30} width={1200}>
+      <ReactGridLayout items={3} layout={layout} cols={3} rowHeight={30} width={300}>
         {doms}
-      </GridLayout>
+      </ReactGridLayout>
     )
   }
 }
