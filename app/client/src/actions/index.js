@@ -1,5 +1,6 @@
 import {
   REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE, GET_ALL_LISTINGS,
+  SET_LISTING_RESULTS,
 } from '../constants/action-types'
 
 export const refreshEth = eth => ({ type: REFRESH_ETH, payload: eth })
@@ -16,3 +17,4 @@ export const createListing = listing => ({ type: CREATE_LISTING, payload: { name
 
 // ServerNode actions
 export const getAllListings = listings => ({ type: GET_ALL_LISTINGS, payload: listings })
+export const setListingResults = listings => ({ type: SET_LISTING_RESULTS, payload: listings })

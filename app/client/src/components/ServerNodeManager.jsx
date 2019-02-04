@@ -2,10 +2,14 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import log from '../logger'
 import { SERVER_NODE_URL } from '../constants/global'
-import { getAllListings } from '../actions'
+import { setListingResults } from '../actions'
 
 
-const mapDispatchToProps = dispatch => ({ dispatchMethods: { getAllListings: listings => dispatch(getAllListings(listings)) } })
+const mapDispatchToProps = dispatch => ({
+  dispatchMethods: {
+    setListingResults: listings => dispatch(setListingResults(listings)),
+  },
+})
 
 class ServerNodeManager extends Component {
   componentDidMount() {
@@ -14,7 +18,7 @@ class ServerNodeManager extends Component {
       .then(response => response.json())
       .then((listingsData) => {
         log.debug(self.props)
-        self.props.dispatchMethods.getAllListings(listingsData)
+        self.props.dispatchMethods.setListingResults(listingsData)
       })
       .catch(err => log.error(`ServerNodeManager:: failed to connect to ${SERVER_NODE_URL}`, err))
   }

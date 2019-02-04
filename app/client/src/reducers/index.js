@@ -1,6 +1,6 @@
 import log from '../logger'
 import {
-  REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE, GET_ALL_LISTINGS,
+  REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE, GET_ALL_LISTINGS, SET_LISTING_RESULTS,
 } from '../constants/action-types'
 import { MAX_CLIENTS, NONE_ADDRESS } from '../constants/global'
 
@@ -10,6 +10,8 @@ const initialState = {
   messages: [],
   clients: {},
   server: { listings: {} },
+  // The result from Listing searches
+  listingResults: {},
   eth: {},
 }
 
@@ -60,6 +62,13 @@ const rootReducer = (state = initialState, action) => {
       return {
         ...state,
         clients,
+      }
+    }
+    case SET_LISTING_RESULTS: {
+      console.log('In SET_LISTING_RESULTS reducer')
+      return {
+        ...state,
+        listingResults: action.payload,
       }
     }
     case CREATE_LISTING: {

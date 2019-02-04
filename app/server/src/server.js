@@ -23,16 +23,16 @@ app.use((req, res, next) => {
   next()
 })
 
-app.post('/api/listings/:lid/', async (req, res) => {
-  // https://ethereum.stackexchange.com/questions/35486/how-to-verify-metamask-account-holder-is-the-real-owner-of-the-address
-  // TODO: verify the user is the actual listing owner 
-  // var sig = getSignature() 
-  // const util = require('ethereumjs-util');
-  // const sig = util.fromRpcSig('<signature from front end>');
-  // const publicKey = util.ecrecover(util.sha3('test'), sig.v, sig.r, sig.s);
-  // const address = util.pubToAddress(publicKey).toString('hex');
-  // res.json({ message: 'Nothing done.' })
-})
+// app.post('/api/listings/:lid/', async (req, res) => {
+//   // https://ethereum.stackexchange.com/questions/35486/how-to-verify-metamask-account-holder-is-the-real-owner-of-the-address
+//   // TODO: verify the user is the actual listing owner 
+//   // var sig = getSignature() 
+//   // const util = require('ethereumjs-util');
+//   // const sig = util.fromRpcSig('<signature from front end>');
+//   // const publicKey = util.ecrecover(util.sha3('test'), sig.v, sig.r, sig.s);
+//   // const address = util.pubToAddress(publicKey).toString('hex');
+//   // res.json({ message: 'Nothing done.' })
+// })
 
 app.get('/api/listings', async (req, res) => {
   logger.info('Serving content on /api/listings/')
