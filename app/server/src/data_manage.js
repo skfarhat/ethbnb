@@ -26,6 +26,10 @@ let bchain_to_db = require('./bchain_to_db')()
 // DEFINITIONS
 // ============================================================
 
+
+// Options set via command line arguments Command line arguments
+const opts = {}
+
 // Show web3 where it needs to look for the Ethereum node.
 const abi = jsonInterface.abi
 const web3 = new Web3(new Web3.providers.WebsocketProvider(global.constants.PROVIDER_WS))
@@ -116,15 +120,10 @@ const add_metadata_to_listing = async (listing) => {
   try {
     lid = parseInt(lid)
     const listingModel = await Listings.findOne({lid})
-    console.log('model found is', listingModel)
     if (lid in listingMetadata) {
       const metadata = listingMetadata[lid]
-      console.log('metadata', metadata)
-      // listingModel.set(metadata)
       await Listings.findOneAndUpdate({lid}, metadata)
-      await Listings.save()  
     }
-    
   } catch (err) {
     console.log('Failed with', err)
   }
@@ -132,8 +131,13 @@ const add_metadata_to_listing = async (listing) => {
 
 // Callback on listing database insert (when bchain_to_db.js inserts a chain entry to database)
 const dbListingInsertCallback = async (listing) => {
-  console.log('Entry inserted into database ', listing)
-  await add_metadata_to_listing(listing)
+  if (opts.metadata_add) {
+    logger.info('Adding metadata')
+    await add_metadata_to_listing(listing)
+  }
+  // Other functions to be called upon listing insertion
+  // here: 
+  // ... 
 }
 
 const addressFromClientIndex = (index) => {
@@ -169,8 +173,9 @@ const run = async () => {
   // 
   // If chain_init=true initialise the blockchain with data
   const args = minimist(process.argv.slice(2))
-  const chain_init = ('chain_init' in args) ? args.chain_init === 'true' : false
-  const db_clear = ('db_clear' in args) ? args.db_clear === 'true' : false 
+  opts.chain_init = ('chain_init' in args) ? args.chain_init === 'true' : false
+  opts.db_clear = ('db_clear' in args) ? args.db_clear === 'true' : false 
+  opts.metadata_add = ('metadata_add' in args) ? args.metadata_add === 'true' : false
 
   // Connect to database so that we can insert metadata in there 
   const database = new Database(global.constants.db)
@@ -179,17 +184,19 @@ const run = async () => {
     process.exit(1)
   }
 
-  // Clear database and exit if 'db_clear=true'
-  if (db_clear) {
+  // Clear database and exit if 'opts.db_clear=true'
+  if (opts.db_clear) {
     await database_clear()
     process.exit(0)
   } else {
     accounts = await web3.eth.getAccounts() 
-    // Synchronises data on-chain with database
+    
+    // Call sync() on bchain_to_db which inserts listings in the database 
+    // when it receives Eth events.
     bchain_to_db.sync(dbListingInsertCallback)
 
-    // Add test data to chain if 'chain_init === true'
-    if (chain_init === true) {
+    // Add test data to chain if 'opts.chain_init === true'
+    if (opts.chain_init === true) {
       await add_test_data_to_blockchain()
     }
 

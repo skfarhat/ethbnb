@@ -1,9 +1,11 @@
 #!/bin/bash 
 #
 # 
-SCRIPTS_DIR=$(cd $(dirname "${BASH_SOURCE[0]}" ) && pwd )
+
+SCRIPTS_DIR=$(cd $(dirname "$0}" ) && pwd )
 ROOT_DIR=$(cd $SCRIPTS_DIR && cd .. && pwd)
 CLIENT_DIR="$ROOT_DIR/app/client"
+SERVER_DIR="$ROOT_DIR/app/server"
 
 lint() {
   d=$(mktemp -d)
@@ -13,4 +15,16 @@ lint() {
   open $d/eslint-output.html
 }
 
-alias ll="lint"
+if [ ! -z "$BNB_SOURCED" ]; then 
+  echo "ethbnb already sourced"
+else
+  export BNB_SOURCED=1
+  export PS1="$PS1🏡 " # Helps indicate if we've already sourced bnb
+  alias ll="lint"
+  alias gothere="cd $ROOT_DIR"
+  alias s0="$SCRIPTS_DIR/setup.sh && node $SERVER_DIR/src/data_manage.js --chain_init=true --metadata_add=true"
+  alias s9="ganache-cli"
+  alias s99="pkill -f ganache-cli"
+  alias s1="npm start --prefix $CLIENT_DIR" # Start client 
+  alias s2="npm start --prefix $SERVER_DIR" # Start server 
+fi
