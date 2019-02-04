@@ -4,7 +4,7 @@ import EthManager from './EthManager'
 import ServerNodeManager from './ServerNodeManager'
 import log from '../logger'
 import AdminPage from './pages/AdminPage'
-import ListingsPage from './pages/ListingsPage'
+import ListingRouter from './pages/ListingRouter'
 import Navigation from './pages/Navigation'
 import '../css/bootstrap-4.1.0.min.css'
 import 'react-table/react-table.css'
@@ -20,8 +20,8 @@ class App extends Component {
           <Navigation />
           <ServerNodeManager />
           <EthManager />
-          <Route exact path="/" component={AdminPage} />
-          <Route exact path="/listings" component={ListingsPage} />
+          <Route exact path="/listing" component={ListingRouter} />
+          <Route exact path="/admin" component={AdminPage} />
         </div>
       </Router>
     )
