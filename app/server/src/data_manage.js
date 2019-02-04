@@ -39,15 +39,27 @@ const BN = web3.utils.BN
 let accounts = null 
 const listingMetadata = {
   1: {
-    title: 'London Victorian House', 
-    description: `Good sized, basic double room in a 3 bed Shared flat situated in the heart of Holborn, 
-    East Central London. The flat comprises of a fitted kitchen and a shared bathroom.`, 
-  }, 
+    title: '53 Devonshire-on-Rails', 
+    description: `Welcome to the super awesome Devonshire place now that Sophie has left.`, 
+  },
   2: {
     title: 'Lovely house at Croissy-Sur-Seine', 
     description: `Ouvry Manor - big place - jakuzzi - sauna - lovely spaceous garden - big DIY garage - 4 bedrooms
     and BABY-FOOT`, 
-  }
+  }, 
+  3: {
+    title: 'London Victorian House', 
+    description: `Good sized, basic double room in a 3 bed Shared flat situated in the heart of Holborn, 
+    East Central London. The flat comprises of a fitted kitchen and a shared bathroom.`, 
+  }, 
+  4: {
+    title: 'Farhat Manor', 
+    description: `Lovely house`, 
+  }, 
+  5: {
+    title: 'Mobader residence', 
+    description: `Lovely Saida residence next to Ain-el-Helwe. Stay next door to the lovely Im Wassim.`, 
+  }, 
 }
 
 const testData = [
@@ -64,31 +76,62 @@ const testData = [
   clientIndex: 1,
 },
 {
-  name: 'createListing',
-  inputs: [
-  { value: 226/* GB */, name: 'country' },
-  { value: 'London', name: 'location' },
-  { value: 1000, name: 'price' },
-  ],
+  name: 'createAccount',
+  inputs: [{ value: 'Margaux Ouvry' }],
   constant: false,
-  clientIndex: 0,
+  clientIndex: 2,
 },
-{
+{ 
+  // lid:1
   name: 'createListing',
   inputs: [
-  { value: '73'/* FR */, name: 'country' },
-  { value: 'Paris', name: 'location' },
-  { value: '20000', name: 'price' },
-  ],
-  constant: false,
-  clientIndex: 0,
-},
-{
-  name: 'createListing',
-  inputs: [
-  { value: '226'/* GB */, name: 'country' },
+  { value: 65/* GB */, name: 'country' },
   { value: 'Cambridge', name: 'location' },
-  { value: '3500', name: 'price' },
+  { value: 600, name: 'price' },
+  ],
+  constant: false,
+  clientIndex: 0,
+},
+{ 
+  // lid:2
+  name: 'createListing',
+  inputs: [
+  { value: '75'/* FR */, name: 'country' },
+  { value: 'Paris', name: 'location' },
+  { value: '2000', name: 'price' },
+  ],
+  constant: false,
+  clientIndex: 2,
+},
+{ 
+  // lid:3
+  name: 'createListing',
+  inputs: [
+  { value: '65'/* GB */, name: 'country' },
+  { value: 'London', name: 'location' },
+  { value: '1799', name: 'price' },
+  ],
+  constant: false,
+  clientIndex: 1,
+},
+{ 
+  // lid:4
+  name: 'createListing',
+  inputs: [
+  { value: '118'/* LB */, name: 'country' },
+  { value: 'Beirut', name: 'location' },
+  { value: '700', name: 'price' },
+  ],
+  constant: false,
+  clientIndex: 0,
+},
+{
+  // lid:5
+  name: 'createListing',
+  inputs: [
+  { value: '118'/* LB */, name: 'country' },
+  { value: 'Saida', name: 'location' },
+  { value: '300', name: 'price' },
   ],
   constant: false,
   clientIndex: 1,
