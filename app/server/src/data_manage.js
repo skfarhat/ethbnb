@@ -219,7 +219,8 @@ const run = async () => {
   opts.chain_init = ('chain_init' in args) ? args.chain_init === 'true' : false
   opts.db_clear = ('db_clear' in args) ? args.db_clear === 'true' : false 
   opts.metadata_add = ('metadata_add' in args) ? args.metadata_add === 'true' : false
-
+  opts.db_print = ('db_print' in args) ? args.db_print === 'true' : false 
+  
   // Connect to database so that we can insert metadata in there 
   const database = new Database(global.constants.db)
   if (false === await database.connectSync()) {
@@ -246,7 +247,8 @@ const run = async () => {
     // -------------------------
     // PRINT DATABASE 
     // -------------------------
-    await database_print()
+    if (opts.db_print === true)
+      await database_print()
 
     // -------------------------
     // EXIT
