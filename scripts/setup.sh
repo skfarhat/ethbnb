@@ -27,7 +27,7 @@ check_exists $DATA_MANAGE || exit_err "❌ Failed to find $DATA_MANAGE"
 # ================================================
 # CHANGE DIRECTORY
 # ================================================
-pushd $ROOT_DIR
+pushd $ROOT_DIR > /dev/null
 
 # ================================================
 # COMPILE CONTRACT
@@ -77,4 +77,4 @@ node $DATA_MANAGE --db_clear=true
 # ================================================
 # CHANGE DIRECTORY BACK
 # ================================================
-popd
+popd > /dev/null
