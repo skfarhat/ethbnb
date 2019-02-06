@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import Img from 'react-image'
 import { Link } from 'react-router-dom'
 import RGL, { WidthProvider } from 'react-grid-layout'
 import { Dropdown } from 'semantic-ui-react'
@@ -14,9 +13,7 @@ import IPFSImage from '../IPFSImage'
 
 
 const mapDispatchToProps = dispatch => ({
-  dispatchMethods: {
-    setListingResults: listings => dispatch(setListingResults(listings)),
-  },
+  dispatchMethods: { setListingResults: listings => dispatch(setListingResults(listings)) },
 })
 
 const ReactGridLayout = WidthProvider(RGL)
@@ -48,12 +45,12 @@ class ListingSearch extends Component {
   }
 
   render() {
-    // layout is an array of objects, see the demo for more complete usage
     const self = this
-    let i = 0
-    const layout = []
+    // ReactGridLayout
     const COLS = 3
+    const layout = []
     const doms = []
+    let i = 0
 
     Object.keys(self.props.listings).forEach((key) => {
       const l = self.props.listings[key]
@@ -71,8 +68,8 @@ class ListingSearch extends Component {
       }
 
       doms.push((
-        <div key={i} className="listing-mini">
-          <Link to={'/listing/' + key}>
+        <div key={l.lid} className="listing-mini">
+          <Link to={"/listing/" + l.lid.toString()}>
             <h5> {l.title} </h5>
           </Link>
           <div> <em> Location: </em> <span className="location"> {l.location} </span> </div>
@@ -90,9 +87,8 @@ class ListingSearch extends Component {
       })
       i += 1
     })
-
     return (
-      <div>
+      <div className="listing-router-container">
         <Dropdown placeholder="Select Country" fluid search selection options={self.countryCodes} onChange={self.dropdownChanged} />
         <ReactGridLayout items={3} layout={layout} cols={3} rowHeight={300} width={300} isDraggable={false} isResizable={false}>
           {doms}

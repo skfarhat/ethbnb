@@ -11,7 +11,7 @@ const initialState = {
   clients: {},
   server: { listings: {} },
   // The result from Listing searches
-  listingResults: {},
+  listingResults: [],
   eth: {},
 }
 
