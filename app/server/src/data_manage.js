@@ -16,16 +16,22 @@
 require('./globals')()
 const minimist = require('minimist')
 const Web3 = require('web3')
+const fs = require('fs')
+const path = require('path')
 const mongoose = require('mongoose')
 const Database = require('./database')
 var Listings = require('./models/Listing')
+var IPFSImage = require('./models/IPFSImage')
 const { contractAddress, jsonInterface } = require('./loadAbi')
 let bchain_to_db = require('./bchain_to_db')()
+const ipfsAPI = require('ipfs-api')
 
 // ============================================================
 // DEFINITIONS
 // ============================================================
 
+// Directory path to listing images 
+const LISTING_IMGS_PATH = "./imgs/listings"
 
 // Options set via command line arguments Command line arguments
 const opts = {}
@@ -36,21 +42,25 @@ const web3 = new Web3(new Web3.providers.WebsocketProvider(global.constants.PROV
 // Load ABI, then contract
 const contract = new web3.eth.Contract(abi, contractAddress)
 const BN = web3.utils.BN
-let accounts = null 
+let accounts = null
+
 const listingMetadata = {
   1: {
     title: '53 Devonshire-on-Rails', 
-    description: `Welcome to the super awesome Devonshire place now that Sophie has left.`, 
+    description: `Welcome to the super awesome Devonshire place now that Sophie has left.`,
+    images: [ "1.jpg" ],
   },
   2: {
     title: 'Lovely house at Croissy-Sur-Seine', 
     description: `Ouvry Manor - big place - jakuzzi - sauna - lovely spaceous garden - big DIY garage - 4 bedrooms
     and BABY-FOOT`, 
+    images: [ "2.jpeg" ],
   }, 
   3: {
     title: 'London Victorian House', 
     description: `Good sized, basic double room in a 3 bed Shared flat situated in the heart of Holborn, 
     East Central London. The flat comprises of a fitted kitchen and a shared bathroom.`, 
+    images: [ "3.jpg" ],
   }, 
   4: {
     title: 'Farhat Manor', 
@@ -63,79 +73,79 @@ const listingMetadata = {
 }
 
 const testData = [
-{
-  name: 'createAccount',
-  inputs: [{ value: 'Sami Farhat' }],
-  constant: false,
-  clientIndex: 0,
-},
-{
-  name: 'createAccount',
-  inputs: [{ value: 'Marwan Mobader' }],
-  constant: false,
-  clientIndex: 1,
-},
-{
-  name: 'createAccount',
-  inputs: [{ value: 'Margaux Ouvry' }],
-  constant: false,
-  clientIndex: 2,
-},
-{ 
-  // lid:1
-  name: 'createListing',
-  inputs: [
-  { value: 65/* GB */, name: 'country' },
-  { value: 'Cambridge', name: 'location' },
-  { value: 600, name: 'price' },
-  ],
-  constant: false,
-  clientIndex: 0,
-},
-{ 
-  // lid:2
-  name: 'createListing',
-  inputs: [
-  { value: '75'/* FR */, name: 'country' },
-  { value: 'Paris', name: 'location' },
-  { value: '2000', name: 'price' },
-  ],
-  constant: false,
-  clientIndex: 2,
-},
-{ 
-  // lid:3
-  name: 'createListing',
-  inputs: [
-  { value: '65'/* GB */, name: 'country' },
-  { value: 'London', name: 'location' },
-  { value: '1799', name: 'price' },
-  ],
-  constant: false,
-  clientIndex: 1,
-},
-{ 
-  // lid:4
-  name: 'createListing',
-  inputs: [
-  { value: '118'/* LB */, name: 'country' },
-  { value: 'Beirut', name: 'location' },
-  { value: '700', name: 'price' },
-  ],
-  constant: false,
-  clientIndex: 0,
-},
-{
-  // lid:5
-  name: 'createListing',
-  inputs: [
-  { value: '118'/* LB */, name: 'country' },
-  { value: 'Saida', name: 'location' },
-  { value: '300', name: 'price' },
-  ],
-  constant: false,
-  clientIndex: 1,
-},
+  {
+    name: 'createAccount',
+    inputs: [{ value: 'Sami Farhat' }],
+    constant: false,
+    clientIndex: 0,
+  },
+  {
+    name: 'createAccount',
+    inputs: [{ value: 'Marwan Mobader' }],
+    constant: false,
+    clientIndex: 1,
+  },
+  {
+    name: 'createAccount',
+    inputs: [{ value: 'Margaux Ouvry' }],
+    constant: false,
+    clientIndex: 2,
+  },
+  { 
+    // lid:1
+    name: 'createListing',
+    inputs: [
+    { value: 65/* GB */, name: 'country' },
+    { value: 'Cambridge', name: 'location' },
+    { value: 600, name: 'price' },
+    ],
+    constant: false,
+    clientIndex: 0,
+  },
+  { 
+    // lid:2
+    name: 'createListing',
+    inputs: [
+    { value: '75'/* FR */, name: 'country' },
+    { value: 'Paris', name: 'location' },
+    { value: '2000', name: 'price' },
+    ],
+    constant: false,
+    clientIndex: 2,
+  },
+  { 
+    // lid:3
+    name: 'createListing',
+    inputs: [
+    { value: '65'/* GB */, name: 'country' },
+    { value: 'London', name: 'location' },
+    { value: '1799', name: 'price' },
+    ],
+    constant: false,
+    clientIndex: 1,
+  },
+  { 
+    // lid:4
+    name: 'createListing',
+    inputs: [
+    { value: '118'/* LB */, name: 'country' },
+    { value: 'Beirut', name: 'location' },
+    { value: '700', name: 'price' },
+    ],
+    constant: false,
+    clientIndex: 0,
+  },
+  {
+    // lid:5
+    name: 'createListing',
+    inputs: [
+    { value: '118'/* LB */, name: 'country' },
+    { value: 'Saida', name: 'location' },
+    { value: '300', name: 'price' },
+    ],
+    constant: false,
+    clientIndex: 1,
+  },
 ]
 
 // ============================================================
@@ -146,15 +156,55 @@ const testData = [
 const database_clear = async () => {
   logger.info('Clearing database')
   await Listings.deleteMany({})
+  await IPFSImage.deleteMany({})
   logger.info('Finished clearing database')
 }
 
-// Database print2
+// Database print
 const database_print = async () => {
   logger.info('Database')
   console.log('--------------------------------------------')
   console.log(await Listings.find({}))
+  console.log(await IPFSImage.find({}))
   console.log('--------------------------------------------')
+}
+
+// Return an array of IPFS details of the images added 
+// to IPFS.
+const images_add_to_ipfs_and_db = async () => {
+  logger.silly('images_add_to_ipfs')
+  const ipfs = ipfsAPI('ipfs.infura.io', '5001', {protocol: 'https'})
+  logger.info('IPFS connected')
+
+  // Filter files and keep only image related ones
+  let images = fs.readdirSync(LISTING_IMGS_PATH).filter((filename) =>
+    [".png", ".jpg", ".jpeg"].findIndex(x => x === path.extname(filename)) > -1
+  )
+
+  // For each image file: 
+  //    - Add it to IPFS
+  //    - Add it to local database
+  for (let img of images) {
+
+    // If image already exists in database, continue without 
+    if (0 !== await IPFSImage.count({path: img}))
+      continue 
+
+    try {
+      const filepath = `${LISTING_IMGS_PATH}/${img}` 
+      // Add image to ipfs
+      let result = await ipfs.util.addFromFs(filepath, { recursive: true })
+      if (result.length === 0) {
+        throw new Error('ipfs.util.addFromFs returned zero-length result')
+      }
+      // Add ipfs image to database
+      await (new IPFSImage(result[0])).save() // get the first item from the array 
+      logger.info('Added image ' + filepath + ' to IPFS and local database.')
+    } catch (err) {
+      console.log(err)
+      return null
+    }
+  }
 }
 
 // Find metadata associated with the given 'listing' and insert into the database
@@ -163,9 +213,13 @@ const add_metadata_to_listing = async (listing) => {
   try {
     lid = parseInt(lid)
     const listingModel = await Listings.findOne({lid})
-    if (lid in listingMetadata) {
-      const metadata = listingMetadata[lid]
-      await Listings.findOneAndUpdate({lid}, metadata)
+    if (lid in listingMetadata && typeof listingMetadata[lid].images !== 'undefined' ) {
+      const meta = listingMetadata[lid]
+      // Replace each image file path in the model with the ObjectId referencing the actual document.
+      meta.images = await Promise.all(meta.images.map(async (imgName) => 
+        await IPFSImage.findOne({ path: imgName }))
+      )
+      await Listings.findOneAndUpdate({lid}, meta)  
     }
   } catch (err) {
     console.log('Failed with', err)
@@ -175,11 +229,9 @@ const add_metadata_to_listing = async (listing) => {
 // Callback on listing database insert (when bchain_to_db.js inserts a chain entry to database)
 const dbListingInsertCallback = async (listing) => {
   if (opts.metadata_add) {
-    logger.info('Adding metadata')
     await add_metadata_to_listing(listing)
   }
-  // Other functions to be called upon listing insertion
-  // here: 
+  // Other functions to be called upon listing insertion here: 
   // ... 
 }
 
@@ -201,8 +253,7 @@ const add_test_data_to_blockchain = async () => {
     const from = addressFromClientIndex(clientIndex)
     try {
       const method = contract.methods[name]
-      const res = await method(..._in).send({ from, gas: 1000000 })
-      console.log('succeeded: ', name)
+      await method(..._in).send({ from, gas: 1000000 })
     } catch (e) {
       console.log(e)
       logger.error(e)
@@ -220,7 +271,7 @@ const run = async () => {
   opts.db_clear = ('db_clear' in args) ? args.db_clear === 'true' : false 
   opts.metadata_add = ('metadata_add' in args) ? args.metadata_add === 'true' : false
   opts.db_print = ('db_print' in args) ? args.db_print === 'true' : false 
-  
+
   // Connect to database so that we can insert metadata in there 
   const database = new Database(global.constants.db)
   if (false === await database.connectSync()) {
@@ -234,6 +285,10 @@ const run = async () => {
     process.exit(0)
   } else {
     accounts = await web3.eth.getAccounts() 
+
+    if (opts.metadata_add) {
+      await images_add_to_ipfs_and_db()
+    }
     
     // Call sync() on bchain_to_db which inserts listings in the database 
     // when it receives Eth events.
@@ -261,6 +316,8 @@ const run = async () => {
 }
 
 run().then( (val) =>  {
+  logger.info(val)
 }, (err) => {
-  logger.error('Exception in run()', err)
+  console.log('Exception in run()')
+  console.log(err)
 })

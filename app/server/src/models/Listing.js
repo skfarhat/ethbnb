@@ -11,6 +11,7 @@ var Listing = mongoose.model('listings', new Schema({
   price: Number, 
   country: Number, 
   location: String,
+  images: [{type: mongoose.Schema.Types.ObjectId, ref: 'IPFSImage'}],
 }))
 
 module.exports = Listing

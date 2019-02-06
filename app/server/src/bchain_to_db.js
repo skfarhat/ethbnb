@@ -119,7 +119,7 @@ module.exports = function () {
     sync: async (callback) => {
       self.callback = callback 
       Object.keys(eventCallbacks).forEach((eventName) => {
-        logger.silly('Registering event: ', eventName)
+        logger.silly('Registering event: ' + eventName)
         // Search the contract events for the hash in the event logs and show matching events.
         contract.events[eventName]({}, eventDispatcher)
         contract.getPastEvents(eventName, {
