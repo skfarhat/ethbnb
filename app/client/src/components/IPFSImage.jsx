@@ -36,7 +36,11 @@ class IPFSImage extends Component {
     const { url } = this.state
     return (
       <div>
-        <img width="200px" src={url} alt="not found"
+        <img
+          width="200px"
+          height="200px"
+          src={url}
+          alt="not found"
           onError={(e) => {
             e.target.onerror = null
             e.target.src = 'http://localhost:3000/house-fallback.png'

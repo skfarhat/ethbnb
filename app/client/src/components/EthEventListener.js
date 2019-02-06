@@ -26,7 +26,6 @@ class EthEventListener {
         // event to get all the details about the listing. We do that by making Eth calls
         // using call.
         callback: async (ethEvent) => {
-          log.debug('callback call CreateListingEvent made', ethEvent)
           const { from, lid } = ethEvent
           const listing = await this.fetchListingObject(from, lid)
 
@@ -71,7 +70,7 @@ class EthEventListener {
       from,
       price: parseInt(price.toString(), 10),
       id: parseInt(lid.toString(), 10),
-      country: parseInt(country.toString(), 10), 
+      country: parseInt(country.toString(), 10),
       location: location,
     }
   }

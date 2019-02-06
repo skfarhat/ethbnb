@@ -57,7 +57,6 @@ const rootReducer = (state = initialState, action) => {
       }
     }
     case CREATE_ACCOUNT: {
-      log.debug('CREATE_ACCOUNT', action.payload.value.from)
       const clients = updateClientWithAddr(state.clients, action.payload.value.from, action)
       return {
         ...state,
@@ -65,14 +64,12 @@ const rootReducer = (state = initialState, action) => {
       }
     }
     case SET_LISTING_RESULTS: {
-      console.log('In SET_LISTING_RESULTS reducer')
       return {
         ...state,
         listingResults: action.payload,
       }
     }
     case CREATE_LISTING: {
-      log.debug('CREATE_LISTING', action.payload)
       const listing = action.payload.value
       const clone = { ...state.clients }
       for (const addr in clone) {
@@ -93,7 +90,6 @@ const rootReducer = (state = initialState, action) => {
       }
     }
     case GET_ALL_LISTINGS: {
-      log.debug('GET_ALL_LISTINGS', action.payload)
       const serverObj = { ...state.server }
       serverObj.listings = { ...action.payload }
       return {
