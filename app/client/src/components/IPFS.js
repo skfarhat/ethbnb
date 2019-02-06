@@ -3,7 +3,7 @@ import ipfsApi from 'ipfs-api'
 import buffer from 'buffer'
 import log from '../logger'
 
-const ipfs = new ipfsApi('localhost', '5001', { protocol: 'http' })
+const ipfs = new ipfsApi('ipfs.infura.io', '5001', { protocol: 'https' })
 
 // Uploads the image to IPFS and modifies the state with the returned hash
 const ipfsFileUpload = async (file) => {
@@ -25,7 +25,7 @@ const ipfsFileUpload = async (file) => {
       }
     }
     // Read Provided File
-    reader.readAsArrayBuffer(file) 
+    reader.readAsArrayBuffer(file)
   }))
 }
 
