@@ -58,7 +58,8 @@ class ListingSearch extends Component {
       let ext = ''
       if (Array.isArray(images) && images.length > 0) {
         const img = images[0]
-        if (img.hasOwnProperty('hash') && img.hasOwnProperty('path')) {
+        if (img && Object.prototype.hasOwnProperty.call(img, 'hash')
+          && Object.prototype.hasOwnProperty.call(img, 'path')) {
           hash = img.hash
           ext = img.path.split('.').pop()
         }
