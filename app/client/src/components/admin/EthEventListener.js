@@ -1,4 +1,3 @@
-import log from '../logger'
 
 // Manages the handling of the contract's emitted events by:
 //
@@ -9,7 +8,7 @@ import log from '../logger'
 //
 class EthEventListener {
   constructor(contractInstance, dispatchMethods) {
-    log.debug('EthEventListener:: constructor()')
+    console.log('EthEventListener:: constructor()')
     this.contractInstance = contractInstance
     this.dispatchMethods = dispatchMethods
     this.ethEvents = {
@@ -76,14 +75,14 @@ class EthEventListener {
   }
 
   registerEvents() {
-    log.debug('EthEventListener:: registerEvents')
+    console.log('EthEventListener:: registerEvents')
     for (const eventName in this.ethEvents) {
       const { callback } = this.ethEvents[eventName]
       const eventConstruct = this.contractInstance[eventName]
       const ev = (error, result) => {
-        log.debug('Eth event:: ', result)
+        console.log('Eth event:: ', result)
         if (error) {
-          log.error(error)
+          console.log(error)
         } else if (result) {
           const r = (result.constructor === Array) ? result : [result]
           for (let i = 0; i < r.length; i++) {

@@ -1,9 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import BigNumber from 'bignumber.js'
-import { getExtensionFromFile, fileObjectFromImgDOM } from './Utils'
-import { ipfsFileUpload } from './IPFS'
-import log from '../logger'
+import { getExtensionFromFile, fileObjectFromImgDOM } from '../Utils'
+import { ipfsFileUpload } from '../IPFS'
 
 const mapStateToProps = state => ({ clients: state.clients })
 
@@ -53,7 +51,7 @@ const testData = [
 ]
 
 const loadTestData = async (eth, clients, dispatchRunAPICommand) => {
-  log.debug('loadTestData function called')
+  console.log('loadTestData function called')
   for (const data of testData) {
     // For images, we need to upload them to IPFS first and get a hash.
     // Our IPFS upload process requires us to provide File objects. So the steps are:
@@ -65,12 +63,9 @@ const loadTestData = async (eth, clients, dispatchRunAPICommand) => {
     try {
       if (data.name.indexOf('setListingMainImage') > -1) {
         const imgDOM = document.getElementById(data.file)
-        console.log('imgDOM', imgDOM)
         const file = await fileObjectFromImgDOM(imgDOM, data.file)
-        console.log('file', file)
         data.inputs[1].value = await ipfsFileUpload(file)
         data.inputs[3].value = getExtensionFromFile(file)
-        console.log('data is ', data)
       }
     } catch (err) {
       console.log('here', err)
@@ -79,9 +74,8 @@ const loadTestData = async (eth, clients, dispatchRunAPICommand) => {
     const clientAddr = clients[firstKey].address
     try {
       const result = await dispatchRunAPICommand(data, clientAddr)
-      log.debug(result)
     } catch (err) {
-      log.error('Failed apiCmd in loadtestData.', err)
+      console.log('Failed apiCmd in loadtestData.', err)
     }
   }
 }

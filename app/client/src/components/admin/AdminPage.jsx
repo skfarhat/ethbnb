@@ -1,14 +1,14 @@
 import React, { Component } from 'react'
-import log from '../../logger'
-import ClientsManager from '../clients/ClientsManager'
-import APICaller from '../APICaller'
-import MessageBoard from '../MessageBoard'
-
+import ClientsManager from './clients/ClientsManager'
+import APICaller from './APICaller'
+import MessageBoard from './MessageBoard'
+import EthManager from './EthManager'
 
 class AdminPage extends Component {
   render() {
     return (
       <div className="row">
+        <EthManager />
         <div className="container-col col-lg-2">
           <MessageBoard />
         </div>

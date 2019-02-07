@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import log from '../../logger'
 import DictTable from '../tables/DictTable'
 
 function bigNumberToDate(bigNumber) {
@@ -9,7 +8,6 @@ function bigNumberToDate(bigNumber) {
 
 class Account extends Component {
   render() {
-    log.debug('Account:: render()', this.props)
     const { data: propsData } = this.props
     // Convert dateCreated property from BigNumber to string
     let data = {}

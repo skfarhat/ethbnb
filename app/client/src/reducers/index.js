@@ -1,4 +1,3 @@
-import log from '../logger'
 import {
   REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE, GET_ALL_LISTINGS, SET_LISTING_RESULTS,
 } from '../constants/action-types'
@@ -98,7 +97,7 @@ const rootReducer = (state = initialState, action) => {
       }
     }
     default: {
-      log.debug('default')
+      console.log('default')
       return state
     }
   }

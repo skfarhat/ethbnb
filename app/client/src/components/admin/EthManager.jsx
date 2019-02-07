@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import TruffleContract from 'truffle-contract'
-import log from '../logger'
-import '../loadAbi'
-import { refreshEth, createAccount, addMessage, createListing } from '../actions'
+import '../../loadAbi'
+import { refreshEth, createAccount, addMessage, createListing } from '../../actions'
 import EthEventListener from './EthEventListener'
 
 const Web3 = require('web3')
@@ -27,7 +26,6 @@ const mapDispatchToProps = dispatch => ({
 
 class EthManager extends Component {
   constructor(props) {
-    log.debug('EthManager:: constructor')
     super(props)
 
     // The event listener will be instantiated when this.setupEth() completes
@@ -39,7 +37,7 @@ class EthManager extends Component {
   }
 
   async setupEth() {
-    log.debug('EthManager:: setupEth() start')
+    console.log('EthManager:: setupEth() start')
     const { dispatchMethods } = this.props
     this.eth = {}
 
@@ -49,7 +47,6 @@ class EthManager extends Component {
       // Set the provider you want from Web3.providers
       web3 = new Web3(new Web3.providers.HttpProvider(PROVIDER_STR))
     }
-    log.debug(web3.version)
 
     // Load ABI into contract
     const abiArray = window.contractDetails.jsonInterface // get it from somewhere
@@ -70,7 +67,6 @@ class EthManager extends Component {
     // Create EventListener and call registerEvents
     this.eventListener = new EthEventListener(contractInstance, dispatchMethods)
     this.eventListener.registerEvents()
-    log.debug('EthManager:: setupEth() done')
   }
 
   getClientObjFromAddress(addr) {

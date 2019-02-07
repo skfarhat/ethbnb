@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import RGL, { WidthProvider } from 'react-grid-layout'
 import { Dropdown } from 'semantic-ui-react'
-import log from '../../logger' // eslint-disable-line no-unused-vars
 import '../../../node_modules/react-grid-layout/css/styles.css'
 import '../../../node_modules/react-resizable/css/styles.css'
 import { countryOptions } from './common'

@@ -1,8 +1,7 @@
 import React, { Component } from 'react'
 import BigNumber from 'bignumber.js'
-import log from '../logger'
-import { ipfsFileUpload } from './IPFS'
-import { getExtensionFromFile } from './Utils'
+import { ipfsFileUpload } from '../IPFS'
+import { getExtensionFromFile } from '../Utils'
 
 // Returns true if the current implementation supports the input type provided
 // input.type is checked against the supported input types
@@ -59,7 +58,7 @@ class APICommand extends Component {
       })
     } catch (err) {
       console.log('could not run ipfsFileUpload', err)
-      log.error(err)
+      console.log(err)
     }
   }
 
@@ -101,7 +100,7 @@ class APICommand extends Component {
     for (let j = 0; j < inputs.length; j += 1) {
       const input = inputs[j]
       if (!inputTypeIsSupported(input)) {
-        log.warn('Skipping input.type', input.type, '.Still unsupported.')
+        console.log('Skipping input.type', input.type, '.Still unsupported.')
         unsupportedInput = true
         break
       } else if (input.name.toLowerCase().indexOf('ipfshash') > -1) {
@@ -144,7 +143,6 @@ Extension:
   }
 
   render() {
-    // console.log('rendering APICommand', this.state, this.props)
     const func = this.props.abiFunction
     return (
       <div className="apiCommand">

@@ -1,10 +1,9 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import log from '../logger'
-import { selectClient, addMessage } from '../actions'
+import { selectClient, addMessage } from '../../actions'
 import TestDataLoader from './TestDataLoader'
 import APICommand from './APICommand'
-import { NONE_ADDRESS } from '../constants/global'
+import { NONE_ADDRESS } from '../../constants/global'
 
 const mapStateToProps = state => ({
   eth: state.eth,
@@ -91,7 +90,7 @@ class APICaller_ extends Component {
     try {
       const result = await this.runAPICommand(eth, apiCmd, selectedClientAddr)
       if (!apiCmd.hasOwnProperty('constant')) {
-        log.error('Invalid apiCmd object does not have field "constant" set.')
+        console.log('Invalid apiCmd object does not have field "constant" set.')
         return
       }
       if (apiCmd.constant) {
@@ -111,7 +110,7 @@ class APICaller_ extends Component {
         })
       }
     } catch (err) {
-      log.error('runAPICommand failed.', err)
+      console.log('runAPICommand failed.', err)
     }
   }
 
@@ -142,7 +141,7 @@ class APICaller_ extends Component {
 
   render() {
     const { eth, clients } = this.props
-    log.debug('APICaller: render')
+    console.log('APICaller: render')
     return (
       <div className="apiCaller">
         <h2 key="title"> API </h2>

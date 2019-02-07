@@ -1,10 +1,8 @@
 import React, { Component } from 'react'
-import log from '../../logger'
 import DefaultTable from '../tables/DefaultTable'
 
 class Listings extends Component {
   render() {
-    log.debug('Listings::render()', this.props.data)
     const columns = [{
       Header: 'ID',
       accessor: 'id',

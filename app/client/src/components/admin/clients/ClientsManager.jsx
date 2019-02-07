@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import log from '../../logger'
-import { selectClient } from '../../actions'
+import { selectClient } from '../../../actions'
 import Client from './Client'
 
 const mapStateToProps = state => ({
@@ -19,7 +18,6 @@ class ConnectedClientsManager extends Component {
   }
 
   render() {
-    log.debug('ClientsManager:: render', this.props)
     const allClients = []
     let i = 0
     for (const addr in this.props.clients) {
@@ -43,5 +41,4 @@ class ConnectedClientsManager extends Component {
   }
 }
 
-const ClientsManager = connect(mapStateToProps, mapDispatchToProps)(ConnectedClientsManager)
-export default ClientsManager
+export default connect(mapStateToProps, mapDispatchToProps)(ConnectedClientsManager)

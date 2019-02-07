@@ -5,9 +5,7 @@ import 'semantic-ui-css/semantic.min.css';
 import store from './store/index'
 import App from './components/App'
 import * as serviceWorker from './serviceWorker'
-import log from './logger'
 
-log.debug('Starting app')
 render(
   <Provider store={store}>
     <App />

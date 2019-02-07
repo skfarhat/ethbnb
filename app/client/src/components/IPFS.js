@@ -1,7 +1,6 @@
 // Run with local daemon
 import ipfsApi from 'ipfs-api'
 import buffer from 'buffer'
-import log from '../logger'
 
 const ipfs = new ipfsApi('ipfs.infura.io', '5001', { protocol: 'https' })
 
@@ -20,7 +19,7 @@ const ipfsFileUpload = async (file) => {
         const result = await ipfs.files.add(buf)
         fulfill(result[0].hash)
       } catch (err) {
-        log.error('IPFS: ipfsFileUpload - exception thrown with error ', err)
+        console.log('IPFS: ipfsFileUpload - exception thrown with error ', err)
         reject(err)
       }
     }
