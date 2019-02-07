@@ -22,12 +22,10 @@ class ListingSearch extends Component {
   constructor() {
     super()
     this.dropdownChanged = this.dropdownChanged.bind(this)
-    this.countryCodes = countryOptions.map((countryO) => {
-      return {
-        ...countryO,
-        value: countryO.code,
-      }
-    })
+    this.countryCodes = countryOptions.map(countryO => ({
+      ...countryO,
+      value: countryO.code,
+    }))
   }
 
   async dropdownChanged(event, data) {
@@ -68,12 +66,29 @@ class ListingSearch extends Component {
 
       doms.push((
         <div key={l.lid} className="listing-mini">
-          <Link to={"/listing/" + l.lid.toString()}>
-            <h5> {l.title} </h5>
+          <Link to={`/listing/${l.lid}`}>
+            <h5>
+              {l.title}
+            </h5>
           </Link>
-          <div> <em> Location: </em> <span className="location"> {l.location} </span> </div>
-          <div> <em> Country: </em> <span className="country"> {l.country} </span> </div>
-          <div> <em> Price: </em> <span className="price"> {l.price} </span> </div>
+          <div>
+            <em> Location: </em>
+            <span className="location">
+              {l.location}
+            </span>
+          </div>
+          <div>
+            <em> Country: </em>
+            <span className="country">
+              {l.country}
+            </span>
+          </div>
+          <div>
+            <em> Price: </em>
+            <span className="price">
+              {l.price}
+            </span>
+          </div>
           <IPFSImage hash={hash} ext={ext} />
         </div>
       ))
@@ -88,8 +103,23 @@ class ListingSearch extends Component {
     })
     return (
       <div className="listing-router-container">
-        <Dropdown placeholder="Select Country" fluid search selection options={self.countryCodes} onChange={self.dropdownChanged} />
-        <ReactGridLayout items={3} layout={layout} cols={3} rowHeight={300} width={300} isDraggable={false} isResizable={false}>
+        <Dropdown
+          placeholder="Select Country"
+          fluid
+          search
+          selection
+          options={self.countryCodes}
+          onChange={self.dropdownChanged}
+        />
+        <ReactGridLayout
+          items={3}
+          layout={layout}
+          cols={3}
+          rowHeight={300}
+          width={300}
+          isDraggable={false}
+          isResizable={false}
+        >
           {doms}
         </ReactGridLayout>
       </div>

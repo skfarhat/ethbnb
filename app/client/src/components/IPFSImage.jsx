@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 import { ipfs } from './IPFS'
 
 class IPFSImage extends Component {
@@ -50,5 +51,11 @@ class IPFSImage extends Component {
     )
   }
 }
+
+IPFSImage.propTypes = {
+  hash: PropTypes.string.isRequired,
+  ext: PropTypes.string.isRequired,
+}
+
 
 export default IPFSImage
