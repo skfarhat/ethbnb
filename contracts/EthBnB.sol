@@ -1,6 +1,7 @@
 pragma solidity ^0.4.22;
 
 // TODO: change listingId param to lid. Shorter, better.
+import  "./DateBooker.sol";
 
 /**
 *
@@ -18,20 +19,6 @@ contract EthBnB {
     AF, AX, AL, DZ, AS, AD, AO, AI, AG, AR, AM, AW, AU, AT, AZ, BS, BH, BD, BB, BY, BE, BZ, BJ, BM, BT, BO, BA, BW, BV, BR, VG, BN, BG, BF, BI, TC, KH, CM, CA, CV, KY, CF, TD, CL, CN, CX, CC, CO, KM, CG, CD, CK, CR, CI, HR, CU, CY, CZ, DK, DJ, DM, DO, EC, EG, SV, GB, GQ, ER, EE, ET, EU, FK, FO, FJ, FI, FR, GF, PF, TF, GA, GM, GE, DE, GH, GI, GR, GL, GD, GP, GU, GT, GW, GN, GY, HT, HM, HN, HK, HU, IS, IN, IO, ID, IR, IQ, IE, IL, IT, JM, JP, JO, KZ, KE, KI, KW, KG, LA, LV, LB, LS, LR, LY, LI, LT, LU, MO, MK, MG, MW, MY, MV, ML, MT, MH, MQ, MR, MU, YT, MX, FM, MD, MC, MN, ME, MS, MA, MZ, NA, NR, NP, AN, NL, NC, PG, NZ, NI, NE, NG, NU, NF, KP, MP, NO, OM, PK, PW, PS, PA, PY, PE, PH, PN, PL, PT, PR, QA, RE, RO, RU, RW, SH, KN, LC, PM, VC, WS, SM, GS, ST, SA, SN, CS, RS, SC, SL, SG, SK, SI, SB, SO, ZA, KR, ES, LK, SD, SR, SJ, SZ, SE, CH, SY, TW, TJ, TZ, TH, TL, TG, TK, TO, TT, TN, TR, TM, TV, UG, UA, AE, US, UY, UM, VI, UZ, VU, VA, VE, VN, WF, EH, YE, ZM, ZW
   }
 
-  struct Booking {
-
-    uint id;
-
-    uint dateCreated;
-
-    uint fromDate;
-
-    uint toDate;
-
-    // TODO: isFinalised (when the bookee confirms their arrival.. etc)
-    // cancel booking
-  }
-
   struct Listing {
 
     uint id;
@@ -41,37 +28,11 @@ contract EthBnB {
     uint price;
 
     string location;
-    
-    Country country; 
 
-    /**
-     * stores all bookings for this Listing with
-     *
-     * key       => value
-     * bookingId => Booking
-     */
-     mapping(uint => Booking) bookings;
+    Country country;
 
-    /**
-     * stores all dates and their corresponding bookings
-     *
-     * For a booking that spans several days, each date of
-     * of the booking duration is stored.
-     *
-     * key             => value
-     * bookingDate     => Booking
-     */
-     mapping(uint => Booking) bookingDates;
-
-    /**
-     * stores all dates where the listing is unavailable.
-     *
-     * Note that the bool value is of no use here as only,
-     * we only care about checking whether a specific date
-     * is present in this map.
-     */
-     mapping(uint => bool) unavailable;
-
+    /** Id returned from the DateBooker upon registration */
+    uint bookerId;
    }
 
    struct Account {
@@ -96,15 +57,22 @@ contract EthBnB {
 
   event Log(string functionName, string msg);
 
-  /* Account Events */
+  // Account events
   event CreateAccountEvent(address from);
   event UpdateAccountEvent(address from);
   event DeleteAccountEvent(address from);
-
-  /* Listing Events */
+  // Listing events
   event CreateListingEvent(address from, uint lid);
   event UpdateListingEvent(address from, uint lid);
   event DeleteListingEvent(address from, uint lid);
+  // Booking events
+  event BookingComplete(address from, uint lid, uint bid);
+  event BookingConflict(address from, uint lid);
+  event BookingNoMoreSpace(address from, uint lid);
+  event BookingCancelled(address from, uint lid, uint bid);
+  event BookingNotFound(address from, uint lid, uint bid);
+
+  uint public BOOKING_CAPACITY = 5;
 
   /** Listings will have incrementing Ids starting from 1 */
   uint nextListingId = 1;
@@ -112,6 +80,8 @@ contract EthBnB {
   /** A list of all listing ids */
   uint[] listingIds;
 
+  /** Reference to deployed smart-contract DateBooker initialised in constructor */
+  DateBooker dateBooker;
 
   /**
    * Store all created listings
@@ -135,6 +105,10 @@ contract EthBnB {
   // FUNCTIONS
   // =======================================================================
 
+  constructor(address dateBookerAddr) public {
+    dateBooker = DateBooker(dateBookerAddr);
+  }
+
   // ACCOUNT
   // -----------------------------------------------------------------------
 
@@ -150,7 +124,7 @@ contract EthBnB {
       // TODO: recheck block.timestamp used for date here
       dateCreated : block.timestamp,
       listingIds: new uint[](0) // gives an array of 0 zeros
-      });
+    });
     emit CreateAccountEvent(msg.sender);
   }
 
@@ -183,7 +157,7 @@ contract EthBnB {
     return listingIds;
   }
 
-  /** Returns a list of all of the message sender's listings */ 
+  /** Returns a list of all of the message sender's listings */
   function getMyListingIds() public view returns (uint[]) {
     require(accounts[msg.sender].owner == msg.sender, "No account found.");
     return accounts[msg.sender].listingIds;
@@ -193,46 +167,55 @@ contract EthBnB {
    * Creates a new listing for the message sender
    * and returns the Id of the created listing
    */
-   function createListing(Country country, string location, uint price) public {
+  function createListing(Country country, string location, uint price) public {
     require(hasAccount(), "Must have an account before creating a listing");
     // Note: enforce a maximum number of listings per user?
-
+    uint bookerId = dateBooker.register(BOOKING_CAPACITY);
     listings[nextListingId] = Listing({
       id : nextListingId,
       owner: msg.sender,
       country: country,
       location: location,
-      price: price
-      });
+      price: price,
+      bookerId: bookerId
+    });
     accounts[msg.sender].listingIds.push(nextListingId);
     listingIds.push(nextListingId);
-    nextListingId++;
-    emit CreateListingEvent(msg.sender, nextListingId-1);
+    emit CreateListingEvent(msg.sender, nextListingId++);
   }
 
-  /** Make the listing with id provided unavailable for the given dates */
-  function setListingAvailability(uint listingId, uint[] dates, bool available) public {
+  /**
+   * Book a listing
+   *
+   * @param listingId    id of the listing to be booked
+   * @param from_date    start date of the booking
+   * @param nb_days      number of days for which the booking will be made
+   */
+  function listingBook(uint listingId, uint from_date, uint nb_days) public {
     checkListingId(listingId);
+    uint bookerId = listings[listingId].bookerId;
+    int res = dateBooker.book(bookerId, from_date, nb_days);
+    emitBookEvent(res, listingId);
+  }
 
-    // if available is 'true', delete the entries from unavailable map
-    // else create them
-    for(uint i = 0; i < dates.length; i++) {
-      uint date = dates[i];
-      if (available) {
-        delete listings[listingId].unavailable[date];
-      }
-      else {
-        listings[listingId].unavailable[date] = true;
-      }
-    }
-    emit UpdateListingEvent(msg.sender, listingId);
+  /**
+   * Cancel a booking.
+   *
+   * @param listingId     id of the listing to be cancelled
+   * @param bid           id of the booking to be cancelled
+   */
+  function listingCancel(uint listingId, uint bid) public {
+    checkListingId(listingId);
+    uint bookerId = listings[listingId].bookerId;
+    int res = dateBooker.cancel(bookerId, bid);
+    emitBookCancelEvent(res, listingId, bid);
   }
 
   function getListingCountry(uint listingId) public view returns (Country) {
-    checkListingId(listingId); 
-    return listings[listingId].country; 
+    checkListingId(listingId);
+    return listings[listingId].country;
   }
-  
+
   function getListingPrice(uint listingId) public view returns (uint) {
     checkListingId(listingId);
     return listings[listingId].price;
@@ -264,12 +247,30 @@ contract EthBnB {
   }
 
   function checkListingId(uint listingId) view private {
-    // make sure account exists
+    // Make sure account exists
     require(accounts[msg.sender].owner == msg.sender);
-
-    // make sure listing exists and properly associated with account
+    // Make sure listing exists and properly associated with account
     require(listings[listingId].id != 0, "No such listing found.");
     require(listings[listingId].owner == msg.sender, "Only the owner of a listing make changes to it.");
   }
 
+  /** Emits an a booking event depending on the result given */
+  function emitBookEvent(int result, uint lid) private {
+    if (result == dateBooker.BOOK_CONFLICT()) {
+      emit BookingConflict(msg.sender, lid);
+    } else if (result == dateBooker.NO_MORE_SPACE()) {
+      emit BookingNoMoreSpace(msg.sender, lid);
+    } else if (result >= 0) {
+      emit BookingComplete(msg.sender, lid, uint(result) /* = bid */ );
+    }
+  }
+
+  /** Emits an a booking cancel event depending on the result given */
+  function emitBookCancelEvent(int result, uint lid, uint bid) private {
+    if (result == dateBooker.NOT_FOUND()) {
+      emit BookingNotFound(msg.sender, lid, bid);
+    } else if (result >= 0) {
+      emit BookingCancelled(msg.sender, lid, bid);
+    }
+  }
 }

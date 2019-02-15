@@ -1,5 +1,5 @@
-// TODO: complete test implementation of delete 
-//  
+// TODO: complete test implementation of delete
+//
 (function() {
   'use strict'
 
@@ -13,9 +13,14 @@
   var EthBnB = artifacts.require("EthBnB")
 
   contract('EthBnB', async (accounts) => {
+    const d = { from : accounts[0] }
+    const FEB_10 = 1549756800 // February 10 2019 - 00:00
+    const FEB_15 = 1550188800 // February 15 2019 - 00:00
+    const FEB_17 = 1550361600 // February 17 2019 - 00:00
+    const FEB_18 = 1550448000 // February 18 2019 - 00:00
 
-    /** Eth account that has no corresponding 'Account' in EthBnB contract **/ 
-    let UNUSED_ACCOUNT = accounts[8] 
+    /** Eth account that has no corresponding 'Account' in EthBnB contract **/
+    let UNUSED_ACCOUNT = accounts[8]
 
     /**
      * Checks that hasAccount() returns false when no account has been created
@@ -32,71 +37,154 @@
      * Check that we can create an account
      */
     it('Account: hasAccount() createAccount() are correct', async() => {
-      var bnb = await EthBnB.deployed()
-
+      let res
+      const bnb = await EthBnB.deployed()
       // Create the account
-      var _shortName = "sami"
-      var res = await bnb.createAccount(_shortName, {from: accounts[0]})
-
+      const _shortName = "sami"
+      res = await bnb.createAccount(_shortName, {from: accounts[0]})
       // Check the account exists
-      var accountExists = await bnb.hasAccount({from: accounts[0]})
+      const accountExists = await bnb.hasAccount({from: accounts[0]})
       assert.isTrue(accountExists, "createAccount doesn't seem to have created an account")
-
       // Check the name is the same
-      var actualName = await bnb.getAccountName({from: accounts[0]})
+      const actualName = await bnb.getAccountName({from: accounts[0]})
       assert.equal(actualName, _shortName, "The account shortName does not match what we expect.")
     })
 
-    /**
-     * Create listing without an account
-     */
+    /** Create listing without an account */
     it('Listing: createListing() fails when user has no \'Account\'', async() => {
-      var bnb = await EthBnB.deployed() 
-
+      const bnb = await EthBnB.deployed()
       // Create a listing
-      var _location = 'London'
-      var _country = COUNTRIES['GB']
-      var _price = 5000
-
-        try {
-          var res = await bnb.createListing(_country, _location, _price, {from : UNUSED_ACCOUNT})    
-          assert(false, "Should have thrown an exception")
-        }
-        catch(error) {
-          // Test pass 
-        }
+      const _location = 'London'
+      const _country = COUNTRIES['GB']
+      const _price = 5000
+      try {
+        var res = await bnb.createListing(_country, _location, _price, {from : UNUSED_ACCOUNT})
+        assert(false, "Should have thrown an exception")
+      } catch(error) {
+        // Test pass
+      }
     })
 
     /**
      *  Check that we can create a listing returning a positive listing Id
-     */ 
+     */
     it('Listing: createListing() correct', async() => {
-      var bnb = await EthBnB.deployed() 
-
+      let res
+      let lid
+      const bnb = await EthBnB.deployed()
       // Create account
-      var _shortName = "Sami"
-      var res = await bnb.createAccount(_shortName, {from: accounts[0]}) 
-
+      const _shortName = "Sami"
+      res = await bnb.createAccount(_shortName, d)
       // Create a listing
-      var _location = 'London'
-      var _price = 5000
-      var _country = COUNTRIES['GB']
-      res = await bnb.createListing(_country, _location, _price, {from: accounts[0]})
-      
-      // Check that an event was emitted 
+      const _location = 'London'
+      const _price = 5000
+      const _country = COUNTRIES['GB']
+      res = await bnb.createListing(_country, _location, _price, d)
+      // Check that an event was emitted
       truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => {
-        return bigNumberToInt(ev.lid) > 0 
+        lid = ev.lid;
+        return bigNumberToInt(ev.lid) > 0
       }, 'CreateListingEvent should be emitted with the id of the created listing')
     })
 
-    /** 
+    it('Listing can be booked', async() => {
+      let res
+      let lid
+      let bid
+      const bnb = await EthBnB.deployed()
+      // Create account
+      const _shortName = "Sami"
+      res = await bnb.createAccount(_shortName, d)
+      // Create a listing
+      const _location = 'London'
+      const _price = 5000
+      const _country = COUNTRIES['GB']
+      res = await bnb.createListing(_country, _location, _price, d)
+      // Check that an event was emitted
+      truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid = ev.lid)
+      const from_date = FEB_10
+      const nb_days = 3
+      res = await bnb.listingBook(lid, FEB_10, 3)
+      truffleAssert.eventEmitted(res, 'BookingComplete', (ev) => bid = ev.bid)
+    })
+
+    it('Listing can be cancelled', async() => {
+      let res
+      let lid
+      let bid
+      const bnb = await EthBnB.deployed()
+      // Create account
+      const _shortName = "Sami"
+      res = await bnb.createAccount(_shortName, d)
+      // Create a listing
+      const _location = 'London'
+      const _price = 5000
+      const _country = COUNTRIES['GB']
+      res = await bnb.createListing(_country, _location, _price, d)
+      // Get the listing id from the event
+      truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid = ev.lid)
+      const from_date = FEB_10
+      const nb_days = 3
+      // Book the listing and get the booking id
+      res = await bnb.listingBook(lid, FEB_10, 3, d)
+      truffleAssert.eventEmitted(res, 'BookingComplete', (ev) => bid = ev.bid)
+      // Cancel the booking
+      res = await bnb.listingCancel(lid, bid, d)
+      truffleAssert.eventEmitted(res, 'BookingCancelled')
+    })
+
+    it('Cannot cancel inexistent booking', async() => {
+      let res
+      let lid
+      let bid
+      const bnb = await EthBnB.deployed()
+      // Create account
+      const _shortName = "Sami"
+      res = await bnb.createAccount(_shortName, d)
+      // Create a listing
+      const _location = 'London'
+      const _price = 5000
+      const _country = COUNTRIES['GB']
+      res = await bnb.createListing(_country, _location, _price, d)
+      // Get the listing id from the event
+      truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid = ev.lid)
+      // Cancel inexistent booking booking
+      res = await bnb.listingCancel(lid, /* inexistent id */ 128348, d)
+      truffleAssert.eventEmitted(res, 'BookingNotFound')
+    })
+
+    it('Cannot book more than capacity', async() => {
+      let res
+      let lid
+      let bid
+      const bnb = await EthBnB.deployed()
+      // Create account
+      const _shortName = "Sami"
+      let cap = bigNumberToInt(await bnb.BOOKING_CAPACITY.call(d))
+      res = await bnb.createAccount(_shortName, d)
+      // Create a listing
+      const _location = 'London'
+      const _price = 5000
+      const _country = COUNTRIES['GB']
+      res = await bnb.createListing(_country, _location, _price, d)
+      // Get the listing id from the event
+      truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid = ev.lid)
+      for (let i = 0; i < 5; i++) {
+        res = await bnb.listingBook(lid, FEB_18 + i * 86400, 1, d)
+        truffleAssert.eventNotEmitted(res, 'BookingNoMoreSpace')
+      }
+      res = await bnb.listingBook(lid, /* irrelevant arg */ 23423, 1)
+      truffleAssert.eventEmitted(res, 'BookingNoMoreSpace')
+    })
+
+    /**
      * Check that getMyListingIds() returns only one entry for account0
-     */ 
+     */
     it("Listing: getListing()", async() => {
       var bnb = await EthBnB.deployed()
 
       try {
-        var res = await bnb.getMyListingIds({from : accounts[0]})      
+        var res = await bnb.getMyListingIds({from : accounts[0]})
         assert(res.length == 1)
         assert(res[0] != 0)
       }
@@ -105,17 +193,17 @@
       }
     })
 
-    /** 
+    /**
      * Test get/set listing price
-     */ 
+     */
     it("Listing: get/set listing price()", async() => {
       var bnb = await EthBnB.deployed()
 
       try {
-        var res = await bnb.getMyListingIds({from : accounts[0]})      
+        var res = await bnb.getMyListingIds({from : accounts[0]})
         var listingId = res[0]
 
-        // Change it to 500 
+        // Change it to 500
         var newPrice = 500
         await bnb.setListingPrice(listingId, newPrice, {from : accounts[0]})
 
@@ -130,11 +218,11 @@
     })
 
 
-    // /** 
+    // /**
     //  * Test delete
-    //  */ 
+    //  */
     // it("Listing: delete", async() => {
-    //   var bnb = await EthBnB.deployed() 
+    //   var bnb = await EthBnB.deployed()
 
     //   // Create a listing
     //   var _location = "Paris"
@@ -143,15 +231,15 @@
     //   var _description = "Description of a place to be deleted"
     //   try {
 
-    //     // Count the number of listings for account0 
+    //     // Count the number of listings for account0
     //     var myListings = await bnb.getMyListingIds({from: accounts[0]})
     //     var prevCount = myListings.length
 
-    //     // Create a new listing then delete it 
-    //     var res = await bnb.createListing(_location, _price, _shortName, _description, 
+    //     // Create a new listing then delete it
+    //     var res = await bnb.createListing(_location, _price, _shortName, _description,
     //       {from : accounts[0]})
 
-    //     // Define delete callback 
+    //     // Define delete callback
     //     async function deleteListingCallback(id) {
     //       var res = await bnb.deleteListing(id, {from: accounts[0]})
 
@@ -161,23 +249,23 @@
     //       // }, "CreateEvent should be emitted with the id of the created listing")
 
     //       // TODO: Change most/all function calls to use "call"
-    //       // TODO: revert createListing to just emit an event, no need to return. 
+    //       // TODO: revert createListing to just emit an event, no need to return.
 
-    //       // Count the number of listings - should be the same as old  
+    //       // Count the number of listings - should be the same as old
     //       var myListings2 = await bnb.getMyListingIds({from: accounts[0]})
     //       var newCount = myListings2.length
     //       assert.equal(newCount, oldCount, "Number of listings changed between creating/deleting")
-          
-    //       // Make sure created listing does not appear in myListings 
+
+    //       // Make sure created listing does not appear in myListings
     //       for (var i = 0 ; i < newCount; i++) {
-    //         if(myListings2[i] == id) 
+    //         if(myListings2[i] == id)
     //           assert(false)
     //       }
     //     }
 
     //     truffleAssert.eventEmitted(res, 'CreateEvent', (ev) => {
     //       deleteListingCallback(ev.id)
-    //       return ev.id > 0 
+    //       return ev.id > 0
     //     }, "CreateEvent should be emitted with the id of the created listing")
 
     //   }
@@ -187,8 +275,8 @@
     //   }
     // })
 
-      // FOR DEBUG: 
-      // Use snippet below to monitor logs 
+      // FOR DEBUG:
+      // Use snippet below to monitor logs
       // ---------------------------------
       // var logEvent = bnb.Log()
       // logEvent.watch(function(error, result) {
@@ -197,6 +285,6 @@
       //     console.log(result)
       //   else
       //     console.log(error)
-      // }) 
+      // })
   })
 })()
