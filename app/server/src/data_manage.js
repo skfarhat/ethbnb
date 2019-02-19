@@ -21,14 +21,20 @@ const path = require('path')
 const mongoose = require('mongoose')
 const ipfsAPI = require('ipfs-api')
 const Database = require('./database')
-var Listings = require('./models/Listing')
-var IPFSImage = require('./models/IPFSImage')
+const Listings = require('./models/Listing')
+const Bookings = require('./models/Booking')
+const IPFSImage = require('./models/IPFSImage')
 const { contractAddress, jsonInterface } = require('./loadAbi')
-let bchain_to_db = require('./bchain_to_db')()
+const bchain_to_db = require('./bchain_to_db')()
 
 // ============================================================
 // DEFINITIONS
 // ============================================================
+
+const FEB_10 = 1549756800 // February 10 2019 - 00:00
+const FEB_15 = 1550188800 // February 15 2019 - 00:00
+const FEB_17 = 1550361600 // February 17 2019 - 00:00
+const FEB_18 = 1550448000 // February 18 2019 - 00:00
 
 // Directory path to listing images
 const LISTING_IMGS_PATH = path.join(__dirname, "imgs/listings")
@@ -146,6 +152,17 @@ const testData = [
     constant: false,
     clientIndex: 1,
   },
+  {
+    // lid: 1
+    name: 'listingBook',
+    inputs: [
+      { value: 1, name: 'listingId' },
+      { value: FEB_10, name: 'from_date' },
+      { value: 1, name: 'nb_days' },
+    ],
+    constant: false,
+    clientIndex: 0,
+  }
 ]
 
 // ============================================================
@@ -157,6 +174,7 @@ const database_clear = async () => {
   logger.info('Clearing database')
   await Listings.deleteMany({})
   await IPFSImage.deleteMany({})
+  await Bookings.deleteMany({})
   logger.info('Finished clearing database')
 }
 
@@ -173,7 +191,7 @@ const database_print = async () => {
 // to IPFS.
 const images_add_to_ipfs_and_db = async () => {
   logger.silly('images_add_to_ipfs')
-  const ipfs = ipfsAPI('ipfs.infura.io', '5001', {protocol: 'https'})
+  const ipfs = ipfsAPI('ipfs.infura.io', '5001', { protocol: 'https' })
   logger.info('IPFS connected')
 
   // Filter files and keep only image related ones

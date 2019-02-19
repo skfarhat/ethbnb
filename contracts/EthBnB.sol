@@ -239,6 +239,12 @@ contract EthBnB {
     emit UpdateListingEvent(msg.sender, listingId);
   }
 
+  function getBookingDates(uint listingId, uint bid) public view returns (uint from_date, uint to_date) {
+    checkListingId(listingId);
+    uint bookerId = listings[listingId].bookerId;
+    return dateBooker.get_dates(bookerId, bid);
+  }
+
   function deleteListing(uint listingId) public {
     checkListingId(listingId);
     // TODO: check that there are no pending bookings, before deteleting

@@ -54,6 +54,10 @@ contract DateBooker {
 
   mapping(uint => Data) private data;
 
+  // =============================================================
+  // STATE CHANGING FUNCTIONS
+  // =============================================================
+
   function register(uint capacity) public returns (uint) {
     require(capacity > 0, "Capacity must be greater than zero");
     data[nextId] = Data({
@@ -76,10 +80,6 @@ contract DateBooker {
     emit Register(nextId);
     return nextId++;
   }
-
-  // =============================================================
-  // STATE CHANGING FUNCTIONS
-  // =============================================================
 
   /**
    * Cancels the booking and returns its id.
