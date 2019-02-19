@@ -1,13 +1,13 @@
 //
 // Sami Farhat
-// 
-// Add testData to chain, then sync with database and insert metadata: 
+//
+// Add testData to chain, then sync with database and insert metadata:
 //    $ node data_manage.js --chain_init=true
-// 
-// Sync chain data with database, then add metadata defined here. 
+//
+// Sync chain data with database, then add metadata defined here.
 //    $ node data_manage.js --chain_init=false
 //    $ node data_manage.js
-//    
+//
 
 // ============================================================
 // REQUIRE
@@ -19,19 +19,19 @@ const Web3 = require('web3')
 const fs = require('fs')
 const path = require('path')
 const mongoose = require('mongoose')
+const ipfsAPI = require('ipfs-api')
 const Database = require('./database')
 var Listings = require('./models/Listing')
 var IPFSImage = require('./models/IPFSImage')
 const { contractAddress, jsonInterface } = require('./loadAbi')
 let bchain_to_db = require('./bchain_to_db')()
-const ipfsAPI = require('ipfs-api')
 
 // ============================================================
 // DEFINITIONS
 // ============================================================
 
-// Directory path to listing images 
-const LISTING_IMGS_PATH = "./imgs/listings"
+// Directory path to listing images
+const LISTING_IMGS_PATH = path.join(__dirname, "imgs/listings")
 
 // Options set via command line arguments Command line arguments
 const opts = {}
@@ -46,30 +46,30 @@ let accounts = null
 
 const listingMetadata = {
   1: {
-    title: '53 Devonshire-on-Rails', 
+    title: '53 Devonshire-on-Rails',
     description: `Welcome to the super awesome Devonshire place now that Sophie has left.`,
     images: [ "1.jpg" ],
   },
   2: {
-    title: 'Lovely house at Croissy-Sur-Seine', 
+    title: 'Lovely house at Croissy-Sur-Seine',
     description: `Ouvry Manor - big place - jakuzzi - sauna - lovely spaceous garden - big DIY garage - 4 bedrooms
-    and BABY-FOOT`, 
+    and BABY-FOOT`,
     images: [ "2.jpeg" ],
-  }, 
+  },
   3: {
-    title: 'London Victorian House', 
-    description: `Good sized, basic double room in a 3 bed Shared flat situated in the heart of Holborn, 
-    East Central London. The flat comprises of a fitted kitchen and a shared bathroom.`, 
+    title: 'London Victorian House',
+    description: `Good sized, basic double room in a 3 bed Shared flat situated in the heart of Holborn,
+    East Central London. The flat comprises of a fitted kitchen and a shared bathroom.`,
     images: [ "3.jpg" ],
-  }, 
+  },
   4: {
-    title: 'Farhat Manor', 
-    description: `Lovely house`, 
-  }, 
+    title: 'Farhat Manor',
+    description: `Lovely house`,
+  },
   5: {
-    title: 'Mobader residence', 
-    description: `Lovely Saida residence next to Ain-el-Helwe. Stay next door to the lovely Im Wassim.`, 
-  }, 
+    title: 'Mobader residence',
+    description: `Lovely Saida residence next to Ain-el-Helwe. Stay next door to the lovely Im Wassim.`,
+  },
 }
 
 const testData = [
@@ -91,7 +91,7 @@ const testData = [
     constant: false,
     clientIndex: 2,
   },
-  { 
+  {
     // lid:1
     name: 'createListing',
     inputs: [
@@ -102,7 +102,7 @@ const testData = [
     constant: false,
     clientIndex: 0,
   },
-  { 
+  {
     // lid:2
     name: 'createListing',
     inputs: [
@@ -113,7 +113,7 @@ const testData = [
     constant: false,
     clientIndex: 2,
   },
-  { 
+  {
     // lid:3
     name: 'createListing',
     inputs: [
@@ -124,7 +124,7 @@ const testData = [
     constant: false,
     clientIndex: 1,
   },
-  { 
+  {
     // lid:4
     name: 'createListing',
     inputs: [
@@ -152,7 +152,7 @@ const testData = [
 // FUNCTIONS
 // ============================================================
 
-// Database clear 
+// Database clear
 const database_clear = async () => {
   logger.info('Clearing database')
   await Listings.deleteMany({})
@@ -169,7 +169,7 @@ const database_print = async () => {
   console.log('--------------------------------------------')
 }
 
-// Return an array of IPFS details of the images added 
+// Return an array of IPFS details of the images added
 // to IPFS.
 const images_add_to_ipfs_and_db = async () => {
   logger.silly('images_add_to_ipfs')
@@ -181,24 +181,24 @@ const images_add_to_ipfs_and_db = async () => {
     [".png", ".jpg", ".jpeg"].findIndex(x => x === path.extname(filename)) > -1
   )
 
-  // For each image file: 
+  // For each image file:
   //    - Add it to IPFS
   //    - Add it to local database
   for (let img of images) {
 
-    // If image already exists in database, continue without 
+    // If image already exists in database, continue without
     if (0 !== await IPFSImage.count({path: img}))
-      continue 
+      continue
 
     try {
-      const filepath = `${LISTING_IMGS_PATH}/${img}` 
+      const filepath = `${LISTING_IMGS_PATH}/${img}`
       // Add image to ipfs
       let result = await ipfs.util.addFromFs(filepath, { recursive: true })
       if (result.length === 0) {
         throw new Error('ipfs.util.addFromFs returned zero-length result')
       }
       // Add ipfs image to database
-      await (new IPFSImage(result[0])).save() // get the first item from the array 
+      await (new IPFSImage(result[0])).save() // get the first item from the array
       logger.info('Added image ' + filepath + ' to IPFS and local database.')
     } catch (err) {
       console.log(err)
@@ -216,10 +216,10 @@ const add_metadata_to_listing = async (listing) => {
     if (lid in listingMetadata && typeof listingMetadata[lid].images !== 'undefined' ) {
       const meta = listingMetadata[lid]
       // Replace each image file path in the model with the ObjectId referencing the actual document.
-      meta.images = await Promise.all(meta.images.map(async (imgName) => 
+      meta.images = await Promise.all(meta.images.map(async (imgName) =>
         await IPFSImage.findOne({ path: imgName }))
       )
-      await Listings.findOneAndUpdate({lid}, meta)  
+      await Listings.findOneAndUpdate({lid}, meta)
     }
   } catch (err) {
     console.log('Failed with', err)
@@ -231,8 +231,8 @@ const dbListingInsertCallback = async (listing) => {
   if (opts.metadata_add) {
     await add_metadata_to_listing(listing)
   }
-  // Other functions to be called upon listing insertion here: 
-  // ... 
+  // Other functions to be called upon listing insertion here:
+  // ...
 }
 
 const addressFromClientIndex = (index) => {
@@ -246,7 +246,7 @@ function sleep(ms) {
 const add_test_data_to_blockchain = async () => {
   logger.silly('add_test_data_to_blockchain')
   // All functions in testData are expected to be non-constant: we send a transaction
-  // to execute each. 
+  // to execute each.
   for (const i in testData) {
     const { name, inputs, clientIndex } = testData[i]
     const _in = inputs.map(x => x.value)
@@ -263,16 +263,16 @@ const add_test_data_to_blockchain = async () => {
 }
 
 const run = async () => {
-  // Command line arguments 
-  // 
+  // Command line arguments
+  //
   // If chain_init=true initialise the blockchain with data
   const args = minimist(process.argv.slice(2))
   opts.chain_init = ('chain_init' in args) ? args.chain_init === 'true' : false
-  opts.db_clear = ('db_clear' in args) ? args.db_clear === 'true' : false 
+  opts.db_clear = ('db_clear' in args) ? args.db_clear === 'true' : false
   opts.metadata_add = ('metadata_add' in args) ? args.metadata_add === 'true' : false
-  opts.db_print = ('db_print' in args) ? args.db_print === 'true' : false 
+  opts.db_print = ('db_print' in args) ? args.db_print === 'true' : false
 
-  // Connect to database so that we can insert metadata in there 
+  // Connect to database so that we can insert metadata in there
   const database = new Database(global.constants.db)
   if (false === await database.connectSync()) {
     logger.error('Failed to connect')
@@ -284,13 +284,13 @@ const run = async () => {
     await database_clear()
     process.exit(0)
   } else {
-    accounts = await web3.eth.getAccounts() 
+    accounts = await web3.eth.getAccounts()
 
     if (opts.metadata_add) {
       await images_add_to_ipfs_and_db()
     }
-    
-    // Call sync() on bchain_to_db which inserts listings in the database 
+
+    // Call sync() on bchain_to_db which inserts listings in the database
     // when it receives Eth events.
     bchain_to_db.sync(dbListingInsertCallback)
 
@@ -300,7 +300,7 @@ const run = async () => {
     }
 
     // -------------------------
-    // PRINT DATABASE 
+    // PRINT DATABASE
     // -------------------------
     if (opts.db_print === true)
       await database_print()
@@ -309,7 +309,7 @@ const run = async () => {
     // EXIT
     // -------------------------
     logger.info('Exiting in 5 seconds')
-    await sleep(5000)  
+    await sleep(5000)
     process.exit(0)
 
   }
