@@ -15,6 +15,5 @@ export const addMessage = message => ({ type: ADD_MESSAGE, payload: message })
 export const createAccount = account => ({ type: CREATE_ACCOUNT, payload: { name: 'account', value: account } })
 export const createListing = listing => ({ type: CREATE_LISTING, payload: { name: 'listing', value: listing } })
 
-// ServerNode actions
 export const getAllListings = listings => ({ type: GET_ALL_LISTINGS, payload: listings })
 export const setListingResults = listings => ({ type: SET_LISTING_RESULTS, payload: listings })

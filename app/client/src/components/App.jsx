@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 import ListingView from './pages/ListingView'
-import ServerNodeManager from './ServerNodeManager'
 import AdminPage from './admin/AdminPage'
 import ListingSearch from './pages/ListingSearch'
 import Navigation from './pages/Navigation'
@@ -17,7 +16,6 @@ class App extends Component {
         <div className="container">
           <Navigation />
           <Route exact path="/admin" component={AdminPage} />
-          <ServerNodeManager />
           <Route exact path="/listing" component={ListingSearch} />
           <Route path="/listing/:lid" component={ListingView} />
         </div>

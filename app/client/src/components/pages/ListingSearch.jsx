@@ -28,6 +28,13 @@ class ListingSearch extends Component {
     }))
   }
 
+  async componentDidMount() {
+    const self = this
+    const response = await fetch(`${SERVER_NODE_URL}api/listings`)
+    const listingsData = await response.json()
+    self.props.dispatchMethods.setListingResults(listingsData)
+  }
+
   async dropdownChanged(event, data) {
     const { dispatchMethods } = this.props
     const { value: countryCode } = data
