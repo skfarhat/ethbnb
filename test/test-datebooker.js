@@ -44,6 +44,19 @@ contract('DateBooker', async (accounts) => {
     }
   })
 
+  it('Different bookings on the same \'id\' have different bids', async() => {
+    let r
+    let bid1
+    let bid2
+    var booker = await DateBooker.deployed()
+    let id = await registerAndGetId(booker, CAPACITY, d)
+    r = await booker.book(id, FEB_15, 1, d)
+    truffleAssert.eventEmitted(r, 'Book', (ev) => bid1 = ev.bid)
+    r = await booker.book(id, FEB_17, 2, d)
+    truffleAssert.eventEmitted(r, 'Book', (ev) => bid2 = ev.bid)
+    assert.notEqual(bid1, bid2, 'Bookings should have different bids.')
+  })
+
   it('find_book works for booking just made', async() => {
     let r
     let bid

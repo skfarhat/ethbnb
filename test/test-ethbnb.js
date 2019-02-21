@@ -9,15 +9,26 @@
     return parseInt(bn.toString())
   }
 
+  /** Convenience function
+   *
+   * Returns seconds timestamp of date in Feb 2019
+   * e.g.
+   * feb2019(10) returns the timestamp of 10/02/2019 which is 1549756800
+   * day_nb = [1..28]
+   */
+  const feb2019 = (day_nb) => {
+    const FEB_01 = 1548979200
+    if (day_nb < 1 || day_nb > 28) {
+      return -1
+    }
+    return FEB_01 + (day_nb - 1) * 86400
+  }
+
   const truffleAssert = require('truffle-assertions')
   var EthBnB = artifacts.require("EthBnB")
 
   contract('EthBnB', async (accounts) => {
     const d = { from : accounts[0] }
-    const FEB_10 = 1549756800 // February 10 2019 - 00:00
-    const FEB_15 = 1550188800 // February 15 2019 - 00:00
-    const FEB_17 = 1550361600 // February 17 2019 - 00:00
-    const FEB_18 = 1550448000 // February 18 2019 - 00:00
 
     /** Eth account that has no corresponding 'Account' in EthBnB contract **/
     let UNUSED_ACCOUNT = accounts[8]
@@ -102,10 +113,33 @@
       res = await bnb.createListing(_country, _location, _price, d)
       // Check that an event was emitted
       truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid = ev.lid)
-      const from_date = FEB_10
+      const from_date = feb2019(10)
       const nb_days = 3
-      res = await bnb.listingBook(lid, FEB_10, 3)
+      res = await bnb.listingBook(lid, feb2019(10), 3)
       truffleAssert.eventEmitted(res, 'BookingComplete', (ev) => bid = ev.bid)
+    })
+
+    it('Two bookings on the same listing have different bids.', async() => {
+      let res
+      let bid1
+      let bid2
+      let lid
+      const bnb = await EthBnB.deployed()
+      const _shortName = "Sami"
+      res = await bnb.createAccount(_shortName, d)
+      // Create a listing
+      const _location = 'London'
+      const _price = 5000
+      const _country = COUNTRIES['GB']
+      res = await bnb.createListing(_country, _location, _price, d)
+      // Check that an event was emitted
+      truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid = ev.lid)
+      const nb_days = 3
+      res = await bnb.listingBook(lid, feb2019(10), 3)
+      truffleAssert.eventEmitted(res, 'BookingComplete', (ev) => bid1 = ev.bid)
+      res = await bnb.listingBook(lid, feb2019(20), 3)
+      truffleAssert.eventEmitted(res, 'BookingComplete', (ev) => bid2 = ev.bid)
+      assert.notEqual(bid1, bid2, 'Bookings on the same listing must have different bids.')
     })
 
     it('Listing can be cancelled', async() => {
@@ -123,10 +157,10 @@
       res = await bnb.createListing(_country, _location, _price, d)
       // Get the listing id from the event
       truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid = ev.lid)
-      const from_date = FEB_10
+      const from_date = feb2019(10)
       const nb_days = 3
       // Book the listing and get the booking id
-      res = await bnb.listingBook(lid, FEB_10, 3, d)
+      res = await bnb.listingBook(lid, feb2019(10), 3, d)
       truffleAssert.eventEmitted(res, 'BookingComplete', (ev) => bid = ev.bid)
       // Cancel the booking
       res = await bnb.listingCancel(lid, bid, d)
@@ -170,7 +204,7 @@
       // Get the listing id from the event
       truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid = ev.lid)
       for (let i = 0; i < 5; i++) {
-        res = await bnb.listingBook(lid, FEB_18 + i * 86400, 1, d)
+        res = await bnb.listingBook(lid, feb2019(18) + i * 86400, 1, d)
         truffleAssert.eventNotEmitted(res, 'BookingNoMoreSpace')
       }
       res = await bnb.listingBook(lid, /* irrelevant arg */ 23423, 1)
