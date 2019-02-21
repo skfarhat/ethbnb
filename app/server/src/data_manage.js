@@ -38,11 +38,7 @@ const bchain_to_db = require('./bchain_to_db')()
 // feb2019(10) returns the timestamp of 10/02/2019 which is 1549756800
 // day_nb = [1..28]
 const feb2019 = (day_nb) => {
-  const FEB_01 = 1548979200
-  if (day_nb < 1 || day_nb > 28) {
-    return -1
-  }
-  return FEB_01 + (day_nb - 1) * 86400
+  return new Date("2019-02-" + day_nb).getTime() / 1000
 }
 
 // Directory path to listing images

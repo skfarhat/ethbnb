@@ -113,7 +113,6 @@ module.exports = function () {
 
   // Create a Booking object and add it to database
   const bookingCompleteEventHanlder = async (event) => {
-    console.log('bookingCompleteEventHanlder', event.returnValues)
     const { lid, bid, from } = event.returnValues
     const booking = await fetchAndReturnBooking(bid, lid, from)
     await addBookingToDatabase(booking)
