@@ -123,7 +123,7 @@ contract DateBooker {
       return NO_MORE_SPACE;
     }
     // Check that there are no date intersections
-    from_date = get_day(from_date);
+    from_date = timestamp_to_day(from_date);
     uint to_date = from_date + nb_of_days;
     int ret = find_book_with_intersecting_dates(id, from_date, to_date);
     if (ret >= 0) {
@@ -151,10 +151,6 @@ contract DateBooker {
   // =============================================================
   // CONSTANT FUNCTIONS
   // =============================================================
-
-  function get_day(uint timestamp) private pure returns (uint) {
-    return uint(timestamp / 86400);
-  }
 
   function find_book_with_intersecting_dates(uint id, uint from_date, uint to_date) private view returns (int) {
     if (is_empty(id)) {
@@ -204,12 +200,20 @@ contract DateBooker {
     int idx = find_book(id, bid);
     require(idx >= 0, 'Cannot get dates for non-present bid.');
     Entry storage entry = data[id].d[uint(idx)];
-    return (entry.from_date, entry.to_date);
+    return (day_to_timestamp(entry.from_date), day_to_timestamp(entry.to_date));
   }
 
   function dates_intersect(uint from1, uint to1, uint from2, uint to2) private pure returns (bool) {
     require(from1 < to1 && from2 < to2, 'from date must be smaller than to date');
     return (from2 < to1 && from2 >= from1) || (to2 <= to1 && to2 > from1);
+  }
+
+  function timestamp_to_day(uint timestamp) private pure returns (uint) {
+    return uint(timestamp / 86400);
+  }
+
+  function day_to_timestamp(uint day) private pure returns (uint) {
+    return uint(day * 86400);
   }
 
 }
