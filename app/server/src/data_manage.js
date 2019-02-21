@@ -31,10 +31,19 @@ const bchain_to_db = require('./bchain_to_db')()
 // DEFINITIONS
 // ============================================================
 
-const FEB_10 = 1549756800 // February 10 2019 - 00:00
-const FEB_15 = 1550188800 // February 15 2019 - 00:00
-const FEB_17 = 1550361600 // February 17 2019 - 00:00
-const FEB_18 = 1550448000 // February 18 2019 - 00:00
+// Convenience function
+//
+// Returns seconds timestamp of date in Feb 2019
+// e.g.
+// feb2019(10) returns the timestamp of 10/02/2019 which is 1549756800
+// day_nb = [1..28]
+const feb2019 = (day_nb) => {
+  const FEB_01 = 1548979200
+  if (day_nb < 1 || day_nb > 28) {
+    return -1
+  }
+  return FEB_01 + (day_nb - 1) * 86400
+}
 
 // Directory path to listing images
 const LISTING_IMGS_PATH = path.join(__dirname, "imgs/listings")
@@ -154,15 +163,29 @@ const testData = [
   },
   {
     // lid: 1
+    // booked [10/02/2019 to 13/02/2019]
     name: 'listingBook',
     inputs: [
       { value: 1, name: 'listingId' },
-      { value: FEB_10, name: 'from_date' },
-      { value: 1, name: 'nb_days' },
+      { value: feb2019(10), name: 'from_date' },
+      { value: 3, name: 'nb_days' },
+    ],
+    constant: false,
+    clientIndex: 0,
+  },
+  {
+    // lid: 4
+    // booked [12/02/2019 to 14/02/2019]
+    name: 'listingBook',
+    inputs: [
+      { value: 4, name: 'listingId' },
+      { value: feb2019(12), name: 'from_date' },
+      { value: 2, name: 'nb_days' },
     ],
     constant: false,
     clientIndex: 0,
   }
+
 ]
 
 // ============================================================

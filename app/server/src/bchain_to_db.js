@@ -62,7 +62,7 @@ module.exports = function () {
 
   const addBookingToDatabase = async (booking) => {
     logger.silly('addBookingToDatabase')
-    let bookingModel = await Booking.findOneAndUpdate({bid: booking.bid}, booking, {new: true, upsert: true})
+    let bookingModel = await Booking.findOneAndUpdate({bid: booking.bid, lid: booking.lid}, booking, {new: true, upsert: true})
     await Listing.findOneAndUpdate({lid: booking.lid}, {$addToSet: {bookings: bookingModel._id}})
   }
 
@@ -113,7 +113,7 @@ module.exports = function () {
 
   // Create a Booking object and add it to database
   const bookingCompleteEventHanlder = async (event) => {
-    logger.silly('bookingCompleteEventHanlder')
+    console.log('bookingCompleteEventHanlder', event.returnValues)
     const { lid, bid, from } = event.returnValues
     const booking = await fetchAndReturnBooking(bid, lid, from)
     await addBookingToDatabase(booking)

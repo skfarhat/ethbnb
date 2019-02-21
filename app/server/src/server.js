@@ -1,11 +1,10 @@
 const app = require('./app')
-
 require('./globals')()
 var IPFSImage  = require('./models/IPFSImage')
-var Listings = require('./models/Listing')
+const Listings = require('./models/Listing')
+const Bookings = require('./models/Booking')
 
 const constants = global.constants
-
 const bchain_to_db = require('./bchain_to_db')()
 
 // Setup database
@@ -26,10 +25,37 @@ app.use((req, res, next) => {
 
 app.get('/api/listings', async (req, res) => {
   logger.info('Serving content on /api/listings/')
-  const allListings = await Listings.find({})
-                                    .populate({path: 'images', model: 'ipfs_images'})
-                                    .populate({path: 'bookings', model: 'bookings'})
-  res.json(allListings)
+  let result
+  // from_date and to_date are expected to be epoch seconds
+  // we convert them to milliseconds if they are provided, otherwise they are passed as is (undefined or null)
+  let { from_date, to_date } = req.query
+  from_date = (from_date !== null && typeof(from_date) !== 'undefined') ? new Date(from_date * 1000) : from_date
+  to_date = (to_date !== null && typeof(to_date) !== 'undefined') ? new Date(to_date * 1000) : to_date
+  return res.json(await Listings.aggregate([
+    {
+      '$lookup': {
+        from: 'bookings',
+        localField: 'bookings',
+        foreignField: '_id',
+        as: 'bookings',
+      },
+    },
+    {
+      '$lookup': {
+        from: 'ipfs_images',
+        localField: 'images',
+        foreignField: '_id',
+        as: 'images',
+      },
+    },
+    {
+      '$match': {
+        'bookings.from_date': { '$not': {'$gte': from_date} },
+        'bookings.to_date': { '$not': {'$lte': to_date} }
+      }
+    }
+    ])
+  )
 })
 
 app.get('/api/listings/country/:country', async (req, res) => {
