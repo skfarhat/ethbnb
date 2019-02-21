@@ -26,7 +26,9 @@ app.use((req, res, next) => {
 
 app.get('/api/listings', async (req, res) => {
   logger.info('Serving content on /api/listings/')
-  const allListings = await Listings.find({}).populate({path: 'images', model: 'ipfs_images'})
+  const allListings = await Listings.find({})
+                                    .populate({path: 'images', model: 'ipfs_images'})
+                                    .populate({path: 'bookings', model: 'bookings'})
   res.json(allListings)
 })
 
