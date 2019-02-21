@@ -1,1 +1,21 @@
-../.eslintrc.json
+{
+    "extends": "airbnb",
+    "parser": "babel-eslint",
+    "plugins": ["react"],
+    "env": {
+        "browser": true
+    },
+    "rules" : {
+        "semi": ["error", "never"],
+        "no-console": 0,
+        "quotes": [2, "single"],
+        "strict": [2, "never"],
+        "react/jsx-uses-react": 2,
+        "react/jsx-uses-vars": 2,
+        "react/prefer-stateless-function": [0],
+        "react/react-in-jsx-scope": 2,
+        "prefer-destructuring": 0,
+        "no-restricted-syntax": ["error", "WithStatement", "BinaryExpression[operator='in']"],
+        "object-curly-newline": "off"
+    }
+}
