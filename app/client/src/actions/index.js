@@ -6,7 +6,6 @@ export const CREATE_ACCOUNT = 'CREATE_ACCOUNT'
 export const CREATE_LISTING = 'CREATE_LISTING'
 export const ADD_MESSAGE = 'ADD_MESSAGE'
 export const GET_ALL_LISTINGS = 'GET_ALL_LISTINGS'
-export const SET_LISTING_RESULTS = 'SET_LISTING_RESULTS '
 export const REQUEST_LISTINGS = 'REQUEST_LISTINGS'
 export const RECEIVE_LISTINGS = 'RECEIVE_LISTINGS'
 
@@ -23,7 +22,6 @@ export const createAccount = account => ({ type: CREATE_ACCOUNT, payload: { name
 export const createListing = listing => ({ type: CREATE_LISTING, payload: { name: 'listing', value: listing } })
 
 export const getAllListings = listings => ({ type: GET_ALL_LISTINGS, payload: listings })
-export const setListingResults = listings => ({ type: SET_LISTING_RESULTS, payload: listings })
 
 
 // Dispatched before we want to request listings, the view should show a spinner
@@ -42,7 +40,18 @@ function receiveListings(data) {
   }
 }
 
-function fetchAllListings() {
+function shouldFetchListings(state) {
+  if (state.listings === null) {
+    return true
+  }
+  if (state.isFetching) {
+    return false
+  }
+  return false
+}
+
+function fetchListings() {
+  console.log('in fetchLIstings')
   return (dispatch) => {
     dispatch(requestListings())
     return fetch(`${SERVER_NODE_URL}api/listings`)
@@ -50,6 +59,15 @@ function fetchAllListings() {
       .then(json => dispatch(receiveListings(json)))
   }
 }
+
+export function fetchListingsIfNeeded() {
+  return (dispatch, getState) => {
+    if (shouldFetchListings(getState())) {
+      return dispatch(fetchListings())
+    }
+  }
+}
+
 
 // function fetchListings(country, from_date, to_date) {
 //   return dispatch => {

@@ -1,6 +1,7 @@
 import {
   REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING,
-  ADD_MESSAGE, GET_ALL_LISTINGS, SET_LISTING_RESULTS,
+  ADD_MESSAGE, GET_ALL_LISTINGS,
+  REQUEST_LISTINGS, RECEIVE_LISTINGS,
 } from '../actions'
 import { MAX_CLIENTS, NONE_ADDRESS } from '../constants/global'
 
@@ -10,8 +11,8 @@ const initialState = {
   messages: [],
   clients: {},
   server: { listings: {} },
-  // The result from Listing searches
-  listingResults: [],
+  isFetching: false,
+  listings: null,
   eth: {},
 }
 
@@ -63,12 +64,19 @@ const rootReducer = (state = initialState, action) => {
         clients,
       }
     }
-    case SET_LISTING_RESULTS: {
-      return {
-        ...state,
-        listingResults: action.payload,
-      }
+    case REQUEST_LISTINGS: {
+      return Object.assign({}, state, {
+        isFetching: true,
+        // didInvalidate: false,
+      })
     }
+    case RECEIVE_LISTINGS:
+      return Object.assign({}, state, {
+        isFetching: false,
+        listings: action.listings,
+        lastUpdated: action.receivedAt,
+        // didInvalidate: false,
+      })
     case CREATE_LISTING: {
       const listing = action.payload.value
       const clone = { ...state.clients }

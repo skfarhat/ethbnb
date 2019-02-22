@@ -2,21 +2,23 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import RGL, { WidthProvider } from 'react-grid-layout'
-import { Dropdown } from 'semantic-ui-react'
+import { Dropdown, Loader } from 'semantic-ui-react'
 import '../../../node_modules/react-grid-layout/css/styles.css'
 import '../../../node_modules/react-resizable/css/styles.css'
 import { countryOptions } from './common'
 import { SERVER_NODE_URL } from '../../constants/global'
-import { setListingResults } from '../../actions'
 import IPFSImage from '../IPFSImage'
+import { fetchListingsIfNeeded } from '../../actions'
 
-
-const mapDispatchToProps = dispatch => ({
-  dispatchMethods: { setListingResults: listings => dispatch(setListingResults(listings)) },
-})
+// const mapDispatchToProps = dispatch => ({
+//   // dispatch: { setListingResults: listings => dispatch(setListingResults(listings)) },
+// })
 
 const ReactGridLayout = WidthProvider(RGL)
-const mapStateToProps = state => ({ listings: state.listingResults })
+const mapStateToProps = state => ({
+  listings: state.listings || [],
+  isFetching: state.isFetching,
+})
 
 class ListingSearch extends Component {
   constructor() {
@@ -29,10 +31,8 @@ class ListingSearch extends Component {
   }
 
   async componentDidMount() {
-    const self = this
-    const response = await fetch(`${SERVER_NODE_URL}api/listings`)
-    const listingsData = await response.json()
-    self.props.dispatchMethods.setListingResults(listingsData)
+    const { dispatch } = this.props
+    dispatch(fetchListingsIfNeeded())
   }
 
   async dropdownChanged(event, data) {
@@ -56,6 +56,9 @@ class ListingSearch extends Component {
     const doms = []
     let i = 0
 
+    const { isFetching } = this.props
+
+    console.log('self.props.listings', self.props.listings)
     Object.keys(self.props.listings).forEach((key) => {
       const l = self.props.listings[key]
 
@@ -111,6 +114,9 @@ class ListingSearch extends Component {
     })
     return (
       <div className="listing-router-container">
+        <Loader
+          active={isFetching}
+        />
         <Dropdown
           placeholder="Select Country"
           fluid
@@ -135,4 +141,4 @@ class ListingSearch extends Component {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ListingSearch)
+export default connect(mapStateToProps)(ListingSearch)
