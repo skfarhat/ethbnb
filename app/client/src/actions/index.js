@@ -51,7 +51,6 @@ function shouldFetchListings(state) {
 }
 
 function fetchListings() {
-  console.log('in fetchLIstings')
   return (dispatch) => {
     dispatch(requestListings())
     return fetch(`${SERVER_NODE_URL}api/listings`)

@@ -10,10 +10,6 @@ import { SERVER_NODE_URL } from '../../constants/global'
 import IPFSImage from '../IPFSImage'
 import { fetchListingsIfNeeded } from '../../actions'
 
-// const mapDispatchToProps = dispatch => ({
-//   // dispatch: { setListingResults: listings => dispatch(setListingResults(listings)) },
-// })
-
 const ReactGridLayout = WidthProvider(RGL)
 const mapStateToProps = state => ({
   listings: state.listings || [],

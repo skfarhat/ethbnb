@@ -1,16 +1,23 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
+import PropTypes from 'prop-types'
+import { Loader } from 'semantic-ui-react'
+import { fetchListingsIfNeeded } from '../../actions'
+
 
 const mapStateToProps = (state, ownProps) => ({
-  listings: state.listingResults,
+  listings: state.listings,
+  isFetching: state.isFetching,
   lid: ownProps.lid,
 })
 
-const getListingDetails = (listings, lid) => {
+const getListingDetails = (isFetching, listings, lid) => {
+  console.log(listings)
   // If listings is undefined
-  if (typeof listings === 'undefined') {
-    return (<h4> There is no binding between react-router and react-redux yet </h4>)
+  if (listings === null || typeof listings === 'undefined') {
+    return (
+      <Loader active={isFetching} />)
   }
   // If listings is defined, find the listing with matching lid
   // if zero or more than one are found, return error
@@ -50,21 +57,29 @@ const getListingDetails = (listings, lid) => {
   )
 // <IPFSImage hash={hash} ext={ext} />
 }
-class ListingView extends Component {
-  render() {
-    const { listings, match } = this.props
-    const { lid } = match.params
 
+
+class ListingView extends Component {
+  componentDidMount() {
+    const { dispatch } = this.props
+    dispatch(fetchListingsIfNeeded())
+  }
+
+  render() {
+    const { listings, match, isFetching } = this.props
+    const { lid } = match.params
     return (
       <div className="listing-view">
         <Link key="back-button" to="/listing/"> Back </Link>
-        { getListingDetails(listings, lid) }
+        { getListingDetails(isFetching, listings, lid) }
       </div>
     )
   }
 }
 
 ListingView.propTypes = {
-  // TODO: listings propTypes here
+  isFetching: PropTypes.bool.isRequired,
+  dispatch: PropTypes.func.isRequired,
+  listings: PropTypes.array.isRequired,
 }
-export default connect(mapStateToProps, null)(ListingView)
+export default connect(mapStateToProps)(ListingView)
