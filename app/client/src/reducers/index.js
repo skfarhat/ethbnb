@@ -1,6 +1,5 @@
 import {
-  REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING,
-  ADD_MESSAGE, GET_ALL_LISTINGS,
+  REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE,
   REQUEST_LISTINGS, RECEIVE_LISTINGS,
 } from '../actions'
 import { MAX_CLIENTS, NONE_ADDRESS } from '../constants/global'
@@ -10,7 +9,6 @@ const initialState = {
   selectedClientAddr: NONE_ADDRESS,
   messages: [],
   clients: {},
-  server: { listings: {} },
   isFetching: false,
   listings: null,
   eth: {},
@@ -95,14 +93,6 @@ const rootReducer = (state = initialState, action) => {
       return {
         ...state,
         messages: state.messages.concat(action.payload),
-      }
-    }
-    case GET_ALL_LISTINGS: {
-      const serverObj = { ...state.server }
-      serverObj.listings = { ...action.payload }
-      return {
-        ...state,
-        server: serverObj,
       }
     }
     default: {

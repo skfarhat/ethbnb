@@ -5,7 +5,6 @@ export const SELECT_CLIENT = 'SELECT_CLIENT'
 export const CREATE_ACCOUNT = 'CREATE_ACCOUNT'
 export const CREATE_LISTING = 'CREATE_LISTING'
 export const ADD_MESSAGE = 'ADD_MESSAGE'
-export const GET_ALL_LISTINGS = 'GET_ALL_LISTINGS'
 export const REQUEST_LISTINGS = 'REQUEST_LISTINGS'
 export const RECEIVE_LISTINGS = 'RECEIVE_LISTINGS'
 
@@ -20,8 +19,6 @@ export const addMessage = message => ({ type: ADD_MESSAGE, payload: message })
 // that the peroperty should be updated to.
 export const createAccount = account => ({ type: CREATE_ACCOUNT, payload: { name: 'account', value: account } })
 export const createListing = listing => ({ type: CREATE_LISTING, payload: { name: 'listing', value: listing } })
-
-export const getAllListings = listings => ({ type: GET_ALL_LISTINGS, payload: listings })
 
 
 // Dispatched before we want to request listings, the view should show a spinner
@@ -40,6 +37,15 @@ function receiveListings(data) {
   }
 }
 
+function fetchListings() {
+  return (dispatch) => {
+    dispatch(requestListings())
+    return fetch(`${SERVER_NODE_URL}api/listings`)
+      .then(response => response.json())
+      .then(json => dispatch(receiveListings(json)))
+  }
+}
+
 function shouldFetchListings(state) {
   if (state.listings === null) {
     return true
@@ -48,15 +54,6 @@ function shouldFetchListings(state) {
     return false
   }
   return false
-}
-
-function fetchListings() {
-  return (dispatch) => {
-    dispatch(requestListings())
-    return fetch(`${SERVER_NODE_URL}api/listings`)
-      .then(response => response.json())
-      .then(json => dispatch(receiveListings(json)))
-  }
 }
 
 export function fetchListingsIfNeeded() {
