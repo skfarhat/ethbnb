@@ -4,6 +4,8 @@ var IPFSImage  = require('./models/IPFSImage')
 const Listings = require('./models/Listing')
 const Bookings = require('./models/Booking')
 
+const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs));
+
 const constants = global.constants
 const bchain_to_db = require('./bchain_to_db')()
 
@@ -31,6 +33,7 @@ app.get('/api/listings', async (req, res) => {
   let { from_date, to_date } = req.query
   from_date = (from_date !== null && typeof(from_date) !== 'undefined') ? new Date(from_date * 1000) : from_date
   to_date = (to_date !== null && typeof(to_date) !== 'undefined') ? new Date(to_date * 1000) : to_date
+  await sleep(2000)
   return res.json(await Listings.aggregate([
     {
       '$lookup': {
