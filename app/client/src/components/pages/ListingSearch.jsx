@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Link } from 'react-router-dom'
 import RGL, { WidthProvider } from 'react-grid-layout'
-import { Dropdown, Loader } from 'semantic-ui-react'
+import { Button, Dropdown, Loader } from 'semantic-ui-react'
+import { DateRangePicker } from 'react-dates'
 import '../../../node_modules/react-grid-layout/css/styles.css'
 import '../../../node_modules/react-resizable/css/styles.css'
 import { countryOptions } from './common'
 import { SERVER_NODE_URL } from '../../constants/global'
-import IPFSImage from '../IPFSImage'
+import ListingMini from './ListingMini'
 import { fetchListingsIfNeeded } from '../../actions'
 
 const ReactGridLayout = WidthProvider(RGL)
@@ -19,11 +19,17 @@ const mapStateToProps = state => ({
 class ListingSearch extends Component {
   constructor() {
     super()
+    this.searchButtonClicked = this.searchButtonClicked.bind(this)
     this.dropdownChanged = this.dropdownChanged.bind(this)
     this.countryCodes = countryOptions.map(countryO => ({
       ...countryO,
       value: countryO.code,
     }))
+    this.state = {
+      startDate: null,
+      endDate: null,
+      focusedInput: null,
+    }
   }
 
   async componentDidMount() {
@@ -32,6 +38,7 @@ class ListingSearch extends Component {
   }
 
   async dropdownChanged(event, data) {
+    // FIX: This
     const { dispatchMethods } = this.props
     const { value: countryCode } = data
     try {
@@ -42,6 +49,12 @@ class ListingSearch extends Component {
     } catch (err) {
       console.log(`Failed to connect to ${SERVER_NODE_URL}`, err)
     }
+  }
+
+  searchButtonClicked() {
+    console.log('searchButtonClicked')
+    const { dispatch } = this.props
+    dispatch()
   }
 
   render() {
@@ -72,31 +85,12 @@ class ListingSearch extends Component {
       }
 
       doms.push((
-        <div key={l.lid} className="listing-mini">
-          <Link to={`/listing/${l.lid}`}>
-            <h5>
-              {l.title}
-            </h5>
-          </Link>
-          <div>
-            <em> Location: </em>
-            <span className="location">
-              {l.location}
-            </span>
-          </div>
-          <div>
-            <em> Country: </em>
-            <span className="country">
-              {l.country}
-            </span>
-          </div>
-          <div>
-            <em> Price: </em>
-            <span className="price">
-              {l.price}
-            </span>
-          </div>
-          <IPFSImage hash={hash} ext={ext} />
+        <div className="listing-mini" key={i}>
+          <ListingMini
+            hash={hash}
+            ext={ext}
+            {...l}
+          />
         </div>
       ))
       layout.push({
@@ -121,6 +115,20 @@ class ListingSearch extends Component {
           options={self.countryCodes}
           onChange={self.dropdownChanged}
         />
+        <DateRangePicker
+          startDateId="startDate"
+          endDateId="endDate"
+          startDate={this.state.startDate}
+          endDate={this.state.endDate}
+          onDatesChange={({ startDate, endDate }) => { this.setState({ startDate, endDate })}}
+          focusedInput={this.state.focusedInput}
+          onFocusChange={(focusedInput) => { this.setState({ focusedInput })}}
+        />
+        <Button
+          onClick={this.searchButtonClicked}
+        >
+        Search
+        </Button>
         <ReactGridLayout
           items={3}
           layout={layout}
