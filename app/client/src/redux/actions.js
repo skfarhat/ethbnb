@@ -1,35 +1,44 @@
 import { SERVER_NODE_URL } from '../constants/global'
 
+
+// ============================================================
+// EXPORT ACTIONS
+// ============================================================
+
+export const SET_SEARCH_OPTIONS = 'SET_SEARCH_OPTIONS'
 export const REQUEST_LISTINGS = 'REQUEST_LISTINGS'
 export const RECEIVE_LISTINGS = 'RECEIVE_LISTINGS'
 
+// ============================================================
+// FUNCTIONS
+// ============================================================
+
+const isSet = val => val !== null && typeof (val) !== 'undefined'
 
 // Dispatched before we want to request listings, the view should show a spinner
-function requestListings() {
-  return {
-    type: REQUEST_LISTINGS,
-  }
-}
+const requestListings = () => ({
+  type: REQUEST_LISTINGS,
+})
 
 // Dispatched when the listings have been received from the remote backend
 // and we want to update the view
-function receiveListings(data) {
-  return {
-    type: RECEIVE_LISTINGS,
-    listings: data,
+const receiveListings = data => ({
+  type: RECEIVE_LISTINGS,
+  listings: data,
+})
+
+const getListingsURI = (opts) => {
+  const params = (isSet(opts)) ? opts : {}
+  for (const key in params) {
+    if (params[key] === null) {
+      delete params[key]
+    }
   }
+  const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&')
+  return `${SERVER_NODE_URL}api/listings?${queryString}`
 }
 
-function fetchListings() {
-  return (dispatch) => {
-    dispatch(requestListings())
-    return fetch(`${SERVER_NODE_URL}api/listings`)
-      .then(response => response.json())
-      .then(json => dispatch(receiveListings(json)))
-  }
-}
-
-function shouldFetchListings(state) {
+const shouldFetchListings = (state) => {
   if (state.listings === null) {
     return true
   }
@@ -39,13 +48,44 @@ function shouldFetchListings(state) {
   return false
 }
 
+const fetchListingsUsingOptions = (dispatch, state) => {
+  // The server expects 'from_date' and 'to_date' in underscore format
+  // whereas the client uses camelCase. We convert below.
+  const { fromDate, toDate, countryCode } = state.searchOptions
+  const opts = {
+    from_date: (fromDate) ? fromDate.getTime() / 1000 : null,
+    to_date: (toDate) ? toDate.getTime() / 1000 : null,
+    country_code: countryCode,
+  }
+  const uri = getListingsURI(opts)
+  return fetch(uri)
+    .then(response => response.json())
+    .then(json => dispatch(receiveListings(json)))
+}
+
+// ============================================================
+// EXPORT FUNCTIONS
+// ============================================================
+
+export const setSearchOptions = opts => ({
+  type: SET_SEARCH_OPTIONS,
+  opts,
+})
+
+export function fetchListings() {
+  return (dispatch, getState) => {
+    dispatch(requestListings())
+    return fetchListingsUsingOptions(dispatch, getState())
+  }
+}
+
 // TODO: add searchOptions to this function
 //       pass them along to fetchListings - which should
 //       tailor the API hostname based on what we need
-export function fetchListingsIfNeeded() {
+export function fetchListingsIfNeeded(opts) {
   return (dispatch, getState) => {
     if (shouldFetchListings(getState())) {
-      return dispatch(fetchListings())
+      return dispatch(fetchListings(opts))
     }
   }
 }

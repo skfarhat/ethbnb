@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import PropTypes from 'prop-types'
 import RGL, { WidthProvider } from 'react-grid-layout'
 import { Loader } from 'semantic-ui-react'
 import '../../../node_modules/react-grid-layout/css/styles.css'
@@ -85,6 +86,10 @@ class ListingSearch extends Component {
       </div>
     )
   }
+}
+
+ListingSearch.propTypes = {
+  dispatch: PropTypes.func.isRequired,
 }
 
 export default connect(mapStateToProps)(ListingSearch)

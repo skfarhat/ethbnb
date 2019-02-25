@@ -59,7 +59,7 @@ app.get('/api/listings', async (req, res) => {
       }
     }
   ]
-  let { from_date, to_date, country } = req.query
+  let { from_date, to_date, country_code } = req.query
 
   // Date options
   //
@@ -89,29 +89,15 @@ app.get('/api/listings', async (req, res) => {
     })
   }
   // Country options
-  if (isSet(country)) {
+  if (isSet(country_code)) {
     // Insert at index = 0 of the pipeline
-    pipeline.splice(0, 0, ({ '$match': { country: parseInt(country) } }))
+    pipeline.splice(0, 0, ({ '$match': { country: parseInt(country_code) } }))
   }
   let response = await Listings.aggregate(pipeline)
   await sleep(2000)
   return res.json(response)
 })
 
-app.get('/api/listings/country/:country', async (req, res) => {
-  let response = null
-  const { country } = req.params
-  try {
-    c = parseInt(country)
-  } catch(e) {
-    logger.error('Failed to parse country to integer')
-    res.json(response)
-    return
-  }
-  response = await Listings.find({country: country}).populate({path: 'images', model: 'ipfs_images'})
-  logger.info('Serving content on /api/listings/country/' + country)
-  res.json(response)
-})
 
 app.listen(constants.PORT, () => {
   logger.info(`Express server listening on port ${constants.PORT}`)
