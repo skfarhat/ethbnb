@@ -84,6 +84,9 @@ const listingMetadata = {
 }
 
 const testData = [
+  // ============================================
+  // CREATE ACCOUNTS
+  // ============================================
   {
     name: 'createAccount',
     inputs: [{ value: 'Sami Farhat' }],
@@ -102,6 +105,9 @@ const testData = [
     constant: false,
     clientIndex: 2,
   },
+  // ============================================
+  // CREATE LISTINGS
+  // ============================================
   {
     // lid:1
     name: 'createListing',
@@ -157,6 +163,9 @@ const testData = [
     constant: false,
     clientIndex: 1,
   },
+  // ============================================
+  // CREATE BOOKINGS
+  // ============================================
   {
     // lid: 1
     // booked [10/02/2019 to 13/02/2019]
@@ -170,6 +179,30 @@ const testData = [
     clientIndex: 0,
   },
   {
+    // lid: 1
+    // booked [16/02/2019 to 20/02/2019]
+    name: 'listingBook',
+    inputs: [
+      { value: 1, name: 'listingId' },
+      { value: feb2019(16), name: 'from_date' },
+      { value: 4, name: 'nb_days' },
+    ],
+    constant: false,
+    clientIndex: 0,
+  },
+  {
+    // lid: 2
+    // booked [06/02/2019 to 10/02/2019]
+    name: 'listingBook',
+    inputs: [
+      { value: 2, name: 'listingId' },
+      { value: feb2019(6), name: 'from_date' },
+      { value: 4, name: 'nb_days' },
+    ],
+    constant: false,
+    clientIndex: 2,
+  },
+  {
     // lid: 4
     // booked [12/02/2019 to 14/02/2019]
     name: 'listingBook',
@@ -181,7 +214,6 @@ const testData = [
     constant: false,
     clientIndex: 0,
   }
-
 ]
 
 // ============================================================
