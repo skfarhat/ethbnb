@@ -1,0 +1,30 @@
+.listing-search-area {
+    max-width:1000px;
+    padding:10px 10px;
+    margin: 0 auto 0;
+    text-align: center;
+}
+.datepicker-wrapper {
+    display: inline-block;
+    width:50%;
+}
+.datepicker-wrapper input {
+    padding: 5px;
+    font-size: inherit;
+}
+.datepicker-wrapper .field {
+    width: 100%;
+}
+.datepicker-wrapper .ui.icon.input {
+    width: 90%;
+}
+.countrypicker-wrapper {
+    width: 40%;
+    display: inline-block;
+}
+.searchButton-wrapper {
+    padding: 10px 10px;
+}
+.searchButton-wrapper .button {
+    width: 150px;
+}

@@ -1,9 +1,11 @@
 import React, { Component } from 'react'
 import { Button, Dropdown } from 'semantic-ui-react'
-import { DateRangePicker } from 'react-dates'
+import SemanticDatepicker from 'react-semantic-ui-datepickers'
+import ptLocale from 'react-semantic-ui-datepickers/dist/locales/pt-BR'
 import { countryOptions } from './common'
 import { SERVER_NODE_URL } from '../../constants/global'
-
+import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css'
+import '../../css/listing-search.css'
 
 class ListingSearchArea extends Component {
   constructor() {
@@ -14,12 +16,6 @@ class ListingSearchArea extends Component {
       ...countryO,
       value: countryO.code,
     }))
-    this.state = {
-      countryCode: null,
-      focusedInput: null,
-      startDate: null,
-      endDate: null,
-    }
   }
 
   async dropdownChanged(event, data) {
@@ -36,6 +32,10 @@ class ListingSearchArea extends Component {
     }
   }
 
+  onDateChange() {
+    console.log('onDateChange')
+  }
+
   searchButtonClicked() {
     console.log('searchButtonClicked')
     const { dispatch, countryCode, startDate, endDate } = this.props
@@ -43,31 +43,34 @@ class ListingSearchArea extends Component {
   }
 
   render() {
-    const { startDate, endDate, focusedInput } = this.state
     return (
       <div className="listing-search-area">
-        <Dropdown
-          placeholder="Select Country"
-          fluid
-          search
-          selection
-          options={this.countryCodes}
-          onChange={ (ev, data) => this.setState({ countryCode: data.value }) }
-        />
-        <DateRangePicker
-          startDateId="startDate"
-          endDateId="endDate"
-          startDate={startDate}
-          endDate={endDate}
-          onDatesChange={({ start, end }) => { this.setState({ startDate: start, endDate: end }) }}
-          focusedInput={focusedInput}
-          onFocusChange={(focused) => { this.setState({ focusedInput: focused }) }}
-        />
-        <Button
-          onClick={this.searchButtonClicked}
-        >
-        Search
-        </Button>
+        <div className="datepicker-wrapper">
+          <SemanticDatepicker
+            locale={ptLocale}
+            onDateChange={this.onDateChange}
+            type="range"
+          />
+        </div>
+        <div className="countrypicker-wrapper">
+          <Dropdown
+            className="dropdown-wrapper"
+            placeholder="Select Country"
+            fluid
+            search
+            selection
+            options={this.countryCodes}
+            onChange={ (ev, data) => this.setState({ countryCode: data.value }) }
+          />
+        </div>
+        <div className="searchButton-wrapper">
+          <Button
+            className="ListingSearchButton"
+            onClick={this.searchButtonClicked}
+          >
+          Search
+          </Button>
+        </div>
       </div>
     )
   }

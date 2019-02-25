@@ -67,10 +67,10 @@ class ListingSearch extends Component {
     })
     return (
       <div className="listing-router-container">
+        <ListingSearchArea />
         <Loader
           active={isFetching}
         />
-        <ListingSearchArea />
         <ReactGridLayout
           items={3}
           layout={layout}
