@@ -2,49 +2,7 @@
 .container {
     max-width: 95%;
 }
-.container-col h2 {
-    text-align:center;
-}
 
-.client-div {
-    border: 1px solid;
-    border-radius: 25px;
-    padding: 15px;
-    margin-bottom: 10px;
-    background-color: thistle;
-}
-.client-selected {
-    background-color: lavender;
-}
-.apiCaller {
-    text-align: center;
-}
-.apiCommand {
-    margin:30px auto 0px;
-}
-.apiCommand button {
-    min-width: 200px;
-}
-.apiCommand input {
-    margin:2px;
-}
-
-/* Message Board */
-#message-board {
-    background-color:lightgrey;
-    border-color:black;
-    border-width: 1px;
-    border-radius: 5px;
-    border-style: solid;
-    max-height: 400px;
-    overflow: scroll;
-}
-#message-board h3 {
-    text-align:center;
-}
-#message-board p {
-    margin:0px;
-}
 /* ListingsPage */
 .grid-item {
   float: left;
