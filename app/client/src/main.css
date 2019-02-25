@@ -1,3 +1,4 @@
+
 .container {
     max-width: 95%;
 }
@@ -44,7 +45,7 @@
 #message-board p {
     margin:0px;
 }
-/* ListingsPage */ 
+/* ListingsPage */
 .grid-item {
   float: left;
   width: 200px;
@@ -56,8 +57,12 @@
 /*.grid-item--width2 { width: 120px; }*/
 /*.grid-item--height2 { height: 120px; }*/
 
-/** See ListingMini.jsx */ 
+/** See ListingMini.jsx */
 .listing-mini {
     /*background-color: magenta;*/
     max-width: 500px;
+    text-align:center;
+}
+.listing-mini img {
+    border-radius: 10px;
 }
