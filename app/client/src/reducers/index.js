@@ -1,5 +1,5 @@
 import {
-  REFRESH_ETH, SELECT_CLIENT, CREATE_ACCOUNT, CREATE_LISTING, ADD_MESSAGE,
+  REFRESH_ETH,
   REQUEST_LISTINGS, RECEIVE_LISTINGS,
 } from '../actions'
 import { MAX_CLIENTS, NONE_ADDRESS } from '../constants/global'
@@ -26,19 +26,6 @@ const getClients = (eth, state) => {
   return clients
 }
 
-const updateClientWithAddr = (clients, addr, action) => {
-  const clone = { ...clients }
-  for (const a in clone) {
-    if (a === addr) {
-      clone[a] = {
-        ...clone[a],
-        account: action.payload.value,
-      }
-    }
-  }
-  return clone
-}
-
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
     case REFRESH_ETH: {
@@ -47,19 +34,6 @@ const rootReducer = (state = initialState, action) => {
         ...state,
         eth: action.payload,
         clients: getClients(eth, state),
-      }
-    }
-    case SELECT_CLIENT: {
-      return {
-        ...state,
-        selectedClientAddr: action.payload,
-      }
-    }
-    case CREATE_ACCOUNT: {
-      const clients = updateClientWithAddr(state.clients, action.payload.value.from, action)
-      return {
-        ...state,
-        clients,
       }
     }
     case REQUEST_LISTINGS: {
@@ -75,28 +49,7 @@ const rootReducer = (state = initialState, action) => {
         lastUpdated: action.receivedAt,
         // didInvalidate: false,
       })
-    case CREATE_LISTING: {
-      const listing = action.payload.value
-      const clone = { ...state.clients }
-      for (const addr in clone) {
-        const client = clone[addr]
-        if (client.address === action.payload.value.from) {
-          client.listings[listing.id] = listing
-        }
-      }
-      return {
-        ...state,
-        clients: clone,
-      }
-    }
-    case ADD_MESSAGE: {
-      return {
-        ...state,
-        messages: state.messages.concat(action.payload),
-      }
-    }
     default: {
-      console.log('default')
       return state
     }
   }
