@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Loader } from 'semantic-ui-react'
-import { fetchListingsIfNeeded } from '../../actions'
+import { fetchListingsIfNeeded } from '../../redux/actions'
 
 
 const mapStateToProps = (state, ownProps) => ({

@@ -6,7 +6,7 @@ import 'react-dates/initialize'
 import 'react-dates/lib/css/_datepicker.css'
 import App from './components/App'
 import * as serviceWorker from './serviceWorker'
-import configureStore from './store'
+import configureStore from './redux/store'
 
 
 const store = configureStore()

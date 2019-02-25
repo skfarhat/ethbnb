@@ -1,7 +1,8 @@
 import {
   REFRESH_ETH,
-  REQUEST_LISTINGS, RECEIVE_LISTINGS,
-} from '../actions'
+  REQUEST_LISTINGS,
+  RECEIVE_LISTINGS,
+} from './actions'
 import { MAX_CLIENTS, NONE_ADDRESS } from '../constants/global'
 
 const initialState = {

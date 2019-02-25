@@ -8,7 +8,7 @@ import '../../../node_modules/react-resizable/css/styles.css'
 import { countryOptions } from './common'
 import { SERVER_NODE_URL } from '../../constants/global'
 import ListingMini from './ListingMini'
-import { fetchListingsIfNeeded } from '../../actions'
+import { fetchListingsIfNeeded } from '../../redux/actions'
 
 const ReactGridLayout = WidthProvider(RGL)
 const mapStateToProps = state => ({
