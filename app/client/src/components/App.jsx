@@ -4,7 +4,6 @@ import ListingView from './pages/ListingView'
 import ListingSearch from './pages/ListingSearch'
 import Navigation from './pages/Navigation'
 import '../css/bootstrap-4.1.0.min.css'
-import 'react-table/react-table.css'
 import '../main.css'
 
 
