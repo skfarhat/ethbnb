@@ -25,16 +25,17 @@ app.use((req, res, next) => {
   next()
 })
 
+const isSet = val => {
+  return val !== null && typeof(val) !== 'undefined'
+}
+
 app.get('/api/listings', async (req, res) => {
+
   logger.info('Serving content on /api/listings/')
   let result
   // from_date and to_date are expected to be epoch seconds
   // we convert them to milliseconds if they are provided, otherwise they are passed as is (undefined or null)
-  let { from_date, to_date } = req.query
-  from_date = (from_date !== null && typeof(from_date) !== 'undefined') ? new Date(from_date * 1000) : from_date
-  to_date = (to_date !== null && typeof(to_date) !== 'undefined') ? new Date(to_date * 1000) : to_date
-  await sleep(2000)
-  return res.json(await Listings.aggregate([
+  const pipeline = [
     {
       '$lookup': {
         from: 'bookings',
@@ -52,13 +53,49 @@ app.get('/api/listings', async (req, res) => {
       },
     },
     {
-      '$match': {
-        'bookings.from_date': { '$not': {'$gte': from_date} },
-        'bookings.to_date': { '$not': {'$lte': to_date} }
+      $project: {
+        _id: 0, _v: 0,
+        'bookings._id': 0, 'bookings._v': 0,
       }
     }
-    ])
-  )
+  ]
+  let { from_date, to_date, country } = req.query
+
+  // Date options
+  //
+  // @from_date and @to_date are expected to be seconds formatted
+  // and not milliseconds. We have to multiply by 1000 to get a date object.
+  if (isSet(from_date) && isSet(to_date)) {
+    from_date = new Date(from_date * 1000)
+    to_date = new Date(to_date * 1000)
+    // Add the match object at index 2 of the pipeline
+    pipeline.splice(2, 0, {
+      $match: {
+        $and: [
+          {
+            $or: [
+              { 'bookings.from_date': { $not: { $gte: from_date } } },
+              { 'bookings.from_date': { $not: { $lt: to_date } } },
+            ]
+          },
+          {
+            $or: [
+              { 'bookings.to_date': { $not: { $gte: from_date } } },
+              { 'bookings.to_date': { $not: { $lt: to_date } } },
+            ]
+          },
+        ]
+      }
+    })
+  }
+  // Country options
+  if (isSet(country)) {
+    // Insert at index = 0 of the pipeline
+    pipeline.splice(0, 0, ({ '$match': { country: parseInt(country) } }))
+  }
+  let response = await Listings.aggregate(pipeline)
+  await sleep(2000)
+  return res.json(response)
 })
 
 app.get('/api/listings/country/:country', async (req, res) => {
