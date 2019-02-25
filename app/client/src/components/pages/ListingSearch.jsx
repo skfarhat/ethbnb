@@ -1,12 +1,10 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import RGL, { WidthProvider } from 'react-grid-layout'
-import { Button, Dropdown, Loader } from 'semantic-ui-react'
-import { DateRangePicker } from 'react-dates'
+import { Loader } from 'semantic-ui-react'
 import '../../../node_modules/react-grid-layout/css/styles.css'
 import '../../../node_modules/react-resizable/css/styles.css'
-import { countryOptions } from './common'
-import { SERVER_NODE_URL } from '../../constants/global'
+import ListingSearchArea from './ListingSearchArea'
 import ListingMini from './ListingMini'
 import { fetchListingsIfNeeded } from '../../redux/actions'
 
@@ -17,44 +15,9 @@ const mapStateToProps = state => ({
 })
 
 class ListingSearch extends Component {
-  constructor() {
-    super()
-    this.searchButtonClicked = this.searchButtonClicked.bind(this)
-    this.dropdownChanged = this.dropdownChanged.bind(this)
-    this.countryCodes = countryOptions.map(countryO => ({
-      ...countryO,
-      value: countryO.code,
-    }))
-    this.state = {
-      startDate: null,
-      endDate: null,
-      focusedInput: null,
-    }
-  }
-
   async componentDidMount() {
     const { dispatch } = this.props
     dispatch(fetchListingsIfNeeded())
-  }
-
-  async dropdownChanged(event, data) {
-    // FIX: This
-    const { dispatchMethods } = this.props
-    const { value: countryCode } = data
-    try {
-      const hostname = `${SERVER_NODE_URL}api/listings/country/${countryCode}`
-      let response = await fetch(hostname)
-      response = await response.json()
-      dispatchMethods.setListingResults(response)
-    } catch (err) {
-      console.log(`Failed to connect to ${SERVER_NODE_URL}`, err)
-    }
-  }
-
-  searchButtonClicked() {
-    console.log('searchButtonClicked')
-    const { dispatch } = this.props
-    dispatch()
   }
 
   render() {
@@ -107,28 +70,7 @@ class ListingSearch extends Component {
         <Loader
           active={isFetching}
         />
-        <Dropdown
-          placeholder="Select Country"
-          fluid
-          search
-          selection
-          options={self.countryCodes}
-          onChange={self.dropdownChanged}
-        />
-        <DateRangePicker
-          startDateId="startDate"
-          endDateId="endDate"
-          startDate={this.state.startDate}
-          endDate={this.state.endDate}
-          onDatesChange={({ startDate, endDate }) => { this.setState({ startDate, endDate })}}
-          focusedInput={this.state.focusedInput}
-          onFocusChange={(focusedInput) => { this.setState({ focusedInput })}}
-        />
-        <Button
-          onClick={this.searchButtonClicked}
-        >
-        Search
-        </Button>
+        <ListingSearchArea />
         <ReactGridLayout
           items={3}
           layout={layout}
