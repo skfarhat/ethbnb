@@ -1,10 +1,8 @@
 import { SERVER_NODE_URL } from '../constants/global'
 
-export const REFRESH_ETH = 'REFRESH_ETH'
 export const REQUEST_LISTINGS = 'REQUEST_LISTINGS'
 export const RECEIVE_LISTINGS = 'RECEIVE_LISTINGS'
 
-export const refreshEth = eth => ({ type: REFRESH_ETH, payload: eth })
 
 // Dispatched before we want to request listings, the view should show a spinner
 function requestListings() {
