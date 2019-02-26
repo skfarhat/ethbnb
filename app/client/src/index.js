@@ -1,22 +1,20 @@
 import React from 'react'
 import { render } from 'react-dom'
 import { Provider } from 'react-redux'
-import { Web3Provider } from 'react-web3'
 import 'semantic-ui-css/semantic.min.css'
 import './css/bootstrap-4.1.0.min.css'
 import './main.css'
 import App from './components/App'
 import * as serviceWorker from './serviceWorker'
 import configureStore from './redux/store'
+import './loadAbi'
 
 const store = configureStore()
 
 
 render(
   <Provider store={store}>
-    <Web3Provider>
-      <App />
-    </Web3Provider>
+    <App />
   </Provider>,
   document.getElementById('root'),
 )

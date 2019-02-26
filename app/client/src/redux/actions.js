@@ -1,5 +1,5 @@
+import TruffleContract from 'truffle-contract'
 import { SERVER_NODE_URL } from '../constants/global'
-
 
 // ============================================================
 // EXPORT ACTIONS
@@ -8,6 +8,8 @@ import { SERVER_NODE_URL } from '../constants/global'
 export const SET_SEARCH_OPTIONS = 'SET_SEARCH_OPTIONS'
 export const REQUEST_LISTINGS = 'REQUEST_LISTINGS'
 export const RECEIVE_LISTINGS = 'RECEIVE_LISTINGS'
+export const SET_WEB3JS = 'SET_WEB3JS'
+export const SET_WEB3_CONTRACT = 'SET_WEB3_CONTRACT'
 
 // ============================================================
 // FUNCTIONS
@@ -51,11 +53,16 @@ const shouldFetchListings = (state) => {
 const fetchListingsUsingOptions = (dispatch, state) => {
   // The server expects 'from_date' and 'to_date' in underscore format
   // whereas the client uses camelCase. We convert below.
-  const { fromDate, toDate, countryCode } = state.searchOptions
-  const opts = {
-    from_date: (fromDate) ? fromDate.getTime() / 1000 : null,
-    to_date: (toDate) ? toDate.getTime() / 1000 : null,
-    country_code: countryCode,
+  let opts
+  if (isSet(state.searchOptions)) {
+    const { fromDate, toDate, countryCode } = state.searchOptions
+    opts = {
+      from_date: (fromDate) ? fromDate.getTime() / 1000 : null,
+      to_date: (toDate) ? toDate.getTime() / 1000 : null,
+      country_code: countryCode,
+    }
+  } else {
+    opts = {}
   }
   const uri = getListingsURI(opts)
   return fetch(uri)
@@ -66,6 +73,21 @@ const fetchListingsUsingOptions = (dispatch, state) => {
 // ============================================================
 // EXPORT FUNCTIONS
 // ============================================================
+
+const setWeb3Contract = web3Contract => ({
+  type: SET_WEB3_CONTRACT,
+  web3Contract,
+})
+
+export const setWeb3Js = (web3js) => {
+  return (dispatch) => {
+    dispatch({ type: SET_WEB3JS, web3js })
+    const abiArray = window.contractDetails.jsonInterface
+    const MyContract = TruffleContract(abiArray)
+    MyContract.setProvider(web3js.currentProvider)
+    MyContract.deployed().then(inst => dispatch(setWeb3Contract(inst)))
+  }
+}
 
 export const setSearchOptions = opts => ({
   type: SET_SEARCH_OPTIONS,

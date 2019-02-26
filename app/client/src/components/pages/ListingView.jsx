@@ -16,14 +16,31 @@ const formatDate = (date) => {
 }
 
 class ListingView extends Component {
+  constructor() {
+    super()
+    this.onBookButtonClicked = this.onBookButtonClicked.bind(this)
+  }
+
   componentDidMount() {
     const { dispatch } = this.props
-    this.onBookButtonClicked = this.onBookButtonClicked.bind(this)
     dispatch(fetchListingsIfNeeded())
   }
 
-  onBookButtonClicked() {
-    console.log('bookButonClicked')
+  async onBookButtonClicked() {
+    // const obj = {
+    //   from: web3.accounts[0],
+    //   gas: 100000,
+    //   // to: ,
+    //   // value: ,
+    //   // gasPrice: ,
+
+    // }
+    // try {
+    //   result = await web3.eth.sendTransaction(obj)
+    // } catch (err) {
+    //   console.log('caught error in sendtransaction')
+    //   console.log(err)
+    // }
   }
 
   getListingDetails(isFetching, listings, lid) {
@@ -118,6 +135,11 @@ class ListingView extends Component {
     )
   }
 }
+
+ListingView.contextTypes = {
+  web3: PropTypes.object,
+}
+
 
 ListingView.propTypes = {
   isFetching: PropTypes.bool.isRequired,

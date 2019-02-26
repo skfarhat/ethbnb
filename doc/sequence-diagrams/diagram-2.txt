@@ -1,0 +1,14 @@
+@startuml
+
+participant "App"
+participant "actions.js"
+participant "reducers.js"
+
+App -> App: web3 = Web3(...)
+App -> "actions.js": dispatch(setWeb3js(web3))
+"actions.js" -> "reducers.js": return { type: SET_WEB3, web3js}
+"reducers.js" -> "reducers.js" : contract.deploy().then() => dispatch()
+"reducers.js" -> "actions.js": dispatch()
+"actions.js" -> "reducers.js": return {type: SET_CONTRACT, contract}
+
+@enduml
