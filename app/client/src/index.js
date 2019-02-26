@@ -1,6 +1,7 @@
 import React from 'react'
 import { render } from 'react-dom'
 import { Provider } from 'react-redux'
+import { Web3Provider } from 'react-web3'
 import 'semantic-ui-css/semantic.min.css'
 import './css/bootstrap-4.1.0.min.css'
 import './main.css'
@@ -8,12 +9,14 @@ import App from './components/App'
 import * as serviceWorker from './serviceWorker'
 import configureStore from './redux/store'
 
-
 const store = configureStore()
+
 
 render(
   <Provider store={store}>
-    <App />
+    <Web3Provider>
+      <App />
+    </Web3Provider>
   </Provider>,
   document.getElementById('root'),
 )

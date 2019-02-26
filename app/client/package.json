@@ -20,6 +20,7 @@
     "react-router-dom": "^4.3.1",
     "react-scripts": "^2.1.5",
     "react-semantic-ui-datepickers": "^1.8.1",
+    "react-web3": "github:skfarhat/react-web3",
     "reactstrap": "^7.1.0",
     "redux": "^4.0.1",
     "redux-logger": "^3.0.6",
