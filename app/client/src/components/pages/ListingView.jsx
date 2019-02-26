@@ -7,16 +7,6 @@ import { fetchListingsIfNeeded } from '../../redux/actions'
 import IPFSImage from '../IPFSImage'
 import '../../css/listing-view.css'
 
-
-const mapStateToProps = (state, ownProps) => ({
-  listings: state.listings,
-  isFetching: state.isFetching,
-  lid: ownProps.lid,
-  fromDate: state.searchOptions.fromDate,
-  toDate: state.searchOptions.toDate,
-})
-
-
 const formatDate = (date) => {
   if (date === null || typeof (date) === 'undefined') {
     return ''
@@ -134,4 +124,13 @@ ListingView.propTypes = {
   dispatch: PropTypes.func.isRequired,
   // listings: PropTypes.array.isRequired,
 }
+
+const mapStateToProps = (state, ownProps) => ({
+  listings: state.listings,
+  isFetching: state.isFetching,
+  lid: ownProps.lid,
+  fromDate: state.searchOptions.fromDate,
+  toDate: state.searchOptions.toDate,
+})
+
 export default connect(mapStateToProps)(ListingView)

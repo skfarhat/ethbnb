@@ -13,6 +13,9 @@
     max-width: 500px;
     text-align:center;
 }
+.listing-mini a {
+  color: inherit;
+}
 .IPFSImage {
     border-radius: 10px;
 }

@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import IPFSImage from '../IPFSImage'
 
 class ListingMini extends Component {
@@ -7,11 +8,11 @@ class ListingMini extends Component {
     const { lid, title, location, country, price, hash, ext } = this.props
     return (
       <div className="listing-mini">
-        <IPFSImage
-          hash={hash}
-          ext={ext}
-        />
         <Link to={`/listing/${lid}`}>
+          <IPFSImage
+            hash={hash}
+            ext={ext}
+          />
           <h5>
             {title}
           </h5>
@@ -37,6 +38,15 @@ class ListingMini extends Component {
       </div>
     )
   }
+}
+
+ListingMini.propTypes = {
+  lid: PropTypes.string.isRequired,
+  title: PropTypes.string,
+  country: PropTypes.number.isRequired,
+  price: PropTypes.number.isRequired,
+  hash: PropTypes.string.isRequired,
+  ext: PropTypes.string.isRequired,
 }
 
 export default ListingMini

@@ -10,10 +10,6 @@ import ListingMini from './ListingMini'
 import { fetchListingsIfNeeded } from '../../redux/actions'
 
 const ReactGridLayout = WidthProvider(RGL)
-const mapStateToProps = state => ({
-  listings: state.listings || [],
-  isFetching: state.isFetching,
-})
 
 class ListingSearch extends Component {
   async componentDidMount() {
@@ -91,5 +87,10 @@ class ListingSearch extends Component {
 ListingSearch.propTypes = {
   dispatch: PropTypes.func.isRequired,
 }
+
+const mapStateToProps = state => ({
+  listings: state.listings || [],
+  isFetching: state.isFetching,
+})
 
 export default connect(mapStateToProps)(ListingSearch)
