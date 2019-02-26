@@ -2,67 +2,110 @@ import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import { Loader } from 'semantic-ui-react'
+import { Button, Loader } from 'semantic-ui-react'
 import { fetchListingsIfNeeded } from '../../redux/actions'
+import IPFSImage from '../IPFSImage'
+import '../../css/listing-view.css'
 
 
 const mapStateToProps = (state, ownProps) => ({
   listings: state.listings,
   isFetching: state.isFetching,
   lid: ownProps.lid,
+  fromDate: state.searchOptions.fromDate,
+  toDate: state.searchOptions.toDate,
 })
 
-const getListingDetails = (isFetching, listings, lid) => {
-  console.log(listings)
-  // If listings is undefined
-  if (listings === null || typeof listings === 'undefined') {
-    return (
-      <Loader active={isFetching} />)
-  }
-  // If listings is defined, find the listing with matching lid
-  // if zero or more than one are found, return error
-  const res = listings.filter(o => o.lid === lid)
-  if (res.length !== 1) {
-    return (
-      <h4>
-        {`Error looking for listing with lid ${lid}`}
-      </h4>
-    )
-  }
-  const l = res[0]
-  return (
-    <div>
-      <h5>
-        {l.title}
-      </h5>
-      <div>
-        <em> Location: </em>
-        <span className="location">
-          {l.location}
-        </span>
-      </div>
-      <div>
-        <em> Country: </em>
-        <span className="country">
-          {l.country}
-        </span>
-      </div>
-      <div>
-        <em> Price: </em>
-        <span className="price">
-          {l.price}
-        </span>
-      </div>
-    </div>
-  )
-// <IPFSImage hash={hash} ext={ext} />
-}
 
+const formatDate = (date) => {
+  if (date === null || typeof (date) === 'undefined') {
+    return ''
+  }
+  const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }
+  return date.toLocaleDateString('en-UK', options)
+}
 
 class ListingView extends Component {
   componentDidMount() {
     const { dispatch } = this.props
+    this.onBookButtonClicked = this.onBookButtonClicked.bind(this)
     dispatch(fetchListingsIfNeeded())
+  }
+
+  onBookButtonClicked() {
+    console.log('bookButonClicked')
+  }
+
+  getListingDetails(isFetching, listings, lid) {
+    const { fromDate, toDate } = this.props
+    let hash
+    let ext
+    // If listings is undefined
+    if (listings === null || typeof listings === 'undefined') {
+      return (
+        <Loader active={isFetching} />)
+    }
+    // If listings is defined, find the listing with matching lid
+    // if zero or more than one are found, return error
+    const res = listings.filter(o => o.lid === lid)
+    if (res.length !== 1) {
+      return (
+        <h4>
+          {`Error looking for listing with lid ${lid}`}
+        </h4>
+      )
+    }
+    const l = res[0]
+    if (Array.isArray(l.images) && l.images.length > 0) {
+      const img = l.images[0]
+      if (img && Object.prototype.hasOwnProperty.call(img, 'hash')
+        && Object.prototype.hasOwnProperty.call(img, 'path')) {
+        hash = img.hash
+        ext = img.path.split('.').pop()
+      }
+    }
+
+    return (
+      <div>
+        <div>
+          {`${formatDate(fromDate)}\t\t${formatDate(toDate)}`}
+        </div>
+        <IPFSImage
+          hash={hash}
+          ext={ext}
+        />
+        <h5>
+          {l.title}
+        </h5>
+        <div>
+          <em> Description: </em>
+          <span className="description">
+            {l.description}
+          </span>
+        </div>
+        <div>
+          <em> Location: </em>
+          <span className="location">
+            {l.location}
+          </span>
+        </div>
+        <div>
+          <em> Country: </em>
+          <span className="country">
+            {l.country}
+          </span>
+        </div>
+        <div>
+          <em> Price: </em>
+          <span className="price">
+            {l.price}
+          </span>
+        </div>
+        <Button toggle active onClick={this.onBookButtonClicked}>
+          Book listing
+        </Button>
+      </div>
+    )
   }
 
   render() {
@@ -70,8 +113,17 @@ class ListingView extends Component {
     const { lid } = match.params
     return (
       <div className="listing-view">
-        <Link key="back-button" to="/listing/"> Back </Link>
-        { getListingDetails(isFetching, listings, lid) }
+        <Link
+          key="back-button"
+          to="/listing/"
+        >
+        <div className="back-button-div">
+          <Button attached="top">
+            Back
+          </Button>
+        </div>
+        </Link>
+        { this.getListingDetails(isFetching, listings, lid) }
       </div>
     )
   }
@@ -80,6 +132,6 @@ class ListingView extends Component {
 ListingView.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
-  listings: PropTypes.array.isRequired,
+  // listings: PropTypes.array.isRequired,
 }
 export default connect(mapStateToProps)(ListingView)

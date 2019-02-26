@@ -38,6 +38,7 @@ class IPFSImage extends Component {
     return (
       <div>
         <img
+          className="IPFSImage"
           width="200px"
           height="200px"
           src={url}

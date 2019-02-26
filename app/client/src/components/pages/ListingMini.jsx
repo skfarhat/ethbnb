@@ -7,7 +7,10 @@ class ListingMini extends Component {
     const { lid, title, location, country, price, hash, ext } = this.props
     return (
       <div className="listing-mini">
-        <IPFSImage hash={hash} ext={ext} />
+        <IPFSImage
+          hash={hash}
+          ext={ext}
+        />
         <Link to={`/listing/${lid}`}>
           <h5>
             {title}

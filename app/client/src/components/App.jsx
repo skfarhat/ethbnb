@@ -3,8 +3,6 @@ import { BrowserRouter as Router, Route } from 'react-router-dom'
 import ListingView from './pages/ListingView'
 import ListingSearch from './pages/ListingSearch'
 import Navigation from './pages/Navigation'
-import '../css/bootstrap-4.1.0.min.css'
-import '../main.css'
 
 
 class App extends Component {
