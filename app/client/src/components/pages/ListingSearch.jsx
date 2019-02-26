@@ -27,7 +27,6 @@ class ListingSearch extends Component {
 
     const { isFetching } = this.props
 
-    console.log('self.props.listings', self.props.listings)
     Object.keys(self.props.listings).forEach((key) => {
       const l = self.props.listings[key]
 
