@@ -7,7 +7,7 @@ import { countryOptions } from './common'
 import { fetchListings, setSearchOptions } from '../../redux/actions'
 import 'react-semantic-ui-datepickers/dist/react-semantic-ui-datepickers.css'
 import '../../css/listing-search.css'
-
+import '../../css/eth-datepicker.css'
 
 class ListingSearchArea extends Component {
   constructor() {

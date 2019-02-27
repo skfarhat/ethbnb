@@ -1,0 +1,14 @@
+.datepicker-wrapper {
+    display: inline-block;
+    width:50%;
+}
+.datepicker-wrapper input {
+    padding: 5px;
+    font-size: inherit;
+}
+.datepicker-wrapper .field {
+    width: 100%;
+}
+.datepicker-wrapper .ui.icon.input {
+    width: 90%;
+}

@@ -6,6 +6,7 @@ import { Button, Loader } from 'semantic-ui-react'
 import { fetchListingsIfNeeded } from '../../redux/actions'
 import IPFSImage from '../IPFSImage'
 import '../../css/listing-view.css'
+import EthDatePicker from './EthDatePicker'
 
 const formatDate = (date) => {
   if (date === null || typeof (date) === 'undefined') {
@@ -108,6 +109,7 @@ class ListingView extends Component {
             {l.price}
           </span>
         </div>
+        <EthDatePicker />
         <Button toggle active onClick={this.onBookButtonClicked}>
           Book listing
         </Button>

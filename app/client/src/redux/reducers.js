@@ -35,7 +35,7 @@ const rootReducer = (state = initialState, action) => {
     case SET_SEARCH_OPTIONS: {
       return {
         ...state,
-        searchOptions: action.opts,
+        searchOptions: Object.assign({}, state.searchOptions, action.opts),
       }
     }
     case REQUEST_LISTINGS: {
