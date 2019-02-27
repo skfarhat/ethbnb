@@ -1,11 +1,15 @@
 @startuml
 
 actor Client
-participant "Server\nethbnb.com" as Server
-box "Eth" #LightBlue
-  participant "EthNode\nlocalhost:8545" as EthNode
-  database Blockchain
-end box
+participant "UI" as ui
+participant "Local Storage" as ls
+participant "Blockchain" as bc
+participant "Server" as s
+
+ui -> ui: If start-end dates are null, disable Book button
+ui -> ls: Otherwise, check if local storage has booking intersecting selected dates
+ui -> ui: Click "Book" button
+ui -> ls: Add booking to local storage
 
 
 == EthNodeInit ==

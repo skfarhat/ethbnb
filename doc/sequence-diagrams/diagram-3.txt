@@ -1,0 +1,24 @@
+@startuml
+
+
+actor Client
+participant "UI" as ui
+participant "Local Storage" as ls
+participant "Blockchain" as bc
+participant "Server" as s
+
+Client -> ui: Go to ListingView page
+ui -> ui: If start-end dates are null, disable Book button
+ui <-> ls: Otherwise, check if local storage has booking intersecting selected dates
+Client -> ui: If enabled, click "Book" button
+ui -> bc: sendTransaction
+bc -> ui: sendTransaction complete
+ui -> ls: Add booking to pending bookings
+ui -> ui: Update Book button props
+bs -> s: Event BookingComplete
+s -> s: Update database
+bs -> ui: Event BookingComplete
+ui -> ui: Invalidate data (request refresh)
+Client -> ui: Refresh UI
+
+@enduml
