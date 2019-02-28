@@ -54,8 +54,8 @@ class IPFSImage extends Component {
 }
 
 IPFSImage.propTypes = {
-  hash: PropTypes.string.isRequired,
-  ext: PropTypes.string.isRequired,
+  hash: PropTypes.string,
+  ext: PropTypes.string,
 }
 
 

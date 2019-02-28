@@ -8,8 +8,8 @@ import { SERVER_NODE_URL } from '../constants/global'
 export const SET_SEARCH_OPTIONS = 'SET_SEARCH_OPTIONS'
 export const REQUEST_LISTINGS = 'REQUEST_LISTINGS'
 export const RECEIVE_LISTINGS = 'RECEIVE_LISTINGS'
-export const SET_WEB3JS = 'SET_WEB3JS'
-export const SET_WEB3_CONTRACT = 'SET_WEB3_CONTRACT'
+export const BOOK_LISTING = 'BOOK_LISTING'
+export const SET_WEB3 = 'SET_WEB3'
 
 // ============================================================
 // FUNCTIONS
@@ -74,18 +74,55 @@ const fetchListingsUsingOptions = (dispatch, state) => {
 // EXPORT FUNCTIONS
 // ============================================================
 
-const setWeb3Contract = web3Contract => ({
-  type: SET_WEB3_CONTRACT,
-  web3Contract,
-})
+export const bookListing = (contract, ethAddr, lid, fromDate, toDate) => {
+  const obj = {
+    from: ethAddr,
+    gas: 100000,
+  }
+  if (!contract) {
+    console.log('Cannot make booking when contract is not setup')
+    return
+  }
+  if (!fromDate || !toDate) {
+    console.log('Book button should be disabled when dates are not set.')
+    return
+  }
+  const lid1 = parseInt(lid, 10)
+  const nbOfDays = (toDate - fromDate) / (86400000) // number of milliseconds per day
+  const fromDate1 = fromDate.getTime() / 1000
+  contract.listingBook(lid1, fromDate1, nbOfDays, obj).then((res) => {
+    console.log('listingBook submitted')
+    console.log(res)
+  }).catch((err) => {
+    // TODO: show user alert
+    console.log('error from listingBook')
+    console.log(err)
+  })
+  return {
+    type: BOOK_LISTING,
+    ethAddr,
+    lid,
+    fromDate,
+    toDate,
+  }
+}
 
 export const setWeb3Js = (web3js) => {
   return (dispatch) => {
-    dispatch({ type: SET_WEB3JS, web3js })
-    const abiArray = window.contractDetails.jsonInterface
-    const MyContract = TruffleContract(abiArray)
+    const { jsonInterface } = window.contractDetails
+    const MyContract = TruffleContract(jsonInterface)
     MyContract.setProvider(web3js.currentProvider)
-    MyContract.deployed().then(inst => dispatch(setWeb3Contract(inst)))
+    web3js.eth.getAccounts()
+      .then(accounts => accounts[0])
+      .then((accountAddr) => {
+        MyContract.deployed()
+          .then(contract => dispatch({
+            type: SET_WEB3,
+            web3js,
+            contract,
+            accountAddr,
+          }))
+      })
   }
 }
 

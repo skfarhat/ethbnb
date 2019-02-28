@@ -15,7 +15,7 @@ class ListingSearchArea extends Component {
 
   onDateChange(data) {
     const { dispatch } = this.props
-    if (data.length === 2) {
+    if (data !== null && data.length === 2) {
       dispatch(setSearchOptions({
         fromDate: data[0],
         toDate: data[1],

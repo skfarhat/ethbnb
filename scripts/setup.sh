@@ -10,7 +10,7 @@ DATA_MANAGE="$ROOT_DIR/app/server/src/data_manage.js"
 ABI_BUILT="$ROOT_DIR/build/contracts/EthBnB.json"
 
 check_exists() {
-  ls "$1"  &> /dev/null 
+  ls "$1"  &> /dev/null
 }
 
 exit_err() {
@@ -36,12 +36,18 @@ echo "Ensure ganache-cli or Ganache is running."
 truffle compile
 
 # ================================================
-# DEPLOY CONTRACT 
+# DEPLOY CONTRACT
 # ================================================
 out=$(truffle migrate --reset)
 echo "$out"
-contractAddress=$(echo "$out" | grep 'EthBnB:' | cut -d ':' -f2)
-contractAddress=${contractAddress:1} # because there's one space at the beginning
+if [ `truffle --version 2>&1 | grep -p 'v\d' -o` '==' "v5" ]; then
+  contractAddress=$(echo "$out" | grep 'contract address' | tail -n 1 | egrep -p '0x\w+' -o) # for truffle v5
+else
+  # Assume it is version 4
+  contractAddress=$(echo "$out" | grep 'EthBnB:' | cut -d ':' -f2) # for truffle v4
+  contractAddress=${contractAddress:1} # because there's one space at the beginning
+fi
+
 
 # ================================================
 # UPDATE ABI_FILE
@@ -52,8 +58,8 @@ contractAddress=${contractAddress:1} # because there's one space at the beginnin
 # echo "}" >> $ABI_FILE
 cat << EOF > $ABI_FILE
 const x = {
-    contractAddress: '$contractAddress', 
-    jsonInterface: 
+    contractAddress: '$contractAddress',
+    jsonInterface:
 EOF
 cat $ABI_BUILT >> $ABI_FILE
 cat << EOF >> $ABI_FILE

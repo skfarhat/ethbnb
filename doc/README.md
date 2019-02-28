@@ -1,5 +1,10 @@
 # README
 
+### Versions:
+
+* truffle (v5) (`npm install -g truffle`)
+* web3@v1.0.0-beta.33
+
 
 ## Server-Client interaction
 
@@ -10,8 +15,8 @@ The server is designed to be another Eth node that reads the state of the blockc
 * Setup `npm install -g ganache-cli`.
 * Run `ganache-cli` in terminal or open Ganache mac application for good GUI view.
 * Run `truffle migrate --reset` in another.
-* IF `CORS` error is seen again. Run `npm install web3@0.20.6 --save`, then restart client with `npm start`. 
-otherwise we could get the CORS bug
+* IF `CORS` error is seen again. Run `npm install web3@0.20.6 --save`, then restart client with `npm start`.
+otherwise we could get the CORS bug. UPDATE: `npm install web3@v1.0.0-beta.33`
 * Start IPFS desktop.
 
 Running server:
@@ -22,7 +27,7 @@ npm run watch-ts
 npm run watch-node
 ```
 
-## Jenkins 
+## Jenkins
 
 * Start Jenkins: On my mac run `start_jenkins` on the command line
 * `JenkinsFile` located in root project defines all build steps
@@ -31,7 +36,7 @@ npm run watch-node
 
 ## Sublime Setup
 
-* Package eslint-formatter. Use `cmd+K+E` to fix 
+* Package eslint-formatter. Use `cmd+K+E` to fix
 * eslint
 
 ## DApp
@@ -51,7 +56,7 @@ npm install
 npm start
 ```
 
-## Sequence Diagrams 
+## Sequence Diagrams
 
 PlantUML: http://plantuml.com/
 
@@ -81,6 +86,6 @@ In terminal 1: `ganache-cli`
 In terminal 2: `truffle test`
 
 
-## Packages 
+## Packages
 
 `npm install -g babel-eslint`

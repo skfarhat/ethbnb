@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Button, Loader } from 'semantic-ui-react'
-import { fetchListingsIfNeeded } from '../../redux/actions'
+import { fetchListingsIfNeeded, bookListing } from '../../redux/actions'
 import IPFSImage from '../IPFSImage'
 import '../../css/listing-view.css'
 import EthDatePicker from './EthDatePicker'
@@ -27,21 +27,10 @@ class ListingView extends Component {
     dispatch(fetchListingsIfNeeded())
   }
 
-  async onBookButtonClicked() {
-    // const obj = {
-    //   from: web3.accounts[0],
-    //   gas: 100000,
-    //   // to: ,
-    //   // value: ,
-    //   // gasPrice: ,
-
-    // }
-    // try {
-    //   result = await web3.eth.sendTransaction(obj)
-    // } catch (err) {
-    //   console.log('caught error in sendtransaction')
-    //   console.log(err)
-    // }
+  onBookButtonClicked() {
+    const { dispatch, contract, fromDate, toDate, accountAddr, match } = this.props
+    const { lid } = match.params
+    dispatch(bookListing(contract, accountAddr, lid, fromDate, toDate))
   }
 
   getListingDetails(isFetching, listings, lid) {
@@ -138,11 +127,6 @@ class ListingView extends Component {
   }
 }
 
-ListingView.contextTypes = {
-  web3: PropTypes.object,
-}
-
-
 ListingView.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
@@ -150,6 +134,8 @@ ListingView.propTypes = {
 }
 
 const mapStateToProps = (state, ownProps) => ({
+  accountAddr: state.accountAddr,
+  contract: state.contract,
   listings: state.listings,
   isFetching: state.isFetching,
   lid: ownProps.lid,
