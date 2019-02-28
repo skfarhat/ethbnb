@@ -77,7 +77,7 @@ const fetchListingsUsingOptions = (dispatch, state) => {
 export const bookListing = (contract, ethAddr, lid, fromDate, toDate) => {
   const obj = {
     from: ethAddr,
-    gas: 100000,
+    gas: 1000000,
   }
   if (!contract) {
     console.log('Cannot make booking when contract is not setup')
@@ -90,6 +90,15 @@ export const bookListing = (contract, ethAddr, lid, fromDate, toDate) => {
   const lid1 = parseInt(lid, 10)
   const nbOfDays = (toDate - fromDate) / (86400000) // number of milliseconds per day
   const fromDate1 = fromDate.getTime() / 1000
+
+  // ESTIMATE GAS:
+  //
+  // contract.contract.methods.listingBook(lid1, fromDate1, nbOfDays)
+  //   .estimateGas(obj)
+  //   .then((err, amount) => {
+  //     console.log(err)
+  //     console.log(amount)
+  //   })
   contract.listingBook(lid1, fromDate1, nbOfDays, obj).then((res) => {
     console.log('listingBook submitted')
     console.log(res)
