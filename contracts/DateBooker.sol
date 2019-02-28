@@ -1,4 +1,4 @@
-pragma solidity ^0.4.22;
+pragma solidity ^0.5.0;
 
 // TODO: introduce needed modifiers and require() in functions
 //       checks on data[id]

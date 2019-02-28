@@ -1,4 +1,4 @@
-pragma solidity ^0.4.22;
+pragma solidity ^0.5.0;
 
 // TODO: change listingId param to lid. Shorter, better.
 import  "./DateBooker.sol";
@@ -117,7 +117,7 @@ contract EthBnB {
    *
    * The created account will be added to 'accounts'
    */
-   function createAccount(string name) public {
+   function createAccount(string memory name) public {
     accounts[msg.sender] = Account({
       owner : msg.sender,
       name : name,
@@ -132,7 +132,7 @@ contract EthBnB {
     return accounts[msg.sender].owner == msg.sender;
   }
 
-  function getAccountName() public view returns (string) {
+  function getAccountName() public view returns (string memory) {
     require(hasAccount(), "No associated account found.");
     return accounts[msg.sender].name;
   }
@@ -153,12 +153,12 @@ contract EthBnB {
   // -----------------------------------------------------------------------
 
   /** Returns a list of all listings */
-  function getAllListings() public view returns (uint[]) {
+  function getAllListings() public view returns (uint[] memory) {
     return listingIds;
   }
 
   /** Returns a list of all of the message sender's listings */
-  function getMyListingIds() public view returns (uint[]) {
+  function getMyListingIds() public view returns (uint[] memory) {
     require(accounts[msg.sender].owner == msg.sender, "No account found.");
     return accounts[msg.sender].listingIds;
   }
@@ -167,7 +167,7 @@ contract EthBnB {
    * Creates a new listing for the message sender
    * and returns the Id of the created listing
    */
-  function createListing(Country country, string location, uint price) public {
+  function createListing(Country country, string memory location, uint price) public {
     require(hasAccount(), "Must have an account before creating a listing");
     // Note: enforce a maximum number of listings per user?
     uint bookerId = dateBooker.register(BOOKING_CAPACITY);
@@ -192,7 +192,7 @@ contract EthBnB {
    * @param nb_days      number of days for which the booking will be made
    */
   function listingBook(uint listingId, uint from_date, uint nb_days) public {
-    checkListingId(listingId);
+    require(listings[listingId].id != 0, "No such listing found.");
     uint bookerId = listings[listingId].bookerId;
     int res = dateBooker.book(bookerId, from_date, nb_days);
     emitBookEvent(res, listingId);
@@ -228,12 +228,12 @@ contract EthBnB {
     emit UpdateListingEvent(msg.sender, listingId);
   }
 
-  function getListingLocation(uint listingId) public view returns (string) {
+  function getListingLocation(uint listingId) public view returns (string memory) {
     checkListingId(listingId);
     return listings[listingId].location;
   }
 
-  function setListingLocation(uint listingId, string location) public {
+  function setListingLocation(uint listingId, string memory location) public {
     checkListingId(listingId);
     listings[listingId].location = location;
     emit UpdateListingEvent(msg.sender, listingId);
