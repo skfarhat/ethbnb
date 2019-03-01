@@ -10,6 +10,8 @@ export const REQUEST_LISTINGS = 'REQUEST_LISTINGS'
 export const RECEIVE_LISTINGS = 'RECEIVE_LISTINGS'
 export const BOOK_LISTING = 'BOOK_LISTING'
 export const SET_WEB3 = 'SET_WEB3'
+export const SET_ACCOUNTS = 'SET_ACCOUNTS'
+export const SET_SELECTED_ACCOUNT = 'SET_SELECTED_ACCOUNT'
 
 // ============================================================
 // FUNCTIONS
@@ -116,22 +118,32 @@ export const bookListing = (contract, ethAddr, lid, fromDate, toDate) => {
   }
 }
 
+export const setSelectedAcccountIndex = (idx) => {
+  return {
+    type: SET_SELECTED_ACCOUNT,
+    selectedAccountIndex: idx,
+  }
+}
+
 export const setWeb3Js = (web3js) => {
   return (dispatch) => {
     const { jsonInterface } = window.contractDetails
     const MyContract = TruffleContract(jsonInterface)
     MyContract.setProvider(web3js.currentProvider)
     web3js.eth.getAccounts()
-      .then(accounts => accounts[0])
-      .then((accountAddr) => {
-        MyContract.deployed()
-          .then(contract => dispatch({
+      .then(accounts => MyContract.deployed()
+        .then((contract) => {
+          dispatch({
             type: SET_WEB3,
             web3js,
             contract,
-            accountAddr,
-          }))
-      })
+            accounts,
+          })
+          dispatch({
+            type: SET_SELECTED_ACCOUNT,
+            selectedAccountIndex: 0,
+          })
+        }))
   }
 }
 
@@ -147,9 +159,6 @@ export function fetchListings() {
   }
 }
 
-// TODO: add searchOptions to this function
-//       pass them along to fetchListings - which should
-//       tailor the API hostname based on what we need
 export function fetchListingsIfNeeded(opts) {
   return (dispatch, getState) => {
     if (shouldFetchListings(getState())) {

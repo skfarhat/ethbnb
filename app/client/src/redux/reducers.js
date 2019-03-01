@@ -4,6 +4,8 @@ import {
   SET_SEARCH_OPTIONS,
   SET_WEB3,
   BOOK_LISTING,
+  SET_ACCOUNTS,
+  SET_SELECTED_ACCOUNT,
 } from './actions'
 
 const initialState = {
@@ -14,6 +16,8 @@ const initialState = {
     toDate: null,
     countryCode: null,
   },
+  selectedAccountIndex: 0,
+  accounts: [],
   accountAddr: null,
   web3: null,
   contract: null,
@@ -27,6 +31,19 @@ const rootReducer = (state = initialState, action) => {
         web3: action.web3js,
         contract: action.contract,
         accountAddr: action.accountAddr,
+        accounts: action.accounts,
+      }
+    }
+    case SET_ACCOUNTS: {
+      return {
+        ...state,
+        accounts: action.accounts,
+      }
+    }
+    case SET_SELECTED_ACCOUNT: {
+      return {
+        ...state,
+        selectedAccountIndex: action.selectedAccountIndex,
       }
     }
     case SET_SEARCH_OPTIONS: {
