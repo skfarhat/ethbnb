@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom'
 import Web3 from 'web3'
 import ListingView from './pages/ListingView'
 import ListingSearch from './pages/ListingSearch'
+import AccountPage from './pages/AccountPage'
 import Navigation from './pages/Navigation'
 import { setWeb3Js } from '../redux/actions'
 
@@ -31,6 +32,7 @@ class App extends Component {
         <div className="container">
           <Navigation />
           <Route exact path="/listing" component={ListingSearch} />
+          <Route exact path="/account" component={AccountPage} />
           <Route path="/listing/:lid" component={ListingView} />
         </div>
       </Router>
