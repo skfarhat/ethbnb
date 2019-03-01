@@ -42,6 +42,7 @@ class ListingSearchArea extends Component {
             fluid
             search
             selection
+            clearable
             value={countryCode}
             options={this.countryCodes}
             onChange={this.onCountryChange}
