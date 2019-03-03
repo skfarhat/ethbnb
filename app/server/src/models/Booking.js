@@ -4,7 +4,7 @@ var ObjectId = Schema.ObjectId
 
 const BookingSchema = new Schema({
     user: String,
-    bid: String,
+    bid: Number,
     lid: Number,
     from_date: Date,
     to_date: Date,

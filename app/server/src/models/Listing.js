@@ -5,9 +5,8 @@ var ObjectId = Schema.ObjectId
 var Listing = mongoose.model('listings', new Schema({
   _id: Number,
   owner: String,
-  lid: { type: String, index: true },
+  lid: { type: Number, index: true },
   title : String,
-  owner_id: Number,
   description: String,
   price: Number,
   country: Number,
