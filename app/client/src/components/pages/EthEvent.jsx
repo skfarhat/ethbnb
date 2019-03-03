@@ -3,21 +3,40 @@ import PropTypes from 'prop-types'
 
 class EthEvent extends Component {
   render() {
-    const { event: name, blockNumber, address, logIndex, returnValues } = this.props
+    const { event: name, transactionHash, returnValues } = this.props
+    const rValuesDOM = {
+      transactionHash,
+    }
+    Object.entries(returnValues).forEach((entry) => {
+      // Only keep non-numeric keys
+      if (Number.isNaN(parseInt(entry[0], 10))) {
+        rValuesDOM[entry[0]] = entry[1]
+      }
+    })
     return (
       <div className="eth-event">
-        <span> { logIndex } </span>
-        <span> { blockNumber } </span>
-        <span> { name } </span>
-        <span> { address } </span>
-        <span> from: { returnValues.from } </span>
+        <h5>
+          { name }
+        </h5>
+        <table>
+          <tbody>
+            {
+              Object.entries(rValuesDOM).map(e => (
+                <tr key={e[0]}>
+                  <td> { e[0] } </td>
+                  <td> { e[1] } </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+
       </div>
     )
   }
 }
 
 
-EthEvent.propTypes = {
-}
+EthEvent.propTypes = {}
 
 export default EthEvent
