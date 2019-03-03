@@ -12,6 +12,7 @@ export const BOOK_LISTING = 'BOOK_LISTING'
 export const SET_WEB3 = 'SET_WEB3'
 export const SET_ACCOUNTS = 'SET_ACCOUNTS'
 export const SET_SELECTED_ACCOUNT = 'SET_SELECTED_ACCOUNT'
+export const SET_ETH_EVENTS = 'SET_ETH_EVENTS'
 
 // ============================================================
 // FUNCTIONS
@@ -41,6 +42,15 @@ const getListingsURI = (opts) => {
   const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&')
   return `${SERVER_NODE_URL}api/listings?${queryString}`
 }
+
+const shouldFetchEthEvents = (state, accountAddr) => {
+  const { ethEvents, isFetchingEthEvents } = state
+  if (!Array.isArray(ethEvents[accountAddr])) {
+    return true
+  }
+  return !isFetchingEthEvents
+}
+
 
 const shouldFetchListings = (state) => {
   if (state.listings === null) {
@@ -163,6 +173,37 @@ export function fetchListingsIfNeeded(opts) {
   return (dispatch, getState) => {
     if (shouldFetchListings(getState())) {
       return dispatch(fetchListings(opts))
+    }
+  }
+}
+
+export const fetchEthEvents = (contract, accountAddr) => {
+  return (dispatch) => {
+    const opts = {
+      fromBlock: 0,
+      toBlock: 'latest',
+    }
+
+    contract.getPastEvents('allEvents', opts)
+      .then((events) => {
+        dispatch({
+          type: SET_ETH_EVENTS,
+          accountAddr,
+          events,
+        })
+      })
+      .catch((err) => {
+        console.log('We hit an error fetching Past events', err)
+      })
+  }
+}
+
+export function fetchEthEventsIfNeeded(accountAddr) {
+  return (dispatch, getState) => {
+    const state = getState()
+    const { contract } = state
+    if (shouldFetchEthEvents(state, accountAddr)) {
+      return dispatch(fetchEthEvents(contract, accountAddr))
     }
   }
 }

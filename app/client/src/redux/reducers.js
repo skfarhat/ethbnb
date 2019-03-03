@@ -6,6 +6,7 @@ import {
   BOOK_LISTING,
   SET_ACCOUNTS,
   SET_SELECTED_ACCOUNT,
+  SET_ETH_EVENTS,
 } from './actions'
 
 const initialState = {
@@ -21,6 +22,7 @@ const initialState = {
   accountAddr: null,
   web3: null,
   contract: null,
+  ethEvents: [],
 }
 
 const rootReducer = (state = initialState, action) => {
@@ -32,6 +34,12 @@ const rootReducer = (state = initialState, action) => {
         contract: action.contract,
         accountAddr: action.accountAddr,
         accounts: action.accounts,
+      }
+    }
+    case SET_ETH_EVENTS: {
+      return {
+        ...state,
+        ethEvents: action.events,
       }
     }
     case SET_ACCOUNTS: {
