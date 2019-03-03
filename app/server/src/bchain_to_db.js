@@ -70,7 +70,8 @@ module.exports = function () {
   // all of a listing's fields from the blockchain.
   const fetchAndReturnListing = async (lid, from) => {
     const l = {
-      lid, from
+      lid,
+      owner: from,
     }
     for (const field in listingFunctions) {
       const funcName = listingFunctions[field]
@@ -89,7 +90,8 @@ module.exports = function () {
   // a booking's fields from the blockchain.
   const fetchAndReturnBooking = async (bid, lid, from) => {
     const b = {
-      bid, from, lid
+      bid, lid,
+      user: from
     }
     let r
     try {

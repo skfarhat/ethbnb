@@ -3,6 +3,7 @@ var Schema   = mongoose.Schema
 var ObjectId = Schema.ObjectId
 
 const BookingSchema = new Schema({
+    user: String,
     bid: String,
     lid: Number,
     from_date: Date,
