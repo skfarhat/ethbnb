@@ -19,7 +19,6 @@ const initialState = {
   },
   selectedAccountIndex: 0,
   accounts: [],
-  accountAddr: null,
   web3: null,
   contract: null,
   ethEvents: [],
@@ -32,7 +31,6 @@ const rootReducer = (state = initialState, action) => {
         ...state,
         web3: action.web3js,
         contract: action.contract,
-        accountAddr: action.accountAddr,
         accounts: action.accounts,
       }
     }

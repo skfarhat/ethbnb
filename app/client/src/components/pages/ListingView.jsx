@@ -28,9 +28,9 @@ class ListingView extends Component {
   }
 
   onBookButtonClicked() {
-    const { dispatch, contract, fromDate, toDate, accountAddr, match } = this.props
+    const { dispatch, contract, fromDate, toDate, addr, match } = this.props
     const { lid } = match.params
-    dispatch(bookListing(contract, accountAddr, lid, fromDate, toDate))
+    dispatch(bookListing(contract, addr, lid, fromDate, toDate))
   }
 
   getListingDetails(isFetching, listings, lid) {
@@ -115,11 +115,11 @@ class ListingView extends Component {
           key="back-button"
           to="/listing/"
         >
-        <div className="back-button-div">
-          <Button attached="top">
-            Back
-          </Button>
-        </div>
+          <div className="back-button-div">
+            <Button attached="top">
+              Back
+            </Button>
+          </div>
         </Link>
         { this.getListingDetails(isFetching, listings, lid) }
       </div>
@@ -134,8 +134,8 @@ ListingView.propTypes = {
 }
 
 const mapStateToProps = (state, ownProps) => ({
-  accountAddr: state.accountAddr,
   contract: state.contract,
+  addr: (state.accounts.length > 0) ? state.accounts[state.selectedAccountIndex] : null,
   listings: state.listings,
   isFetching: state.isFetching,
   lid: ownProps.lid,
