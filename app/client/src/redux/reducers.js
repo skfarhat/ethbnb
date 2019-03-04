@@ -27,11 +27,13 @@ const initialState = {
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
     case SET_WEB3: {
+      const accounts = new Object()
+      Array.forEach(action.accounts, (act) => accounts[act] = {})
       return {
         ...state,
         web3: action.web3js,
         contract: action.contract,
-        accounts: action.accounts,
+        accounts,
       }
     }
     case SET_ETH_EVENTS: {

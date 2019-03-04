@@ -76,7 +76,7 @@ AccountPage.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  accounts: state.accounts,
+  accounts: Object.keys(state.accounts),
   contract: state.contract,
   events: state.ethEvents,
   selectedAccountIndex: state.selectedAccountIndex,

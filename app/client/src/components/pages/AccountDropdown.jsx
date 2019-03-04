@@ -18,7 +18,7 @@ const options = [
 ]
 
 const getOptions = (accounts) => {
-  if (!isSet(accounts) || accounts.length === 0) {
+  if (!isSet(accounts)) {
     return options
   }
   // Enable the
@@ -72,7 +72,7 @@ AccountDropdown.propTypes = {
 
 
 const mapStateToProps = state => ({
-  accounts: state.accounts,
+  accounts: Object.keys(state.accounts),
   selectedAccountIndex: state.selectedAccountIndex,
 })
 
