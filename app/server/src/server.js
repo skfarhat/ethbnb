@@ -29,6 +29,39 @@ const isSet = val => {
   return val !== null && typeof(val) !== 'undefined'
 }
 
+// GET /api/account
+//
+// :user account address for which bookings will be returned
+//
+app.get('/api/account/:user/bookings', async (req, res) => {
+  const { user } = req.params
+  const pipeline = [
+    {
+      $match: { user }
+    },
+    {
+      '$lookup': {
+        from: 'listings',
+        localField: 'lid',
+        foreignField: 'lid',
+        as: 'listing',
+      },
+    },
+    {
+      $unwind: "$listing"
+    },
+    {
+      $project: {
+        _id: 0,
+        __v: 0,
+      }
+    },
+  ]
+  const response = await Bookings.aggregate(pipeline)
+  return res.json(response)
+})
+
+
 app.get('/api/listings', async (req, res) => {
 
   logger.info('Serving content on /api/listings/')
@@ -37,7 +70,7 @@ app.get('/api/listings', async (req, res) => {
   // we convert them to milliseconds if they are provided, otherwise they are passed as is (undefined or null)
   const pipeline = [
     {
-      '$lookup': {
+      $lookup: {
         from: 'bookings',
         localField: 'bookings',
         foreignField: '_id',
@@ -45,7 +78,7 @@ app.get('/api/listings', async (req, res) => {
       },
     },
     {
-      '$lookup': {
+      $lookup: {
         from: 'ipfs_images',
         localField: 'images',
         foreignField: '_id',
