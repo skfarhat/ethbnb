@@ -19,10 +19,11 @@ contract DateBooker {
   // =============================================================
 
   event Register(uint id);
-  event Book(uint bid);
+  event Book(uint id, uint bid);
   event Cancellation(uint id, uint bid);
   event NoMoreSpace(uint id);
-  event BookConflict(uint bid);
+  event BookConflict(uint id, uint bid);
+  event PermissionDenied(uint id, uint bid);
   event CancellationError(uint id, int errno);
   event Error(int errno);
   event Log(uint x); // Used for debugging
@@ -44,6 +45,8 @@ contract DateBooker {
     // Any second of a given day is enough to represent that day.
     uint from_date;
     uint to_date;
+    // Address of this entrie's booker
+    address bookerAddr;
   }
 
   struct Data {
@@ -78,7 +81,8 @@ contract DateBooker {
         bid: INVALID,
         used: false,
         from_date: 0,
-        to_date: 0
+        to_date: 0,
+        bookerAddr: address(0)
       });
     }
     emit Register(nextId);
@@ -88,10 +92,12 @@ contract DateBooker {
   /**
    * Cancels the booking and returns its id.
    *
-   * @param id      id used in register()
-   * @param bid     booking id to be cancelled
+   *
+   * @param id          id used in register()
+   * @param bookerAddr  address of the entrie's booker
+   * @param bid         booking id to be cancelled
    */
-  function cancel(uint id, uint bid) public returns (int) {
+  function cancel(uint id, address bookerAddr, uint bid) public returns (int) {
     int idx = find_book(id, bid);
     if (idx < 0) {
       // Cannot remove in-existent entry
@@ -101,6 +107,11 @@ contract DateBooker {
     Data storage _data = data[id];
     uint udx = uint(idx);
     Entry storage curr = _data.d[udx];
+    // Check permission
+    if (curr.bookerAddr != bookerAddr) {
+      // Permission Denied
+      emit PermissionDenied(id, bid);
+    }
     if ( has_space(id) ) {
       _data.d[curr.prev].next = curr.next;
       _data.d[curr.next].prev = curr.prev;
@@ -109,6 +120,7 @@ contract DateBooker {
       _data.d[_data.d[_data.end].prev].next = udx;
       _data.d[_data.end].prev = udx;
     }
+    curr.bookerAddr = address(0);
     curr.used = false;
     _data.end = udx;
     if (_data.end == _data.start) {
@@ -119,7 +131,7 @@ contract DateBooker {
     return int(bid);
   }
 
-  function book(uint id, uint from_date, uint nb_of_days) public returns (int) {
+  function book(uint id, address bookerAddr, uint from_date, uint nb_of_days) public returns (int) {
     require(nb_of_days > 0, 'Cannot have non-positive days.');
     // Check that there is space
     if ( !has_space(id) ) {
@@ -131,7 +143,7 @@ contract DateBooker {
     uint to_date = from_date + nb_of_days;
     int ret = find_book_with_intersecting_dates(id, from_date, to_date);
     if (ret >= 0) {
-      emit BookConflict(uint(ret));
+      emit BookConflict(id, uint(ret));
       return BOOK_CONFLICT;
     }
     // Set properties of new entry
@@ -140,6 +152,7 @@ contract DateBooker {
     _data.d[_data.end].from_date = from_date;
     _data.d[_data.end].bid = _data.size;
     _data.d[_data.end].used = true;
+    _data.d[_data.end].bookerAddr = bookerAddr;
 
     if ( is_empty(id) ) {
       _data.start = _data.end;
@@ -148,7 +161,7 @@ contract DateBooker {
     if (_data.end == _data.start) {
       _data.end = INVALID;
     }
-    emit Book(_data.size);
+    emit Book(id, _data.size);
     return int(_data.size++);
   }
 

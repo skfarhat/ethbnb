@@ -35,8 +35,8 @@ contract EthBnB {
     // the DateBooker contract to setup the appropriate data structure
     // for storing booking information for that Listing.
     //
-    // The bookerId field below is set in createListing
-    uint bookerId;
+    // Field is set in createListing
+    uint dbid;
    }
 
    struct Account {
@@ -174,14 +174,14 @@ contract EthBnB {
   function createListing(Country country, string memory location, uint price) public {
     require(hasAccount(), "Must have an account before creating a listing");
     // Note: enforce a maximum number of listings per user?
-    uint bookerId = dateBooker.register(BOOKING_CAPACITY);
+    uint dbid = dateBooker.register(BOOKING_CAPACITY);
     listings[nextListingId] = Listing({
       id : nextListingId,
       owner: msg.sender,
       country: country,
       location: location,
       price: price,
-      bookerId: bookerId
+      dbid: dbid
     });
     accounts[msg.sender].listingIds.push(nextListingId);
     listingIds.push(nextListingId);
@@ -197,8 +197,9 @@ contract EthBnB {
    */
   function listingBook(uint listingId, uint from_date, uint nb_days) public {
     require(listings[listingId].id != 0, "No such listing found.");
-    uint bookerId = listings[listingId].bookerId;
-    int res = dateBooker.book(bookerId, from_date, nb_days);
+    require(hasAccount(), "Must have an account before creating a listing");
+    uint dbid = listings[listingId].dbid;
+    int res = dateBooker.book(dbid, msg.sender, from_date, nb_days);
     emitBookEvent(res, listingId);
   }
 
@@ -210,8 +211,8 @@ contract EthBnB {
    */
   function listingCancel(uint listingId, uint bid) public {
     checkListingId(listingId);
-    uint bookerId = listings[listingId].bookerId;
-    int res = dateBooker.cancel(bookerId, bid);
+    uint dbid = listings[listingId].dbid;
+    int res = dateBooker.cancel(dbid, msg.sender, bid);
     emitBookCancelEvent(res, listingId, bid);
   }
 
@@ -245,8 +246,8 @@ contract EthBnB {
 
   function getBookingDates(uint listingId, uint bid) public view returns (uint from_date, uint to_date) {
     checkListingId(listingId);
-    uint bookerId = listings[listingId].bookerId;
-    return dateBooker.get_dates(bookerId, bid);
+    uint dbid = listings[listingId].dbid;
+    return dateBooker.get_dates(dbid, bid);
   }
 
   function deleteListing(uint listingId) public {
