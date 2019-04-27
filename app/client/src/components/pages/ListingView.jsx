@@ -108,7 +108,7 @@ class ListingView extends Component {
 
   render() {
     const { listings, match, isFetching } = this.props
-    const { lid } = match.params
+    const lid = parseInt(match.params.lid, 10)
     return (
       <div className="listing-view">
         <Link
