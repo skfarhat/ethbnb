@@ -31,7 +31,11 @@ contract EthBnB {
 
     Country country;
 
-    /** Id returned from the DateBooker upon registration */
+    // Every listing has its own DateBooker 'id' which allows
+    // the DateBooker contract to setup the appropriate data structure
+    // for storing booking information for that Listing.
+    //
+    // The bookerId field below is set in createListing
     uint bookerId;
    }
 
@@ -199,7 +203,7 @@ contract EthBnB {
   }
 
   /**
-   * Cancel a booking.
+   * Cancel a booking
    *
    * @param listingId     id of the listing to be cancelled
    * @param bid           id of the booking to be cancelled
@@ -247,7 +251,7 @@ contract EthBnB {
 
   function deleteListing(uint listingId) public {
     checkListingId(listingId);
-    // TODO: check that there are no pending bookings, before deteleting
+    // TODO: check that there are no pending bookings, before deleting
     delete listings[listingId];
     emit DeleteListingEvent(msg.sender, listingId);
   }

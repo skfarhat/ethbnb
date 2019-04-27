@@ -35,6 +35,10 @@ contract DateBooker {
     uint prev;
     uint next;
     uint bid;
+    // Field used to mark that the Entry is active.
+    // False implies we have an Entry that is not in use
+    // Technically we can check that bid is not zero, and set bid to zero when
+    // the entry becomes inactive, but this is more readable.
     bool used;
     // The dates below are seconds since epoch but will be interpreted as days.
     // Any second of a given day is enough to represent that day.
