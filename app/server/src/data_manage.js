@@ -21,6 +21,7 @@ const path = require('path')
 const mongoose = require('mongoose')
 const ipfsAPI = require('ipfs-api')
 const Database = require('./database')
+const Accounts = require('./models/Account')
 const Listings = require('./models/Listing')
 const Bookings = require('./models/Booking')
 const IPFSImage = require('./models/IPFSImage')
@@ -58,7 +59,7 @@ let accounts = null
 const listingMetadata = {
   1: {
     title: '53 Devonshire-on-Rails',
-    description: `Welcome to the super awesome Devonshire place now that Sophie has left.`,
+    description: `Welcome to the super awesome Devonshire place.`,
     images: [ "1.jpg" ],
   },
   2: {
@@ -200,7 +201,7 @@ const testData = [
       { value: 4, name: 'nb_days' },
     ],
     constant: false,
-    clientIndex: 2,
+    clientIndex: 1,
   },
   {
     // lid: 4
@@ -213,7 +214,20 @@ const testData = [
     ],
     constant: false,
     clientIndex: 0,
-  }
+  },
+  // ============================================
+  // CREATE RATINGS
+  // ============================================
+  {
+    name: 'rate',
+    inputs: [
+      { value: 2, name: 'lid' },
+      { value: 0, name: 'bid' },
+      { value: 5, name: 'stars' },
+    ],
+    constant: false,
+    clientIndex: 1,
+  },
 ]
 
 // ============================================================
@@ -223,6 +237,7 @@ const testData = [
 // Database clear
 const database_clear = async () => {
   logger.info('Clearing database')
+  await Accounts.deleteMany({})
   await Listings.deleteMany({})
   await IPFSImage.deleteMany({})
   await Bookings.deleteMany({})

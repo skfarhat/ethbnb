@@ -1,5 +1,7 @@
 const app = require('./app')
 require('./globals')()
+
+const Accounts = require('./models/Account')
 var IPFSImage  = require('./models/IPFSImage')
 const Listings = require('./models/Listing')
 const Bookings = require('./models/Booking')
@@ -29,38 +31,34 @@ const isSet = val => {
   return val !== null && typeof(val) !== 'undefined'
 }
 
-// GET /api/account
+// GET /api/account/:user
 //
 // :user account address for which bookings will be returned
 //
-app.get('/api/account/:user/bookings', async (req, res) => {
+app.get('/api/account/:user', async (req, res) => {
   const { user } = req.params
   const pipeline = [
-    {
-      $match: { user }
-    },
-    {
-      '$lookup': {
-        from: 'listings',
-        localField: 'lid',
-        foreignField: 'lid',
-        as: 'listing',
+      {
+        $match: { addr: user }
       },
-    },
-    {
-      $unwind: "$listing"
-    },
-    {
-      $project: {
-        _id: 0,
-        __v: 0,
-      }
-    },
-  ]
-  const response = await Bookings.aggregate(pipeline)
+      {
+        '$lookup': {
+          from: 'bookings',
+          localField: 'user',
+          foreignField: 'addr',
+          as: 'bookings',
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          __v: 0,
+        }
+      },
+    ]
+  const response = await Accounts.aggregate(pipeline)
   return res.json(response)
 })
-
 
 app.get('/api/listings', async (req, res) => {
 
