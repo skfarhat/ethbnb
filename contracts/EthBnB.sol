@@ -139,13 +139,13 @@ contract EthBnB {
     return accounts[msg.sender].owner == msg.sender;
   }
 
-  function getAccountName() public view returns (string memory) {
-    require(hasAccount(), "No associated account found.");
-    return accounts[msg.sender].name;
+  function getAccountName(address owner) public view returns (string memory) {
+    require(accounts[owner].owner == owner, 'No such account found');
+    return accounts[owner].name;
   }
 
-  function getAccountDateCreated() public view returns (uint) {
-    require(hasAccount(), "No associated account found.");
+  function getAccountDateCreated(address owner) public view returns (uint) {
+    require(accounts[owner].owner == owner, 'No such account found');
     return accounts[msg.sender].dateCreated;
   }
 
@@ -308,7 +308,7 @@ contract EthBnB {
   }
 
   function getBookingDates(uint lid, uint bid) public view returns (uint from_date, uint to_date) {
-    checkListingId(lid);
+    require(listings[lid].id == lid, 'Listing does not exist');
     uint dbid = listings[lid].dbid;
     return dateBooker.get_dates(dbid, bid);
   }

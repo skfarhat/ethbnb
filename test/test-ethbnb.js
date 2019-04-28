@@ -53,7 +53,7 @@
       const accountExists = await bnb.hasAccount({from: accounts[0]})
       assert.isTrue(accountExists, "createAccount doesn't seem to have created an account")
       // Check the name is the same
-      const actualName = await bnb.getAccountName({from: accounts[0]})
+      const actualName = await bnb.getAccountName(accounts[0], {from: accounts[0]})
       assert.equal(actualName, _shortName, "The account shortName does not match what we expect.")
     })
 
