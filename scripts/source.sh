@@ -24,7 +24,9 @@ else
   alias data="node $SERVER_DIR/src/data_manage.js"
   alias setup='$SCRIPTS_DIR/setup.sh'
   alias gothere="cd $ROOT_DIR"
-  alias s0="$SCRIPTS_DIR/setup.sh && node $SERVER_DIR/src/data_manage.js --chain_init=true --metadata_add=true"
+  alias full_setup="$SCRIPTS_DIR/setup.sh && node $SERVER_DIR/src/data_manage.js --chain_init=true --metadata_add=true"
+  alias quick_setup="$SCRIPTS_DIR/setup.sh && node $SERVER_DIR/src/data_manage.js --chain_init=true --metadata_add=false"
+  alias s0=quick_setup
   alias s9="ganache-cli -e 10000 -m \"eyebrow pluck bonus glove drastic nature chef rent youth dizzy magnet virtual\""
   alias s99="pkill -f ganache-cli"
   alias s1="npm start --prefix $CLIENT_DIR" # Start client
