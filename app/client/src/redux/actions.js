@@ -13,6 +13,7 @@ export const SET_WEB3 = 'SET_WEB3'
 export const SET_ACCOUNTS = 'SET_ACCOUNTS'
 export const SET_SELECTED_ACCOUNT = 'SET_SELECTED_ACCOUNT'
 export const SET_ETH_EVENTS = 'SET_ETH_EVENTS'
+export const RATE_BOOKING = 'RATE_BOOKING'
 
 // ============================================================
 // FUNCTIONS
@@ -204,6 +205,33 @@ export function fetchEthEventsIfNeeded(accountAddr) {
     const { contract } = state
     if (shouldFetchEthEvents(state, accountAddr)) {
       return dispatch(fetchEthEvents(contract, accountAddr))
+    }
+  }
+}
+
+export function rateBooking(lid, bid, stars, contract, ethAddr) {
+  return (dispatch, getState) => {
+    const obj = {
+      from: ethAddr,
+      gas: 1000000,
+    }
+    if (!contract) {
+      console.log('Cannot make booking when contract is not setup')
+      return
+    }
+    contract.rate(lid, bid, stars, obj).then((res) => {
+      console.log('rateBooking submitted')
+      console.log(res)
+    }).catch((err) => {
+      // TODO: show user alert
+      console.log('error from listingBook')
+      console.log(err)
+    })
+    // TODO: return something here
+    return {
+      type: RATE_BOOKING,
+      ethAddr,
+      lid,
     }
   }
 }
