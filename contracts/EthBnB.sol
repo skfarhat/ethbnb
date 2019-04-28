@@ -241,12 +241,13 @@ contract EthBnB {
   //                the person being rated
   // @param stars   unsigned integer between 1 and 5, anything else
   //                will emit an error
-  // TODO: Only allow users to rate after a certain number of days after booking end date?
   function rate(uint lid, uint bid, uint stars) public {
     require(listings[lid].id == lid && listings[lid].bookings[bid].bid == bid, 'No such listing or booking');
     require(stars >= 1 && stars <= 5, 'Stars arg must be in [1,5]');
-    Booking memory booking = listings[lid].bookings[bid];
+    Booking storage booking = listings[lid].bookings[bid];
     require(booking.guestAddr == msg.sender || booking.hostAddr == msg.sender, 'Sender not participated in booking');
+    (uint from_date, uint to_date) = getBookingDates(lid, bid);
+    require(to_date <= now, 'Cannot rate a booking before it ends');
     if (booking.guestAddr == msg.sender) {
       // The guest is rating the host
       require(booking.hostRating == 0, 'Host already rated, cannot re-rate.');
