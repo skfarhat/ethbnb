@@ -130,7 +130,6 @@
       res = await bnb.createListing(_country, _location, _price, d)
       // Check that an event was emitted
       truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid = ev.lid)
-      const nb_days = 3
       res = await bnb.listingBook(lid, feb2019(10), 3)
       truffleAssert.eventEmitted(res, 'BookingComplete', (ev) => bid1 = ev.bid)
       res = await bnb.listingBook(lid, feb2019(20), 3)
@@ -153,8 +152,6 @@
       res = await bnb.createListing(_country, _location, _price, d)
       // Get the listing id from the event
       truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid = ev.lid)
-      const from_date = feb2019(10)
-      const nb_days = 3
       // Book the listing and get the booking id
       res = await bnb.listingBook(lid, feb2019(10), 3, d)
       truffleAssert.eventEmitted(res, 'BookingComplete', (ev) => bid = ev.bid)
@@ -247,74 +244,104 @@
       }
     })
 
+    // A host has two listings, and gets a booking for each.
+    // His guests rate him
+    it("Rating: a user twice, check their totalScore and nRatings", async() => {
+      let res
+      let lid1, lid2, bid1, bid2
+      let bnb = await EthBnB.deployed()
+      res = await bnb.createAccount('Host', {from: accounts[0]})
+      res = await bnb.createAccount('Guest1', {from: accounts[1]})
+      res = await bnb.createAccount('Guest2', {from: accounts[2]})
+      res = await bnb.createListing(COUNTRIES['GB'], 'London', 5000, {from: accounts[0]})
+      // Get the listing id from the event
+      truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid1 = ev.lid)
+      res = await bnb.createListing(COUNTRIES['FR'], 'London', 5000, d)
+      truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid2 = ev.lid)
+      // Two bookings from the two users
+      res = await bnb.listingBook(lid1, feb2019(10), 3, {from: accounts[1]})
+      truffleAssert.eventEmitted(res, 'BookingComplete', (ev) => bid1 = ev.bid)
+      res = await bnb.listingBook(lid2, feb2019(10), 3, {from: accounts[2]})
+      truffleAssert.eventEmitted(res, 'BookingComplete', (ev) => bid2 = ev.bid)
+      // Two ratings from the two users
+      res = await bnb.rate(lid1, bid1, 1, {from: accounts[1]})
+      truffleAssert.eventEmitted(res, 'RatingComplete')
+      res = await bnb.rate(lid2, bid2, 5, {from: accounts[2]})
+      truffleAssert.eventEmitted(res, 'RatingComplete')
+      const totalScore = await bnb.getAccountTotalScore(accounts[0], {from: accounts[5]}) // Any account can view another's score
+      const totalRatings = await bnb.getAccountNumberOfRatings(accounts[0], {from: accounts[5]})  // Any account can view another's nbRatings
+      assert(bigNumberToInt(totalScore) === 5+1, 'Total score must be 6')
+      assert(bigNumberToInt(totalRatings) === 2, 'Total number of ratings must be 2')
 
-    // /**
-    //  * Test delete
-    //  */
-    // it("Listing: delete", async() => {
-    //   var bnb = await EthBnB.deployed()
+      // The host rates one of the users
+      res = await bnb.rate(lid1, bid1, 4, {from: accounts[0]})
+      truffleAssert.eventEmitted(res, 'RatingComplete')
+    })
 
-    //   // Create a listing
-    //   var _location = "Paris"
-    //   var _price = 300
-    //   var _shortName = "Place to be deleted"
-    //   var _description = "Description of a place to be deleted"
-    //   try {
+    it("Rating: Cannot rate a booking twice", async() => {
+      let res
+      let lid1, bid1
+      let bnb = await EthBnB.deployed()
+      // Accounts
+      res = await bnb.createAccount('Host', {from: accounts[0]})
+      res = await bnb.createAccount('Guest1', {from: accounts[1]})
+      // Listing
+      res = await bnb.createListing(COUNTRIES['GB'], 'London', 5000, {from: accounts[0]})
+      truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid1 = ev.lid)
+      // Booking
+      res = await bnb.listingBook(lid1, feb2019(10), 3, {from: accounts[1]})
+      truffleAssert.eventEmitted(res, 'BookingComplete', (ev) => bid1 = ev.bid)
+      // Rating
+      res = await bnb.rate(lid1, bid1, 1, {from: accounts[1]})
+      truffleAssert.eventEmitted(res, 'RatingComplete')
+      try {
+        res = await bnb.rate(lid1, bid1, 5, {from: accounts[1]})
+        assert(false, 'Second time rating should have failed')
+      } catch(err) {}
+    })
 
-    //     // Count the number of listings for account0
-    //     var myListings = await bnb.getMyListingIds({from: accounts[0]})
-    //     var prevCount = myListings.length
+    it("Rating: Number of stars must be in [1,5]", async() => {
+      let res
+      let lid1, bid1
+      let bnb = await EthBnB.deployed()
+      // Accounts
+      res = await bnb.createAccount('Host', {from: accounts[0]})
+      res = await bnb.createAccount('Guest1', {from: accounts[1]})
+      // Listing
+      res = await bnb.createListing(COUNTRIES['GB'], 'London', 5000, {from: accounts[0]})
+      truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid1 = ev.lid)
+      // Booking
+      res = await bnb.listingBook(lid1, feb2019(10), 3, {from: accounts[1]})
+      truffleAssert.eventEmitted(res, 'BookingComplete', (ev) => bid1 = ev.bid)
+      try {
+        res = await bnb.rate(lid1, bid1, 0, {from: accounts[1]})
+        assert(false, 'Rating below 1 should have failed')
+      } catch(err) {}
+      try {
+       res = await bnb.rate(lid1, bid1, 6, {from: accounts[1]})
+        assert(false, 'Rating above 5 should have failed')
+      } catch(err) {}
+    })
 
-    //     // Create a new listing then delete it
-    //     var res = await bnb.createListing(_location, _price, _shortName, _description,
-    //       {from : accounts[0]})
+    it("Rating: users can only rate their bookings", async() => {
+      let res
+      let lid1, bid1
+      let bnb = await EthBnB.deployed()
+      // Accounts
+      res = await bnb.createAccount('Host', {from: accounts[0]})
+      res = await bnb.createAccount('Guest1', {from: accounts[1]})
+      res = await bnb.createAccount('Guest1', {from: accounts[2]})
+      // Listing
+      res = await bnb.createListing(COUNTRIES['GB'], 'London', 5000, {from: accounts[0]})
+      truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => lid1 = ev.lid)
+      // Booking
+      res = await bnb.listingBook(lid1, feb2019(10), 3, {from: accounts[1]})
+      truffleAssert.eventEmitted(res, 'BookingComplete', (ev) => bid1 = ev.bid)
+      try {
+        res = await bnb.rate(lid1, bid1, 1, {from: accounts[2]})
+        assert(false, 'Should have failed since account[2] did not participate in the booking')
+      } catch(err) {}
+    })
 
-    //     // Define delete callback
-    //     async function deleteListingCallback(id) {
-    //       var res = await bnb.deleteListing(id, {from: accounts[0]})
-
-    //       // Check that a DeleteEvent is emitted
-    //       // truffleAssert.eventEmitted(res, "DeleteEvent", (ev) => {
-    //         // return ev.id == id
-    //       // }, "CreateEvent should be emitted with the id of the created listing")
-
-    //       // TODO: Change most/all function calls to use "call"
-    //       // TODO: revert createListing to just emit an event, no need to return.
-
-    //       // Count the number of listings - should be the same as old
-    //       var myListings2 = await bnb.getMyListingIds({from: accounts[0]})
-    //       var newCount = myListings2.length
-    //       assert.equal(newCount, oldCount, "Number of listings changed between creating/deleting")
-
-    //       // Make sure created listing does not appear in myListings
-    //       for (var i = 0 ; i < newCount; i++) {
-    //         if(myListings2[i] == id)
-    //           assert(false)
-    //       }
-    //     }
-
-    //     truffleAssert.eventEmitted(res, 'CreateEvent', (ev) => {
-    //       deleteListingCallback(ev.id)
-    //       return ev.id > 0
-    //     }, "CreateEvent should be emitted with the id of the created listing")
-
-    //   }
-    //   catch(error) {
-    //     console.log(error)
-    //     assert(false)
-    //   }
-    // })
-
-      // FOR DEBUG:
-      // Use snippet below to monitor logs
-      // ---------------------------------
-      // var logEvent = bnb.Log()
-      // logEvent.watch(function(error, result) {
-      //   console.log("received the log event")
-      //   if (!error)
-      //     console.log(result)
-      //   else
-      //     console.log(error)
-      // })
   })
 })()

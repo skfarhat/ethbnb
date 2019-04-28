@@ -35,6 +35,7 @@ contract DateBooker {
   struct Entry {
     uint prev;
     uint next;
+    // Begins at zero
     uint bid;
     // Field used to mark that the Entry is active.
     // False implies we have an Entry that is not in use
@@ -45,6 +46,7 @@ contract DateBooker {
     // Any second of a given day is enough to represent that day.
     uint from_date;
     uint to_date;
+    // TODO: remove this, and just rely on the one in EthBnB
     // Address of this entrie's booker
     address bookerAddr;
   }
