@@ -24,6 +24,7 @@
     "truffle-assertions": "^0.7.2"
   },
   "dependencies": {
+    "eslint-config-airbnb": "^17.1.0",
     "truffle-contract": "^3.0.6"
   }
 }
