@@ -134,7 +134,7 @@ contract DateBooker {
   }
 
   function book(uint id, address bookerAddr, uint from_date, uint nb_of_days) public returns (int) {
-    require(nb_of_days > 0, 'Cannot have non-positive days.');
+    require(nb_of_days > 0, 'Cannot have non-positive days');
     // Check that there is space
     if ( !has_space(id) ) {
       emit NoMoreSpace(id);

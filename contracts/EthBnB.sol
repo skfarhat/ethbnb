@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 
 // TODO: change listingId param to lid. Shorter, better.
-import  "./DateBooker.sol";
+import  './DateBooker.sol';
 
 /**
 *
@@ -150,12 +150,12 @@ contract EthBnB {
   }
 
   function getAccountTotalScore(address addr) public view returns (uint) {
-    require(accounts[addr].owner == addr, "No such account");
+    require(accounts[addr].owner == addr, 'No such account');
     return accounts[addr].totalScore;
   }
 
   function getAccountNumberOfRatings(address addr) public view returns (uint) {
-    require(accounts[addr].owner == addr, "No such account");
+    require(accounts[addr].owner == addr, 'No such account');
     return accounts[addr].nRatings;
   }
 
@@ -176,7 +176,7 @@ contract EthBnB {
 
   /** Returns a list of all of the message sender's listings */
   function getMyListingIds() public view returns (uint[] memory) {
-    require(accounts[msg.sender].owner == msg.sender, "No account found.");
+    require(accounts[msg.sender].owner == msg.sender, 'No account found');
     return accounts[msg.sender].listingIds;
   }
 
@@ -185,7 +185,7 @@ contract EthBnB {
    * and returns the Id of the created listing
    */
   function createListing(Country country, string memory location, uint price) public {
-    require(hasAccount(), "Must have an account before creating a listing");
+    require(hasAccount(), 'Must have an account before creating a listing');
     // Note: enforce a maximum number of listings per user?
     uint dbid = dateBooker.register(BOOKING_CAPACITY);
     listings[nextListingId] = Listing({
@@ -209,8 +209,8 @@ contract EthBnB {
    * @param nb_days      number of days for which the booking will be made
    */
   function listingBook(uint lid, uint from_date, uint nb_days) public {
-    require(listings[lid].id != 0, "No such listing found.");
-    require(hasAccount(), "Must have an account before creating a listing");
+    require(listings[lid].id != 0, 'No such listing found');
+    require(hasAccount(), 'Must have an account before creating a listing');
     address guestAddr = msg.sender;
     uint dbid = listings[lid].dbid;
     int res = dateBooker.book(dbid, guestAddr, from_date, nb_days);
@@ -250,7 +250,7 @@ contract EthBnB {
     require(to_date <= now, 'Cannot rate a booking before it ends');
     if (booking.guestAddr == msg.sender) {
       // The guest is rating the host
-      require(booking.hostRating == 0, 'Host already rated, cannot re-rate.');
+      require(booking.hostRating == 0, 'Host already rated, cannot re-rate');
       // Assign the rating and adjust their account
       booking.hostRating = stars;
       accounts[booking.hostAddr].totalScore += stars;
@@ -258,7 +258,7 @@ contract EthBnB {
     }
     else if (booking.hostAddr == msg.sender) {
       // The host is rating the guest
-      require(booking.guestRating == 0, 'Guest already rated, cannot re-rate.');
+      require(booking.guestRating == 0, 'Guest already rated, cannot re-rate');
       // Assing the rating and adjust their account
       booking.guestRating = stars;
       accounts[booking.guestAddr].totalScore += stars;
@@ -292,7 +292,7 @@ contract EthBnB {
 
   function setListingPrice(uint lid, uint price) public {
     checkListingId(lid);
-    require(price > 0, "Price must be > 0.");
+    require(price > 0, 'Price must be > 0');
     listings[lid].price = price;
     emit UpdateListingEvent(msg.sender, lid);
   }
@@ -326,8 +326,8 @@ contract EthBnB {
     // Make sure account exists
     require(accounts[msg.sender].owner == msg.sender);
     // Make sure listing exists and properly associated with account
-    require(listings[lid].id != 0, "No such listing found.");
-    require(listings[lid].owner == msg.sender, "Only the owner of a listing make changes to it.");
+    require(listings[lid].id != 0, 'No such listing found');
+    require(listings[lid].owner == msg.sender, 'Only the owner of a listing make changes to it');
   }
 
   /** Emits an a booking event depending on the result given */
