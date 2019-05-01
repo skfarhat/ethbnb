@@ -83,34 +83,41 @@ const listingMetadata = {
     description: `Lovely Saida residence next to Ain-el-Helwe. Stay next door to the lovely Im Wassim.`,
   },
 }
-
 const testData = [
   // ============================================
-  // CREATE ACCOUNTS
+  // ACCOUNTS
   // ============================================
   {
     name: 'createAccount',
-    inputs: [{ value: 'Sami Farhat' }],
+    inputs: [{ value: 'Host1' }],
     constant: false,
     clientIndex: 0,
   },
   {
     name: 'createAccount',
-    inputs: [{ value: 'Marwan Mobader' }],
+    inputs: [{ value: 'Host2' }],
     constant: false,
     clientIndex: 1,
   },
   {
     name: 'createAccount',
-    inputs: [{ value: 'Margaux Ouvry' }],
+    inputs: [{ value: 'Guest1' }],
     constant: false,
     clientIndex: 2,
   },
+  {
+    name: 'createAccount',
+    inputs: [{ value: 'Guest2' }],
+    constant: false,
+    clientIndex: 3,
+  },
   // ============================================
-  // CREATE LISTINGS
+  // LISTINGS
   // ============================================
   {
-    // lid:1
+    // owner: Host1
+    // lid: 1
+    clientIndex: 0,
     name: 'createListing',
     inputs: [
     { value: 65/* GB */, name: 'country' },
@@ -118,21 +125,11 @@ const testData = [
     { value: 600, name: 'price' },
     ],
     constant: false,
+  },
+  {
+    // owner: Host1
+    // lid: 2
     clientIndex: 0,
-  },
-  {
-    // lid:2
-    name: 'createListing',
-    inputs: [
-    { value: '75'/* FR */, name: 'country' },
-    { value: 'Paris', name: 'location' },
-    { value: '2000', name: 'price' },
-    ],
-    constant: false,
-    clientIndex: 2,
-  },
-  {
-    // lid:3
     name: 'createListing',
     inputs: [
     { value: '65'/* GB */, name: 'country' },
@@ -140,10 +137,23 @@ const testData = [
     { value: '1799', name: 'price' },
     ],
     constant: false,
-    clientIndex: 1,
   },
   {
-    // lid:4
+    // owner: Host1
+    // lid: 3
+    clientIndex: 2,
+    name: 'createListing',
+    inputs: [
+    { value: '75'/* FR */, name: 'country' },
+    { value: 'Paris', name: 'location' },
+    { value: '2000', name: 'price' },
+    ],
+    constant: false,
+  },
+  {
+    // owner: Host2
+    // lid: 4
+    clientIndex: 1,
     name: 'createListing',
     inputs: [
     { value: '118'/* LB */, name: 'country' },
@@ -151,10 +161,11 @@ const testData = [
     { value: '700', name: 'price' },
     ],
     constant: false,
-    clientIndex: 0,
   },
   {
-    // lid:5
+    // owner: Host2
+    // lid: 5
+    clientIndex: 1,
     name: 'createListing',
     inputs: [
     { value: '118'/* LB */, name: 'country' },
@@ -162,14 +173,16 @@ const testData = [
     { value: '300', name: 'price' },
     ],
     constant: false,
-    clientIndex: 1,
   },
   // ============================================
-  // CREATE BOOKINGS
+  // BOOKINGS
   // ============================================
   {
-    // lid: 1
-    // booked [10/02/2019 to 13/02/2019]
+    // Guest1 -> Host1
+    // lid: 1 (Cambridge)
+    // bid: 0
+    // booked for 3 days: 10/02/2019 to 13/02/2019
+    clientIndex: 2,
     name: 'listingBook',
     inputs: [
       { value: 1, name: 'listingId' },
@@ -177,11 +190,27 @@ const testData = [
       { value: 3, name: 'nb_days' },
     ],
     constant: false,
-    clientIndex: 0,
   },
   {
-    // lid: 1
-    // booked [16/02/2019 to 20/02/2019]
+    // Guest1 -> Host1
+    // lid: 3 (Paris)
+    // bid: 1
+    // booked for 4 days: 16/02/2019 to 20/02/2019
+    clientIndex: 2,
+    name: 'listingBook',
+    inputs: [
+      { value: 3, name: 'listingId' },
+      { value: feb2019(16), name: 'from_date' },
+      { value: 4, name: 'nb_days' },
+    ],
+    constant: false,
+  },
+  {
+    // Guest2 -> Host1
+    // lid: 1 (Cambridge)
+    // bid: 1
+    // booked for 4 days: 16/02/2019 to 20/02/2019
+    clientIndex: 3,
     name: 'listingBook',
     inputs: [
       { value: 1, name: 'listingId' },
@@ -189,23 +218,26 @@ const testData = [
       { value: 4, name: 'nb_days' },
     ],
     constant: false,
-    clientIndex: 0,
   },
   {
-    // lid: 2
-    // booked [06/02/2019 to 10/02/2019]
+    // Guest1 -> Host2
+    // lid: 3 (Paris)
+    // booked for 4 days: 06/02/2019 to 10/02/2019
+    clientIndex: 2,
     name: 'listingBook',
     inputs: [
-      { value: 2, name: 'listingId' },
+      { value: 3, name: 'listingId' },
       { value: feb2019(6), name: 'from_date' },
       { value: 4, name: 'nb_days' },
     ],
     constant: false,
-    clientIndex: 1,
   },
   {
-    // lid: 4
-    // booked [12/02/2019 to 14/02/2019]
+    // Guest2 -> Host2
+    // lid: 4 (Beirut)
+    // bid: 0
+    // booked for 2 days: 12/02/2019 to 14/02/2019
+    clientIndex: 3,
     name: 'listingBook',
     inputs: [
       { value: 4, name: 'listingId' },
@@ -213,20 +245,44 @@ const testData = [
       { value: 2, name: 'nb_days' },
     ],
     constant: false,
-    clientIndex: 0,
   },
   // ============================================
-  // CREATE RATINGS
+  // RATINGS
   // ============================================
+  // Cambridge (lid=1) owned by Host1 (clientIndex=0) is rated:
+  //    5 stars by Guest1 (bid=0)
+  //    2 stars by Guest2 (bid=1)
+  // Paris (lid=2) owned by Host1 (clientIndex=0) is rated:
+  //    4 stars by Guest1 (bid=0)
   {
+    clientIndex: 2,
     name: 'rate',
     inputs: [
-      { value: 2, name: 'lid' },
+      { value: 1, name: 'lid' },
       { value: 0, name: 'bid' },
       { value: 5, name: 'stars' },
     ],
     constant: false,
-    clientIndex: 1,
+  },
+  {
+    clientIndex: 3,
+    name: 'rate',
+    inputs: [
+      { value: 1, name: 'lid' },
+      { value: 1, name: 'bid' },
+      { value: 2, name: 'stars' },
+    ],
+    constant: false,
+  },
+  {
+    clientIndex: 2,
+    name: 'rate',
+    inputs: [
+      { value: 3, name: 'lid' },
+      { value: 0, name: 'bid' },
+      { value: 4, name: 'stars' },
+    ],
+    constant: false,
   },
 ]
 
