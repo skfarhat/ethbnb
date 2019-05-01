@@ -5,7 +5,7 @@ var ObjectId = Schema.ObjectId
 const AccountSchema = new Schema({
     addr: { type: String, index: true },
     name: String,
-    dateCreated: Date,
+    dateCreated: { type: Date, set: setMongoDate },
     // Counts the total score received for this account
     // Note: this is not the average
     totalScore: Number,

@@ -112,11 +112,10 @@ module.exports = function () {
       bid, lid,
       user: from
     }
-    let r
     try {
-      r = await contract.methods.getBookingDates(lid, bid).call({ from })
-      b.from_date = parseInt(r.from_date) * 1000
-      b.to_date = parseInt(r.to_date) * 1000
+      let r = await contract.methods.getBookingDates(lid, bid).call({ from })
+      b.from_date = r.from_date
+      b.to_date = r.to_date
       return b
     } catch (exc) {
       logger.error('Failed to call getBookingDates()' + exc)

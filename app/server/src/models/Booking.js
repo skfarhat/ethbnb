@@ -2,12 +2,14 @@ var mongoose = require('mongoose')
 var Schema   = mongoose.Schema
 var ObjectId = Schema.ObjectId
 
+
+
 const BookingSchema = new Schema({
     user: String,
     bid: Number,
     lid: Number,
-    from_date: Date,
-    to_date: Date,
+    from_date: { type: Date, set: setMongoDate },
+    to_date: { type: Date, set: setMongoDate }
   },
   {
     toObject: {virtuals: true},

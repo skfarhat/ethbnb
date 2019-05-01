@@ -12,14 +12,17 @@
 module.exports = () => {
   global.format = require('string-format')
   global.logger = require('./logger')
+  global.setMongoDate = (dateSec) => {
+    return parseInt(dateSec) * 1000
+  }
   global.constants = {
     PORT: 3001,
     PROVIDER_HTTP: 'http://localhost:8545',
     PROVIDER_WS: 'ws://localhost:8545',
     db: {
-      db_name: 'ethbnb', 
-      host: 'localhost', 
-      port: 27017,    
+      db_name: 'ethbnb',
+      host: 'localhost',
+      port: 27017,
     },
   }
 }
