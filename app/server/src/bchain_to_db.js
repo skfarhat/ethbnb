@@ -161,9 +161,12 @@ module.exports = function () {
   const ratingCompleteEventHandler = async (event) => {
     logger.silly('ratingCompleteEventHandler')
     let res
-    const { from, bid, stars } = event.returnValues
-    res = await Account.findOneAndUpdate({addr: from }, {$inc: {nRatings: 1}})
-    await Account.findOneAndUpdate({addr: from}, {$inc: {totalScore: stars}})
+    const { from, bid, stars, lid } = event.returnValues
+    res = await Account.findOneAndUpdate({addr: from}, {$inc: {nRatings: 1}})
+    res = await Account.findOneAndUpdate({addr: from}, {$inc: {totalScore: stars}})
+
+    res = await Listing.findOneAndUpdate({lid}, {$inc: {nRatings: 1}})
+    res = await Listing.findOneAndUpdate({lid}, {$inc: {totalScore: stars}})
   }
 
   const eventCallbacks = {
