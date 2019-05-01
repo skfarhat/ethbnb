@@ -139,6 +139,14 @@ module.exports = function () {
     await addListingToDatabase(listing)
   }
 
+  // Find the cancelled booking and delete it if present
+  const bookingCancelledEventHandler = async (event) => {
+    logger.silly('bookingCancelledEventHandler - deleting booking')
+    const { lid, bid, from } = event.returnValues
+    res = await Booking.delete({bid})
+    logger.debug(res)
+  }
+
   // Create a Booking object and add it to database
   const bookingCompleteEventHanlder = async (event) => {
     const { lid, bid, from } = event.returnValues
@@ -161,6 +169,7 @@ module.exports = function () {
   const eventCallbacks = {
     'CreateAccountEvent': createAccountEventHandler,
     'BookingComplete': bookingCompleteEventHanlder,
+    'BookingCancelled': bookingCancelledEventHandler,
     'CreateListingEvent': createListingEventHandler,
     'RatingComplete': ratingCompleteEventHandler
   }
