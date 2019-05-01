@@ -41,7 +41,7 @@ class ListingMini extends Component {
 }
 
 ListingMini.propTypes = {
-  lid: PropTypes.string.isRequired,
+  lid: PropTypes.number.isRequired,
   title: PropTypes.string,
   country: PropTypes.number.isRequired,
   price: PropTypes.number.isRequired,
