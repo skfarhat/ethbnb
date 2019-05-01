@@ -28,7 +28,8 @@ class ListingView extends Component {
   }
 
   onBookButtonClicked() {
-    const { dispatch, contract, fromDate, toDate, addr, match } = this.props
+    const { dispatch, contract, accounts, selectedAccountIndex, fromDate, toDate, match } = this.props
+    const addr = accounts[selectedAccountIndex]
     const { lid } = match.params
     dispatch(bookListing(contract, addr, lid, fromDate, toDate))
   }
@@ -130,17 +131,17 @@ class ListingView extends Component {
 ListingView.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
-  // listings: PropTypes.array.isRequired,
 }
 
 const mapStateToProps = (state, ownProps) => ({
+  accounts: Object.keys(state.accounts),
   contract: state.contract,
-  addr: (state.accounts.length > 0) ? state.accounts[state.selectedAccountIndex] : null,
   listings: state.listings,
   isFetching: state.isFetching,
   lid: ownProps.lid,
   fromDate: state.searchOptions.fromDate,
   toDate: state.searchOptions.toDate,
+  selectedAccountIndex: state.selectedAccountIndex,
 })
 
 export default connect(mapStateToProps)(ListingView)
