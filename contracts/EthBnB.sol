@@ -86,7 +86,7 @@ contract EthBnB {
   event BookingCancelled(address from, uint lid, uint bid);
   event BookingNotFound(address from, uint lid, uint bid);
 
-  event RatingComplete(address from, uint bid, uint stars);
+  event RatingComplete(address from, uint lid, uint bid, uint stars);
 
   uint public BOOKING_CAPACITY = 5;
 
@@ -264,7 +264,7 @@ contract EthBnB {
       accounts[booking.guestAddr].totalScore += stars;
       accounts[booking.guestAddr].nRatings++;
     }
-    emit RatingComplete(msg.sender, bid, stars);
+    emit RatingComplete(msg.sender, lid, bid, stars);
   }
 
   /**
