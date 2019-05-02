@@ -37,27 +37,28 @@ const isSet = val => {
 //
 app.get('/api/account/:user', async (req, res) => {
   const { user } = req.params
-  const pipeline = [
+  const bookingsPipeline = [
       {
-        $match: { addr: user }
+        $match: { user: user }
       },
       {
         '$lookup': {
-          from: 'bookings',
-          localField: 'user',
-          foreignField: 'addr',
-          as: 'bookings',
+          from: 'listings',
+          localField: 'lid',
+          foreignField: 'lid',
+          as: 'listing',
         },
       },
       {
-        $project: {
-          _id: 0,
-          __v: 0,
-        }
-      },
+        '$unwind': '$listing'
+      }
     ]
-  const response = await Accounts.aggregate(pipeline)
-  return res.json(response)
+  let account = await Accounts.findOne({ addr: user }).lean()
+  account.bookings = await Bookings.aggregate(bookingsPipeline)
+  // Drop __id and __v
+  delete account._id
+  delete account.__v
+  return res.json(account)
 })
 
 app.get('/api/listings', async (req, res) => {
