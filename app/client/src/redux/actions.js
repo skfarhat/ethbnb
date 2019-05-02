@@ -8,6 +8,7 @@ import { SERVER_NODE_URL } from '../constants/global'
 export const SET_SEARCH_OPTIONS = 'SET_SEARCH_OPTIONS'
 export const REQUEST_LISTINGS = 'REQUEST_LISTINGS'
 export const RECEIVE_LISTINGS = 'RECEIVE_LISTINGS'
+export const RECEIVE_ACCOUNT_INFO = 'RECEIVE_ACCOUNT_INFO'
 export const BOOK_LISTING = 'BOOK_LISTING'
 export const SET_WEB3 = 'SET_WEB3'
 export const SET_ACCOUNTS = 'SET_ACCOUNTS'
@@ -21,19 +22,7 @@ export const RATE_BOOKING = 'RATE_BOOKING'
 
 const isSet = val => val !== null && typeof (val) !== 'undefined'
 
-// Dispatched before we want to request listings, the view should show a spinner
-const requestListings = () => ({
-  type: REQUEST_LISTINGS,
-})
-
-// Dispatched when the listings have been received from the remote backend
-// and we want to update the view
-const receiveListings = data => ({
-  type: RECEIVE_LISTINGS,
-  listings: data,
-})
-
-const getListingsURI = (opts) => {
+const getListingsURL = (opts) => {
   const params = (isSet(opts)) ? opts : {}
   for (const key in params) {
     if (params[key] === null) {
@@ -51,7 +40,6 @@ const shouldFetchEthEvents = (state, accountAddr) => {
   }
   return !isFetchingEthEvents
 }
-
 
 const shouldFetchListings = (state) => {
   if (state.listings === null) {
@@ -77,10 +65,13 @@ const fetchListingsUsingOptions = (dispatch, state) => {
   } else {
     opts = {}
   }
-  const uri = getListingsURI(opts)
-  return fetch(uri)
+  const url = getListingsURL(opts)
+  return fetch(url)
     .then(response => response.json())
-    .then(json => dispatch(receiveListings(json)))
+    .then(json => dispatch(({
+      type: RECEIVE_LISTINGS,
+      listings: json,
+    })))
 }
 
 // ============================================================
@@ -163,18 +154,15 @@ export const setSearchOptions = opts => ({
   opts,
 })
 
-export function fetchListings() {
-  return (dispatch, getState) => {
-    dispatch(requestListings())
-    return fetchListingsUsingOptions(dispatch, getState())
-  }
-}
-
-export function fetchListingsIfNeeded(opts) {
-  return (dispatch, getState) => {
-    if (shouldFetchListings(getState())) {
-      return dispatch(fetchListings(opts))
-    }
+export const fetchAccountInfo = (user) => {
+  const url = `${SERVER_NODE_URL}api/account/${user}`
+  return (dispatch) => {
+    fetch(url)
+      .then(response => response.json())
+      .then(json => dispatch({
+        type: RECEIVE_ACCOUNT_INFO,
+        data: json,
+      }))
   }
 }
 
@@ -184,7 +172,6 @@ export const fetchEthEvents = (contract, accountAddr) => {
       fromBlock: 0,
       toBlock: 'latest',
     }
-
     contract.getPastEvents('allEvents', opts)
       .then((events) => {
         dispatch({
@@ -205,6 +192,21 @@ export function fetchEthEventsIfNeeded(accountAddr) {
     const { contract } = state
     if (shouldFetchEthEvents(state, accountAddr)) {
       return dispatch(fetchEthEvents(contract, accountAddr))
+    }
+  }
+}
+
+export function fetchListings() {
+  return (dispatch, getState) => {
+    dispatch(({ type: REQUEST_LISTINGS }))
+    return fetchListingsUsingOptions(dispatch, getState())
+  }
+}
+
+export function fetchListingsIfNeeded(opts) {
+  return (dispatch, getState) => {
+    if (shouldFetchListings(getState())) {
+      return dispatch(fetchListings(opts))
     }
   }
 }

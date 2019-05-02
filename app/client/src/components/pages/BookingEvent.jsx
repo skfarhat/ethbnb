@@ -1,8 +1,11 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { Link } from 'react-router-dom'
 import Rating from 'react-rating'
 import PropTypes from 'prop-types'
+import moment from 'moment'
 import { rateBooking } from '../../redux/actions'
+
 
 class BookingEvent extends Component {
   constructor(props) {
@@ -11,40 +14,25 @@ class BookingEvent extends Component {
   }
 
   onRatingChange(rating) {
-    const { returnValues, dispatch, contract, ethAddr } = this.props
-    const { lid, bid } = returnValues
-    dispatch(rateBooking(lid, bid, rating, contract, ethAddr))
+    const { dispatch, contract, ethAddr } = this.props
+    // const { lid, bid } = returnValues
+    // dispatch(rateBooking(lid, bid, rating, contract, ethAddr))
     // TODO: set it to readonly after setting or if it was already set (need to do that)
   }
 
   render() {
-    const { event: name, transactionHash, returnValues } = this.props
-    const rValuesDOM = {
-      transactionHash,
-    }
-    Object.entries(returnValues).forEach((entry) => {
-      // Only keep non-numeric keys
-      if (Number.isNaN(parseInt(entry[0], 10))) {
-        rValuesDOM[entry[0]] = entry[1]
-      }
-    })
+    const { location, title, price, from_date, to_date, listing } = this.props
+    const fromDate1 = moment(from_date.toString()).format('DD/MM/YY')
+    const toDate1 = moment(to_date.toString()).format('DD/MM/YY')
     return (
-      <div className="eth-event">
+      <div className="booking-event">
         <h5>
-          Booking
+          {`${listing.location} ${fromDate1}  ${toDate1}`}
         </h5>
-        <table>
-          <tbody>
-            {
-              Object.entries(rValuesDOM).map(e => (
-                <tr key={e[0]}>
-                  <td> { e[0] } </td>
-                  <td> { e[1] } </td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
+        <Link to={`/listing/${listing.lid}`}>
+          {listing.title}
+        </Link>
+        {listing.owner}
         <Rating
           start={0}
           stop={5}
@@ -56,6 +44,8 @@ class BookingEvent extends Component {
 }
 
 BookingEvent.propTypes = {
+  // from_date: PropTypes.date,
+  // to_date: PropTypes.date,
   myAddr: PropTypes.string,
   contract: PropTypes.object,
   dispatch: PropTypes.func.isRequired,

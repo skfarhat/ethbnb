@@ -1,12 +1,13 @@
 import {
-  REQUEST_LISTINGS,
-  RECEIVE_LISTINGS,
-  SET_SEARCH_OPTIONS,
-  SET_WEB3,
   BOOK_LISTING,
+  RECEIVE_ACCOUNT_INFO,
+  RECEIVE_LISTINGS,
+  REQUEST_LISTINGS,
   SET_ACCOUNTS,
-  SET_SELECTED_ACCOUNT,
   SET_ETH_EVENTS,
+  SET_SEARCH_OPTIONS,
+  SET_SELECTED_ACCOUNT,
+  SET_WEB3,
 } from './actions'
 
 const initialState = {
@@ -19,6 +20,9 @@ const initialState = {
   },
   selectedAccountIndex: 0,
   accounts: [],
+  // Fetched from /api/account/:user
+  // contains name, addr, bookings, dateCreated
+  accountInfo: null,
   web3: null,
   contract: null,
   ethEvents: [],
@@ -66,6 +70,11 @@ const rootReducer = (state = initialState, action) => {
         // didInvalidate: false,
       })
     }
+    case RECEIVE_ACCOUNT_INFO:
+      return {
+        ...state,
+        accountInfo: action.data,
+      }
     case RECEIVE_LISTINGS:
       return Object.assign({}, state, {
         isFetching: false,
