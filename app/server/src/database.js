@@ -1,11 +1,15 @@
 const mongoose = require('mongoose')
+const Accounts = require('./models/Account')
+const Listings = require('./models/Listing')
+const Bookings = require('./models/Booking')
+const IPFSImage = require('./models/IPFSImage')
 
 module.exports = class Database {
 
   constructor(options) {
     this.options = options
     this.connectOpts = {
-      newUrlParser: true, 
+      newUrlParser: true,
       autoReconnect: true,
     }
     this.connect_str = format("mongodb://{host}:{port}/{db_name}", options)
@@ -24,7 +28,7 @@ module.exports = class Database {
       mongoose.connect(this.connect_str, this.connectOpts);
     })
   }
-  
+
   connect() {
     mongoose.connection.on('error', (e) => {
       logger.error('Failed to connect to mongoose', e)
@@ -33,5 +37,16 @@ module.exports = class Database {
       logger.info('Connected to database')
     })
     mongoose.connect(this.connect_str, this.connectOpts);
+  }
+
+  // Delete all documents
+  async clear() {
+    // Database clear
+    logger.info('Clearing database')
+    await Accounts.deleteMany({})
+    await Listings.deleteMany({})
+    await IPFSImage.deleteMany({})
+    await Bookings.deleteMany({})
+    logger.info('Finished clearing database')
   }
 }

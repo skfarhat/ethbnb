@@ -3,13 +3,16 @@ var Schema   = mongoose.Schema
 var ObjectId = Schema.ObjectId
 
 
-
 const BookingSchema = new Schema({
     user: String,
     bid: Number,
     lid: Number,
     from_date: { type: Date, set: setMongoDate },
-    to_date: { type: Date, set: setMongoDate }
+    to_date: { type: Date, set: setMongoDate },
+    // Determined by the host
+    guestRating: Number,
+    // Determined by the guest
+    hostRating: Number,
   },
   {
     toObject: {virtuals: true},

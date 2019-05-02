@@ -290,16 +290,7 @@ const testData = [
 // FUNCTIONS
 // ============================================================
 
-// Database clear
-const database_clear = async () => {
-  logger.info('Clearing database')
-  await Accounts.deleteMany({})
-  await Listings.deleteMany({})
-  await IPFSImage.deleteMany({})
-  await Bookings.deleteMany({})
-  logger.info('Finished clearing database')
-}
-
+// TODO: move this to database
 // Database print
 const database_print = async () => {
   logger.info('Database')
@@ -421,7 +412,7 @@ const run = async () => {
 
   // Clear database and exit if 'opts.db_clear=true'
   if (opts.db_clear) {
-    await database_clear()
+    await database.clear()
     process.exit(0)
   } else {
     accounts = await web3.eth.getAccounts()

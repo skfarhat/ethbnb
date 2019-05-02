@@ -15,8 +15,10 @@ const bchain_to_db = require('./bchain_to_db')()
 const Database = require('./database')
 const database = new Database(constants.db)
 
-// Async call
-database.connect()
+// Async calls
+// IMPROVE: the database is not waited for so the below is not neat
+database.connectSync().then(() => database.clear())
+
 
 // Async call
 bchain_to_db.sync()
@@ -31,8 +33,27 @@ const isSet = val => {
   return val !== null && typeof(val) !== 'undefined'
 }
 
+// GET /api/public/account/:user
+//
+// Public call to account returns name, addr and dateCreated
+//
+app.get('/api/public/account/:user', async (req, res) => {
+  const { user } = req.params
+  const fields = {
+    _id: 0,
+    name: 1,
+    dateCreated: 1,
+    addr: 1,
+  }
+  let result = await Accounts.findOne({ addr: user }, fields).lean()
+  result.toObject
+  return res.json(result)
+})
+
 // GET /api/account/:user
 //
+// Returns all information on the given user, this call
+// will likely need to add authentication later (TODO)
 // :user account address for which bookings will be returned
 //
 app.get('/api/account/:user', async (req, res) => {

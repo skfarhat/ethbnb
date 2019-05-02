@@ -15,6 +15,7 @@ module.exports = () => {
   global.setMongoDate = (dateSec) => {
     return parseInt(dateSec) * 1000
   }
+  global.sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs))
   global.constants = {
     PORT: 3001,
     PROVIDER_HTTP: 'http://localhost:8545',

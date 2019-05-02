@@ -154,18 +154,49 @@ module.exports = function () {
   }
 
   // Update the number of reviews and average rating
-  // for listings and users.
+  // for the listings and users.
+  // The 'booking' document is also updated to show who rated whom.
   //
   // Callback should fire after bookingComplete and others.
   const ratingCompleteEventHandler = async (event) => {
-    logger.silly('ratingCompleteEventHandler')
     let res
-    const { from, bid, stars, lid } = event.returnValues
-    res = await Account.findOneAndUpdate({addr: from}, {$inc: {nRatings: 1}})
-    res = await Account.findOneAndUpdate({addr: from}, {$inc: {totalScore: stars}})
+    logger.silly('ratingCompleteEventHandler - start')
+    const { from, bid, lid, stars } = event.returnValues
 
+    // Get booking and listing
+    // We might have to wait for them as the event firing is asynchronouse
+    // and RatingComplete relies on the Listing and Booking being present.
+    //
+    // FIXME: The below is not ideal but does the job for now.
+    const WAIT_INTERVAL = 500 // usec
+    let booking = await Booking.findOne({bid, lid})
+    let listing = await Listing.findOne({lid}, {owner: 1, _id: 0})
+    while (!listing || !booking) {
+      booking = await Booking.findOne({bid, lid})
+      listing = await Listing.findOne({lid}, {owner: 1, _id: 0})
+      sleep(WAIT_INTERVAL)
+    }
+    // True if the guest is the one who is rating the host
+    const isGuestRater = from == booking.user
+    // If the rater = guest, other = host
+    // If rater = host, other = guest
+    let other = (isGuestRater) ? listing.owner : booking.user
+
+    // Update rating for Account 'other'
+    res = await Account.findOneAndUpdate({addr: other}, {$inc: {nRatings: 1}})
+    res = await Account.findOneAndUpdate({addr: other}, {$inc: {totalScore: stars}})
+    // Update rating for the listing
     res = await Listing.findOneAndUpdate({lid}, {$inc: {nRatings: 1}})
     res = await Listing.findOneAndUpdate({lid}, {$inc: {totalScore: stars}})
+    // Update rating on the booking
+    const updateObj = (isGuestRater) ? {hostRating: stars} : {guestRating: stars}
+    res = await Booking.findOneAndUpdate({lid, bid}, updateObj)
+
+    // // TODO: determine if host or other rating
+    // // Update rating on the booking
+    // booking.hostRating = stars
+    // await booking.save()
+    logger.silly('ratingCompleteEventHandler - end')
   }
 
   const eventCallbacks = {
