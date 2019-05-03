@@ -177,10 +177,10 @@ module.exports = () => {
       listing = await Listing.findOne({ lid }, { owner: 1, _id: 0 })
       sleep(WAIT_INTERVAL)
     }
-    // True if the guest is the one who is rating the host
+    // True if the guest is the one who is rating the owner
     const isGuestRater = from === booking.user
-    // If the rater = guest, other = host
-    // If rater = host, other = guest
+    // If the rater = guest, other = owner
+    // If rater = owner, other = guest
     const other = (isGuestRater) ? listing.owner : booking.user
 
     // Update rating for Account 'other'
@@ -190,13 +190,14 @@ module.exports = () => {
     await Listing.findOneAndUpdate({ lid }, { $inc: { nRatings: 1 } })
     await Listing.findOneAndUpdate({ lid }, { $inc: { totalScore: stars } })
     // Update rating on the booking
-    const updateObj = (isGuestRater) ? { hostRating: stars } : { guestRating: stars }
+    const updateObj = (isGuestRater) ? { ownerRating: stars } : { guestRating: stars }
     await Booking.findOneAndUpdate({ lid, bid }, updateObj)
 
-    // // TODO: determine if host or other rating
-    // // Update rating on the booking
-    // booking.hostRating = stars
+    // TODO: determine if owner or other rating
+    // Update rating on the booking
+    // booking.ownerRating = stars
     // await booking.save()
+    logger.warn('Implementation incomplete here.')
     logger.silly('ratingCompleteEventHandler - end')
   }
 
