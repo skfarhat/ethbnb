@@ -28,28 +28,10 @@ class ListingSearch extends Component {
     const { isFetching } = this.props
 
     Object.keys(self.props.listings).forEach((key) => {
-      const l = self.props.listings[key]
-
-      // Prep stuff for the image
-      const { images } = l
-      let hash = ''
-      let ext = ''
-      if (Array.isArray(images) && images.length > 0) {
-        const img = images[0]
-        if (img && Object.prototype.hasOwnProperty.call(img, 'hash')
-          && Object.prototype.hasOwnProperty.call(img, 'path')) {
-          hash = img.hash
-          ext = img.path.split('.').pop()
-        }
-      }
-
+      const listing = self.props.listings[key]
       doms.push((
         <div className="listing-mini" key={i}>
-          <ListingMini
-            hash={hash}
-            ext={ext}
-            {...l}
-          />
+          <ListingMini {...listing} />
         </div>
       ))
       layout.push({

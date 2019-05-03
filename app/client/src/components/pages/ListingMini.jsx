@@ -31,9 +31,25 @@ const getRatingElem = (totalScore, nRatings) => {
   )
 }
 
+const getMainImageInfo = (images) => {
+  // Prep stuff for the image
+  let hash = ''
+  let ext = ''
+  if (Array.isArray(images) && images.length > 0) {
+    const img = images[0]
+    if (img && Object.prototype.hasOwnProperty.call(img, 'hash')
+      && Object.prototype.hasOwnProperty.call(img, 'path')) {
+      hash = img.hash
+      ext = img.path.split('.').pop()
+    }
+  }
+  return [hash, ext]
+}
+
 class ListingMini extends Component {
   render() {
-    const { lid, title, location, country, price, hash, ext, nRatings, totalScore } = this.props
+    const { lid, title, location, country, price, nRatings, totalScore, images } = this.props
+    const [hash, ext] = getMainImageInfo(images)
     return (
       <div className="listing-mini">
         <Link to={`/listing/${lid}`}>
@@ -78,8 +94,6 @@ ListingMini.propTypes = {
   title: PropTypes.string,
   country: PropTypes.number.isRequired,
   price: PropTypes.number.isRequired,
-  hash: PropTypes.string.isRequired,
-  ext: PropTypes.string.isRequired,
   nRatings: PropTypes.number,
   totalScore: PropTypes.number,
 }
