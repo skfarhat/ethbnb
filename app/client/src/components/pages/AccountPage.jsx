@@ -5,7 +5,7 @@ import { Loader } from 'semantic-ui-react'
 import { fetchEthEvents, fetchEthEventsIfNeeded, fetchAccountInfo } from '../../redux/actions'
 import EthEvent from './EthEvent'
 import BookingEvent from './BookingEvent'
-
+import ListingMini from './ListingMini'
 
 class AccountPage extends Component {
   constructor() {
@@ -23,6 +23,17 @@ class AccountPage extends Component {
     if (accountInfo === null || prevProps.selectedAccountIndex !== selectedAccountIndex) {
       this.fetchAccountInfo()
     }
+  }
+
+  getMyRating() {
+    const { accountInfo } = this.props
+    const { nRatings, totalScore } = accountInfo
+    if (nRatings) {
+      const avgScore = (totalScore / nRatings)
+      const reviewStr = (nRatings > 1) ? 'reviews' : 'review'
+      return `Average rating: ${avgScore} (${nRatings} ${reviewStr})`
+    }
+    return 'No ratings'
   }
 
   getSelectedAddr() {
@@ -57,15 +68,23 @@ class AccountPage extends Component {
     // My Bookings
     const bookingEvents = accountInfo.bookings.map((booking, idx) => <BookingEvent key={idx} userAddr={myAddr} {...booking} />)
     const bookingsDOM = (bookingEvents.length) ? (<div> <h3> Bookings </h3> {bookingEvents} </div>) : (<span />)
+
+    const listings = accountInfo.listings.map((listing, idx) => <ListingMini key={idx} {...listing} />)
+    const listingsDOM = (listings.length) ? (<div> <h3> My Listings </h3> {listings} </div>) : (<span />)
+
     return (
       <div className="accounts-page">
         <div className="account-info">
           <h5> {accountInfo.name} </h5>
           <p> Date Created {accountInfo.dateCreated} </p>
           <p> Ethereum Address: {accountInfo.addr} </p>
+          <p> My Score: {this.getMyRating()} </p>
         </div>
-        <div key="accounts-bookings" className="accounts-bookings">
+        <div key="account-bookings" className="account-bookings">
           {bookingsDOM}
+        </div>
+        <div key="account-listings" className="account-listings">
+          {listingsDOM}
         </div>
       </div>
     )

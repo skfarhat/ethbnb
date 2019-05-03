@@ -28,20 +28,46 @@ class BookingEvent extends Component {
     const userIsOwner = userAddr === listing.owner
     // User has not rated if they are the owner and guestRating is not defined (or not-zero)
     // Or, if they are not the owner (they are the guest) and ownerRating is not defined (or not-zero)
-    const userHasNotRated = (userIsOwner && guestRating) || (!userIsOwner && ownerRating)
     let ourScore
     let theirScore
     if (userIsOwner) {
-      ourScore = (ownerRating) ? (<div> They rated you {getReactRating(ownerRating, true)} </div>) : (<span> They have not rated you </span>)
-      theirScore = (guestRating) ? getReactRating(guestRating, true) : getReactRating(3, false) // initial val of 3
+      ourScore = (
+        <div>
+          {
+              (ownerRating)
+                ? (<p> They rated you </p>) + getReactRating(ownerRating, !!ownerRating)
+                : (<p> They have not rated you yet </p>)
+          }
+        </div>
+      )
+      theirScore = (
+        <div>
+          {(guestRating) ? (<p> You rated them </p>) : (<p> Rate them </p>)}
+          {getReactRating((guestRating || 3), !!guestRating)}
+        </div>
+      )
     } else {
-      ourScore = (guestRating) ? (<div> They rated you {getReactRating(guestRating, true)} </div>) : (<span> They have not rated you </span>)
-      theirScore = (ownerRating) ? getReactRating(ownerRating, true) : getReactRating(3, false) // initial val of 3
+      ourScore = (
+        <div>
+          {
+            (guestRating)
+              ? (<p> They rated you </p>) + getReactRating(guestRating, !!guestRating)
+              : <p> They have not rated you yet </p>
+          }
+        </div>
+      )
+      theirScore = (
+        <div>
+          {(ownerRating) ? (<p> You rated them </p>) : (<p> Rate them </p>)}
+          {getReactRating(ownerRating || 3, !!ownerRating)}
+        </div>
+      )
+      // (ownerRating) ? getReactRating(ownerRating, true) : getReactRating(3, false) // initial val of 3
     }
     return (
       <div className="ratings">
         <div key="their-score">
-          Your rating of them {theirScore}
+          {theirScore}
         </div>
         <div key="our-score">
           {ourScore}
@@ -73,12 +99,19 @@ class BookingEvent extends Component {
   }
 }
 
+BookingEvent.defaultProps = {
+  guestRating: 0,
+  ownerRating: 0,
+}
+
 BookingEvent.propTypes = {
   // from_date: PropTypes.date,
   // to_date: PropTypes.date,
-  myAddr: PropTypes.string,
-  contract: PropTypes.object,
   dispatch: PropTypes.func.isRequired,
+  contract: PropTypes.object,
+  guestRating: PropTypes.number,
+  ownerRating: PropTypes.number,
+  userAddr: PropTypes.string.isRequired,
 }
 
 const mapStateToProps = state => ({
