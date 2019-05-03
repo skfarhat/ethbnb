@@ -81,12 +81,16 @@ module.exports = {
           },
         },
       ]
-      const account = await Accounts.findOne({ addr: user }).lean()
-      account.bookings = await Bookings.aggregate(bookingsPipeline)
-      account.listings = await Listings.aggregate(listingsPipeline)
-      // Drop __id and __v
-      delete account._id
-      delete account.__v
+      let account = await Accounts.findOne({ addr: user }).lean()
+      if (account) {
+        account.bookings = await Bookings.aggregate(bookingsPipeline)
+        account.listings = await Listings.aggregate(listingsPipeline)
+        // Drop __id and __v
+        delete account._id
+        delete account.__v
+      } else {
+        account = {}
+      }
       return res.json(account)
     })
 
