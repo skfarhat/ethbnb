@@ -122,7 +122,7 @@ const chainTransactions = [
   {
     // owner: Host1
     // lid: 3
-    clientIndex: 2,
+    clientIndex: 1,
     name: 'createListing',
     inputs: [
       { value: '75'/* FR */, name: 'country' },

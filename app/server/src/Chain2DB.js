@@ -160,8 +160,7 @@ module.exports = () => {
   //
   // Callback should fire after bookingComplete and others.
   const ratingCompleteEventHandler = async (event) => {
-    let res
-    logger.silly('ratingCompleteEventHandler - start')
+    logger.silly('ratingCompleteEventHandler')
     const { from, bid, lid, stars } = event.returnValues
 
     // Get booking and listing
@@ -192,13 +191,6 @@ module.exports = () => {
     // Update rating on the booking
     const updateObj = (isGuestRater) ? { ownerRating: stars } : { guestRating: stars }
     await Booking.findOneAndUpdate({ lid, bid }, updateObj)
-
-    // TODO: determine if owner or other rating
-    // Update rating on the booking
-    // booking.ownerRating = stars
-    // await booking.save()
-    logger.warn('Implementation incomplete here.')
-    logger.silly('ratingCompleteEventHandler - end')
   }
 
   const eventCallbacks = {

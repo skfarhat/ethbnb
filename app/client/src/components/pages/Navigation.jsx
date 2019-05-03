@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
-import { Menu, Dropdown } from 'semantic-ui-react'
+import { Menu } from 'semantic-ui-react'
 import AccountDropdown from './AccountDropdown'
 
 

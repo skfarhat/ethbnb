@@ -20,7 +20,7 @@ class AccountPage extends Component {
 
   componentDidUpdate(prevProps) {
     const { accountInfo, selectedAccountIndex } = this.props
-    if (accountInfo === null || prevProps.selectedAccountIndex !== selectedAccountIndex) {
+    if (!accountInfo || prevProps.selectedAccountIndex !== selectedAccountIndex) {
       this.fetchAccountInfo()
     }
   }
@@ -55,14 +55,21 @@ class AccountPage extends Component {
   render() {
     // TODO: show error message if there is no account and the page is accessed
     //       e.g. if the user types in /account in the URL but there are no eth accounts.
-    const { events, contract, accountInfo } = this.props
+    const { accountInfo } = this.props
     const myAddr = this.getSelectedAddr()
-    const accountEvents = events.filter(event => Object.prototype.hasOwnProperty.call(event.returnValues, 'from')
-      && myAddr === event.returnValues.from)
-    // const accountEventViews = accountEvents.map((event, idx) => <EthEvent key={idx} {...event} />)
+
+    // const { events, contract } = this.props
+    // const accountEvents = events.filter(event =>
+    // Object.prototype.hasOwnProperty.call(event.returnValues, 'from')
+    // && myAddr === event.returnValues.from)
+    // const accountEventViews = accountEvents.map((event, idx) =>
+    // <EthEvent key={idx} {...event} />)
 
     if (!accountInfo) {
       return (<Loader active />)
+    }
+    if (!Object.entries(accountInfo).length) {
+      return (<div> <p> No account found </p> </div>)
     }
 
     // My Bookings
@@ -78,7 +85,7 @@ class AccountPage extends Component {
           <h5> {accountInfo.name} </h5>
           <p> Date Created {accountInfo.dateCreated} </p>
           <p> Ethereum Address: {accountInfo.addr} </p>
-          <p> My Score: {this.getMyRating()} </p>
+          <p> { this.getMyRating() } </p>
         </div>
         <div key="account-bookings" className="account-bookings">
           {bookingsDOM}

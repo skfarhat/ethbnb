@@ -7,7 +7,7 @@ const IPFSImage = require('./models/IPFSImage')
 const Database = (options) => {
   const connectStr = format('mongodb://{host}:{port}/{db_name}', options)
   const connectOpts = {
-    newUrlParser: true,
+    useNewUrlParser: true,
     autoReconnect: true,
   }
 

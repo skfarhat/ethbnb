@@ -7,8 +7,6 @@ import moment from 'moment'
 import { rateBooking } from '../../redux/actions'
 
 
-const getReactRating = (val, readonly) => <Rating start={0} stop={5} readonly={readonly} initialRating={val} />
-
 class BookingEvent extends Component {
   constructor(props) {
     super(props)
@@ -16,34 +14,48 @@ class BookingEvent extends Component {
   }
 
   onRatingChange(rating) {
-    const { dispatch, contract, userAddr } = this.props
-    // const { lid, bid } = returnValues
-    // dispatch(rateBooking(lid, bid, rating, contract, ethAddr))
+    const { dispatch, contract, userAddr, lid, bid } = this.props
+    dispatch(rateBooking(lid, bid, rating, contract, userAddr))
+
+    // TODO: show something on the UI suggesting we have submitted
     // TODO: set it to readonly after setting or if it was already set (need to do that)
   }
 
+  getReactRating(val, readonly) {
+    return (
+      <Rating
+        start={0}
+        stop={5}
+        readonly={readonly}
+        initialRating={val}
+        onChange={this.onRatingChange}
+      />
+    )
+  }
 
   getRatingDOM() {
     const { ownerRating, guestRating, listing, userAddr } = this.props
     const userIsOwner = userAddr === listing.owner
-    // User has not rated if they are the owner and guestRating is not defined (or not-zero)
-    // Or, if they are not the owner (they are the guest) and ownerRating is not defined (or not-zero)
+    // User has not rated if they are the owner and guestRating
+    // is not defined (or not-zero)
+    // Or, if they are not the owner (they are the guest) and
+    // ownerRating is not defined (or not-zero)
     let ourScore
     let theirScore
     if (userIsOwner) {
       ourScore = (
         <div>
           {
-              (ownerRating)
-                ? (<p> They rated you </p>) + getReactRating(ownerRating, !!ownerRating)
-                : (<p> They have not rated you yet </p>)
+            (ownerRating)
+              ? (<p> They rated you </p>) + this.getReactRating(ownerRating, !!ownerRating)
+              : (<p> They have not rated you yet </p>)
           }
         </div>
       )
       theirScore = (
         <div>
           {(guestRating) ? (<p> You rated them </p>) : (<p> Rate them </p>)}
-          {getReactRating((guestRating || 3), !!guestRating)}
+          {this.getReactRating((guestRating || 3), !!guestRating)}
         </div>
       )
     } else {
@@ -51,18 +63,17 @@ class BookingEvent extends Component {
         <div>
           {
             (guestRating)
-              ? (<p> They rated you </p>) + getReactRating(guestRating, !!guestRating)
-              : <p> They have not rated you yet </p>
+              ? (<p> They rated you </p>) + this.getReactRating(guestRating, !!guestRating)
+              : (<p> They have not rated you yet </p>)
           }
         </div>
       )
       theirScore = (
         <div>
           {(ownerRating) ? (<p> You rated them </p>) : (<p> Rate them </p>)}
-          {getReactRating(ownerRating || 3, !!ownerRating)}
+          {this.getReactRating(ownerRating || 3, !!ownerRating)}
         </div>
       )
-      // (ownerRating) ? getReactRating(ownerRating, true) : getReactRating(3, false) // initial val of 3
     }
     return (
       <div className="ratings">
@@ -107,9 +118,12 @@ BookingEvent.defaultProps = {
 BookingEvent.propTypes = {
   // from_date: PropTypes.date,
   // to_date: PropTypes.date,
-  dispatch: PropTypes.func.isRequired,
+  bid: PropTypes.number.isRequired,
   contract: PropTypes.object,
+  dispatch: PropTypes.func.isRequired,
   guestRating: PropTypes.number,
+  lid: PropTypes.number.isRequired,
+  listing: PropTypes.object,
   ownerRating: PropTypes.number,
   userAddr: PropTypes.string.isRequired,
 }
