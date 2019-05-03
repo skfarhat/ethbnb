@@ -25,3 +25,10 @@
 .eth-event td:nth-child(1) {
     width: 200px;
 }
+.booking-event {
+    padding: 20px 20px;
+    background-color: #f5eaea;
+    margin: 10px;
+    width: 50%;
+    border-radius: 20px
+}

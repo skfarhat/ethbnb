@@ -14,6 +14,7 @@ const getRatingElem = (totalScore, nRatings) => {
       </div>
     )
   }
+  const ratingStr = (nRatings > 1) ? 'ratings' : 'rating'
   return (
     <div className="listing-rating">
       <Rating
@@ -21,6 +22,11 @@ const getRatingElem = (totalScore, nRatings) => {
         initialRating={totalScore / nRatings}
         fractions={2}
       />
+      <div>
+        <em>
+          {`${nRatings} ${ratingStr}`}
+        </em>
+      </div>
     </div>
   )
 }
@@ -35,11 +41,11 @@ class ListingMini extends Component {
             hash={hash}
             ext={ext}
           />
-          {getRatingElem(totalScore, nRatings)}
           <h5>
             {title}
           </h5>
         </Link>
+        {getRatingElem(totalScore, nRatings)}
         <div>
           <em> Location: </em>
           <span className="location">

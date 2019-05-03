@@ -235,6 +235,9 @@ const chainTransactions = [
   //    2 stars by Guest2 (bid=1)
   // Paris (lid=2) owned by Host1 (clientIndex=0) is rated:
   //    4 stars by Guest1 (bid=0)
+  //
+  // Host1 rated Guest2 for (bid=1, lid=1)
+  //    3 stars
   {
     clientIndex: 2,
     name: 'rate',
@@ -262,6 +265,16 @@ const chainTransactions = [
       { value: 3, name: 'lid' },
       { value: 0, name: 'bid' },
       { value: 4, name: 'stars' },
+    ],
+    constant: false,
+  },
+  {
+    clientIndex: 0,
+    name: 'rate',
+    inputs: [
+      { value: 1, name: 'lid' },
+      { value: 1, name: 'bid' },
+      { value: 3, name: 'stars' },
     ],
     constant: false,
   },

@@ -55,7 +55,7 @@ class AccountPage extends Component {
     }
 
     // My Bookings
-    const bookingEvents = accountInfo.bookings.map((booking, idx) => <BookingEvent key={idx} ethAddr={myAddr} {...booking} />)
+    const bookingEvents = accountInfo.bookings.map((booking, idx) => <BookingEvent key={idx} userAddr={myAddr} {...booking} />)
     const bookingsDOM = (bookingEvents.length) ? (<div> <h3> Bookings </h3> {bookingEvents} </div>) : (<span />)
     return (
       <div className="accounts-page">
