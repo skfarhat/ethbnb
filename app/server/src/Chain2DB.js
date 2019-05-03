@@ -3,6 +3,7 @@ const Account = require('./models/Account')
 const Listing = require('./models/Listing')
 const Booking = require('./models/Booking')
 const { contractAddress, jsonInterface } = require('./loadAbi')
+
 const abi = jsonInterface.abi
 
 // Show web3 where it needs to look for the Ethereum node.
@@ -29,8 +30,8 @@ const accountFunctions = {
 //
 //          callback will be called upon each database insertion if provided
 //
-module.exports = function () {
-  var self = this
+module.exports = () => {
+  const self = this
 
   // ==================================================================
   // DEFINITIONS
@@ -38,14 +39,13 @@ module.exports = function () {
 
   // Make callback it one has been provided
   const callbackIfExists = (data) => {
-    if (self.callback)
-      self.callback(data)
+    if (self.callback) self.callback(data)
   }
 
   const addAccountToDatabase = async (account) => {
     logger.silly('addAccountToDatabase')
-    const { addr, } = account
-    let accountModel = await Account.findOneAndUpdate({addr}, account, {new: true, upsert: true})
+    const { addr } = account
+    await Account.findOneAndUpdate({ addr }, account, { new: true, upsert: true })
   }
 
   // Create a listing model and save it to Mongo
@@ -53,16 +53,16 @@ module.exports = function () {
     logger.silly('addListingToDatbase')
     const { country, lid } = listing
     // {"new: true"} so that the modified/inserted is returned instead
-    let listingModel = await Listing.findOneAndUpdate({lid: listing.lid}, listing, {new: true, upsert: true});
+    const listingModel = await Listing.findOneAndUpdate({ lid: listing.lid }, listing, { new: true, upsert: true })
     // Check for existing bookings in the database and update the listing's field
-    let booking = await Booking.findOne({lid: lid})
+    const booking = await Booking.findOne({ lid })
     callbackIfExists(listingModel)
   }
 
   const addBookingToDatabase = async (booking) => {
     logger.silly('addBookingToDatabase')
-    let bookingModel = await Booking.findOneAndUpdate({bid: booking.bid, lid: booking.lid}, booking, {new: true, upsert: true})
-    await Listing.findOneAndUpdate({lid: booking.lid}, {$addToSet: {bookings: bookingModel._id}})
+    const bookingModel = await Booking.findOneAndUpdate({ bid: booking.bid, lid: booking.lid }, booking, { new: true, upsert: true })
+    await Listing.findOneAndUpdate({ lid: booking.lid }, { $addToSet: { bookings: bookingModel._id } })
   }
 
   const fetchAndReturnAccount = async (addr) => {
@@ -75,10 +75,10 @@ module.exports = function () {
     for (const field in accountFunctions) {
       const funcName = accountFunctions[field]
       try {
-        res = await contract.methods[funcName](addr).call({addr,})
-      } catch(err) {
-        logger.error('Error: Failed to call function ' + funcName +
-          'Received error: ' + err)
+        res = await contract.methods[funcName](addr).call({ addr })
+      } catch (err) {
+        logger.error(`Error: Failed to call function ${funcName
+        }Received error: ${err}`)
       }
       account[field] = res
     }
@@ -96,8 +96,8 @@ module.exports = function () {
       const funcName = listingFunctions[field]
       let res
       try {
-        res = await contract.methods[funcName](lid).call({from,})
-      } catch(err) {
+        res = await contract.methods[funcName](lid).call({ from })
+      } catch (err) {
         logger.error('Error: Failed to call function ', funcName, 'Received error: ', err)
       }
       l[field] = res
@@ -109,16 +109,17 @@ module.exports = function () {
   // a booking's fields from the blockchain.
   const fetchAndReturnBooking = async (bid, lid, from) => {
     const b = {
-      bid, lid,
-      user: from
+      bid,
+      lid,
+      user: from,
     }
     try {
-      let r = await contract.methods.getBookingDates(lid, bid).call({ from })
+      const r = await contract.methods.getBookingDates(lid, bid).call({ from })
       b.from_date = r.from_date
       b.to_date = r.to_date
       return b
     } catch (exc) {
-      logger.error('Failed to call getBookingDates()' + exc)
+      logger.error(`Failed to call getBookingDates()${exc}`)
       throw exc
     }
   }
@@ -142,7 +143,7 @@ module.exports = function () {
   const bookingCancelledEventHandler = async (event) => {
     logger.silly('bookingCancelledEventHandler - deleting booking')
     const { lid, bid, from } = event.returnValues
-    res = await Booking.delete({bid})
+    const res = await Booking.delete({ bid })
     logger.debug(res)
   }
 
@@ -169,28 +170,28 @@ module.exports = function () {
     //
     // FIXME: The below is not ideal but does the job for now.
     const WAIT_INTERVAL = 500 // usec
-    let booking = await Booking.findOne({bid, lid})
-    let listing = await Listing.findOne({lid}, {owner: 1, _id: 0})
+    let booking = await Booking.findOne({ bid, lid })
+    let listing = await Listing.findOne({ lid }, { owner: 1, _id: 0 })
     while (!listing || !booking) {
-      booking = await Booking.findOne({bid, lid})
-      listing = await Listing.findOne({lid}, {owner: 1, _id: 0})
+      booking = await Booking.findOne({ bid, lid })
+      listing = await Listing.findOne({ lid }, { owner: 1, _id: 0 })
       sleep(WAIT_INTERVAL)
     }
     // True if the guest is the one who is rating the host
-    const isGuestRater = from == booking.user
+    const isGuestRater = from === booking.user
     // If the rater = guest, other = host
     // If rater = host, other = guest
-    let other = (isGuestRater) ? listing.owner : booking.user
+    const other = (isGuestRater) ? listing.owner : booking.user
 
     // Update rating for Account 'other'
-    res = await Account.findOneAndUpdate({addr: other}, {$inc: {nRatings: 1}})
-    res = await Account.findOneAndUpdate({addr: other}, {$inc: {totalScore: stars}})
+    await Account.findOneAndUpdate({ addr: other }, { $inc: { nRatings: 1 } })
+    await Account.findOneAndUpdate({ addr: other }, { $inc: { totalScore: stars } })
     // Update rating for the listing
-    res = await Listing.findOneAndUpdate({lid}, {$inc: {nRatings: 1}})
-    res = await Listing.findOneAndUpdate({lid}, {$inc: {totalScore: stars}})
+    await Listing.findOneAndUpdate({ lid }, { $inc: { nRatings: 1 } })
+    await Listing.findOneAndUpdate({ lid }, { $inc: { totalScore: stars } })
     // Update rating on the booking
-    const updateObj = (isGuestRater) ? {hostRating: stars} : {guestRating: stars}
-    res = await Booking.findOneAndUpdate({lid, bid}, updateObj)
+    const updateObj = (isGuestRater) ? { hostRating: stars } : { guestRating: stars }
+    await Booking.findOneAndUpdate({ lid, bid }, updateObj)
 
     // // TODO: determine if host or other rating
     // // Update rating on the booking
@@ -200,11 +201,11 @@ module.exports = function () {
   }
 
   const eventCallbacks = {
-    'CreateAccountEvent': createAccountEventHandler,
-    'BookingComplete': bookingCompleteEventHanlder,
-    'BookingCancelled': bookingCancelledEventHandler,
-    'CreateListingEvent': createListingEventHandler,
-    'RatingComplete': ratingCompleteEventHandler
+    CreateAccountEvent: createAccountEventHandler,
+    BookingComplete: bookingCompleteEventHanlder,
+    BookingCancelled: bookingCancelledEventHandler,
+    CreateListingEvent: createListingEventHandler,
+    RatingComplete: ratingCompleteEventHandler,
   }
 
   // Calls the callback
@@ -230,7 +231,7 @@ module.exports = function () {
     // The callback 'eventDispatcher' is used for each event that arrives.
     sync: async (callback) => {
       self.callback = callback
-      for (let eventName in eventCallbacks) {
+      for (const eventName in eventCallbacks) {
         // Search the contract events for the hash in the event logs and show matching events.
         await contract.events[eventName]({}, eventDispatcher)
         await contract.getPastEvents(eventName, {

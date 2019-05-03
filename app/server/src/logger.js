@@ -3,6 +3,7 @@ const colors = require('colors')
 const path = require('path')
 const { createLogger, format, transports } = winston
 const { combine, timestamp, label, printf, colorize } = format
+
 const myFormat = printf(info => {
   return `${info.timestamp} [${info.label}] ${info.level}: ${info.message}`
 })
@@ -16,12 +17,12 @@ const logger = createLogger({
     new transports.Console({
       format: combine(
         colorize(),
-        myFormat
+        myFormat,
       ),
       level: 'silly' }),
     // new transports.File({ format: myFormat, filename: path.resolve(logDir, 'info.log'), level: 'info' }),
     // new transports.File({ format: myFormat, filename: path.resolve(logDir, 'error.log'), level: 'error' })
-  ]
+  ],
 })
 
 module.exports = logger

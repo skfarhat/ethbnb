@@ -1,157 +1,69 @@
-const app = require('./app')
+const minimist = require('minimist')
+const path = require('path')
+const { spawn } = require('child_process')
 require('./globals')()
 
-const Accounts = require('./models/Account')
-var IPFSImage  = require('./models/IPFSImage')
-const Listings = require('./models/Listing')
-const Bookings = require('./models/Booking')
-
-const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs));
-
+const SETUP_SCRIPT = path.join(__dirname, '../../../scripts/setup.sh')
 const constants = global.constants
-const bchain_to_db = require('./bchain_to_db')()
+const webServer = require('./WebServer')
+const Chain2DB = require('./Chain2DB')
+const Database = require('./Database')
+const dataManager = require('./DataManager')
 
-// Setup database
-const Database = require('./database')
-const database = new Database(constants.db)
-
-// Async calls
-// IMPROVE: the database is not waited for so the below is not neat
-database.connectSync().then(() => database.clear())
-
-
-// Async call
-bchain_to_db.sync()
-
-// Allow CORS
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000')
-  next()
-})
-
-const isSet = val => {
-  return val !== null && typeof(val) !== 'undefined'
+async function asyncExec(command) {
+  let stdout = ''
+  return new Promise((resolve, reject) => {
+    const child = spawn(command)
+    child.addListener('error', reject)
+    child.stdout.on('data', (data) => {
+      console.log(data.toString())
+      stdout += data
+    })
+    child.addListener('exit', code => resolve({ code, stdout }))
+  })
 }
 
-// GET /api/public/account/:user
-//
-// Public call to account returns name, addr and dateCreated
-//
-app.get('/api/public/account/:user', async (req, res) => {
-  const { user } = req.params
-  const fields = {
-    _id: 0,
-    name: 1,
-    dateCreated: 1,
-    addr: 1,
+// Parse Command Line
+// ------------------
+// If chain_init=true initialise the blockchain with data
+const args = minimist(process.argv.slice(2))
+args.initTestData = (hasKey(args, 'initTestData')) ? args.initTestData === 'true' : false
+
+const chain2DB = Chain2DB()
+const database = Database(constants.db)
+
+database.connectSync().then(async () => {
+  // Chain2DB will setup event listeners which
+  // will insert documents in the model for each chain event
+  await chain2DB.sync()
+
+  if (args.initTestData) {
+    // Run scripts/setup.sh which compiles the contract and migrates it
+    // If needed:
+    // const { errCode, stdout } = await asyncExec(SETUP_SCRIPT)
+    await asyncExec(SETUP_SCRIPT)
+
+    // Clear the database
+    await database.clear()
+
+    // Add test data to chain
+    // createAccount, createListing, listingBook...
+    await dataManager.addTestDataToChain()
+
+    // Upload images to ipfs.infura.com
+    // and insert them in the local database
+    await dataManager.imagesAddToIPFSAndDB()
+
+    // Add non-chain data to database
+    // including the above images
+    await dataManager.addListingMetadata()
   }
-  let result = await Accounts.findOne({ addr: user }, fields).lean()
-  result.toObject
-  return res.json(result)
-})
 
-// GET /api/account/:user
-//
-// Returns all information on the given user, this call
-// will likely need to add authentication later (TODO)
-// :user account address for which bookings will be returned
-//
-app.get('/api/account/:user', async (req, res) => {
-  const { user } = req.params
-  const bookingsPipeline = [
-      {
-        $match: { user: user }
-      },
-      {
-        '$lookup': {
-          from: 'listings',
-          localField: 'lid',
-          foreignField: 'lid',
-          as: 'listing',
-        },
-      },
-      {
-        '$unwind': '$listing'
-      }
-    ]
-  let account = await Accounts.findOne({ addr: user }).lean()
-  account.bookings = await Bookings.aggregate(bookingsPipeline)
-  // Drop __id and __v
-  delete account._id
-  delete account.__v
-  return res.json(account)
-})
+  // Async call
+  // bchain_to_db.sync()
 
-app.get('/api/listings', async (req, res) => {
-
-  logger.info('Serving content on /api/listings/')
-  let result
-  // from_date and to_date are expected to be epoch seconds
-  // we convert them to milliseconds if they are provided, otherwise they are passed as is (undefined or null)
-  const pipeline = [
-    {
-      $lookup: {
-        from: 'bookings',
-        localField: 'bookings',
-        foreignField: '_id',
-        as: 'bookings',
-      },
-    },
-    {
-      $lookup: {
-        from: 'ipfs_images',
-        localField: 'images',
-        foreignField: '_id',
-        as: 'images',
-      },
-    },
-    {
-      $project: {
-        _id: 0, _v: 0,
-        'bookings._id': 0, 'bookings._v': 0,
-      }
-    }
-  ]
-  let { from_date, to_date, country_code } = req.query
-
-  // Date options
-  //
-  // @from_date and @to_date are expected to be seconds formatted
-  // and not milliseconds. We have to multiply by 1000 to get a date object.
-  if (isSet(from_date) && isSet(to_date)) {
-    from_date = new Date(from_date * 1000)
-    to_date = new Date(to_date * 1000)
-    // Add the match object at index 2 of the pipeline
-    pipeline.splice(2, 0, {
-      $match: {
-        $and: [
-          {
-            $or: [
-              { 'bookings.from_date': { $not: { $gte: from_date } } },
-              { 'bookings.from_date': { $not: { $lt: to_date } } },
-            ]
-          },
-          {
-            $or: [
-              { 'bookings.to_date': { $not: { $gte: from_date } } },
-              { 'bookings.to_date': { $not: { $lt: to_date } } },
-            ]
-          },
-        ]
-      }
-    })
-  }
-  // Country options
-  if (isSet(country_code)) {
-    // Insert at index = 0 of the pipeline
-    pipeline.splice(0, 0, ({ '$match': { country: parseInt(country_code) } }))
-  }
-  let response = await Listings.aggregate(pipeline)
-  await sleep(2000)
-  return res.json(response)
-})
-
-
-app.listen(constants.PORT, () => {
-  logger.info(`Express server listening on port ${constants.PORT}`)
+  webServer.listen()
+}).catch((err) => {
+  logger.error('Error: ', err)
+  process.exit(1)
 })

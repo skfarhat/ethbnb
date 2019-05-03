@@ -1,31 +1,29 @@
-var mongoose = require('mongoose')
-var Schema   = mongoose.Schema
-var ObjectId = Schema.ObjectId
-
+const mongoose = require('mongoose')
+const Schema = mongoose.Schema
 
 const BookingSchema = new Schema({
-    user: String,
-    bid: Number,
-    lid: Number,
-    from_date: { type: Date, set: setMongoDate },
-    to_date: { type: Date, set: setMongoDate },
-    // Determined by the host
-    guestRating: Number,
-    // Determined by the guest
-    hostRating: Number,
-  },
-  {
-    toObject: {virtuals: true},
-  }
-)
+  user: String,
+  bid: Number,
+  lid: Number,
+  from_date: { type: Date, set: setMongoDate },
+  to_date: { type: Date, set: setMongoDate },
+  // Determined by the host
+  guestRating: Number,
+  // Determined by the guest
+  hostRating: Number,
+},
+{
+  toObject: { virtuals: true },
+})
 
 // Foreign keys definitions
 BookingSchema.virtual('listing', {
   ref: 'listings',
   localField: 'lid',
   foreignField: 'lid',
-  justOne: true // for many-to-1 relationships
-});
+  // for many-to-1 relationships
+  justOne: true,
+})
 
-var Booking = mongoose.model('bookings', BookingSchema)
+const Booking = mongoose.model('bookings', BookingSchema)
 module.exports = Booking

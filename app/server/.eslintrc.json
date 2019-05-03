@@ -1,17 +1,28 @@
 {
-    "parser": "eslint",
-      "rules" : {
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es6": true
+    },
+    "extends": "airbnb-base",
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly",
+        "hasKey": "readonly",
+        "logger": "readonly",
+        "isSet": "readonly",
+        "sleep": "readonly"
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018
+    },
+    "rules" : {
         "semi": ["error", "never"],
         "no-console": 0,
         "quotes": [2, "single"],
         "strict": [2, "never"],
-        "prefer-destructuring": 0, 
+        "prefer-destructuring": 0,
         "no-restricted-syntax": ["error", "WithStatement", "BinaryExpression[operator='in']"],
-        "object-curly-newline": ["error", {
-            "ObjectExpression": { "multiline": true},
-            "ObjectPattern": { "multiline": true },
-            "ImportDeclaration": "never",
-            "ExportDeclaration": { "multiline": true, "minProperties": 3 }
-        }]
-  }
+        "object-curly-newline": "off"
+    }
 }

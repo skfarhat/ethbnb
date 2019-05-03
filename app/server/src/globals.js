@@ -12,10 +12,10 @@
 module.exports = () => {
   global.format = require('string-format')
   global.logger = require('./logger')
-  global.setMongoDate = (dateSec) => {
-    return parseInt(dateSec) * 1000
-  }
-  global.sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs))
+  global.hasKey = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
+  global.setMongoDate = dateSec => parseInt(dateSec, 10) * 1000
+  global.sleep = waitTimeInMs => new Promise(resolve => setTimeout(resolve, waitTimeInMs))
+  global.isSet = val => val !== null && typeof (val) !== 'undefined'
   global.constants = {
     PORT: 3001,
     PROVIDER_HTTP: 'http://localhost:8545',
