@@ -46,9 +46,6 @@ module.exports = {
       const { user } = req.params
       const bookingsPipeline = [
         {
-          $match: { user },
-        },
-        {
           $lookup: {
             from: 'listings',
             localField: 'lid',
@@ -57,11 +54,36 @@ module.exports = {
           },
         },
         {
+          $match: { $or: [{ user }, { 'listing.owner': user }] },
+        },
+        {
           $unwind: '$listing',
+        },
+      ]
+      const listingsPipeline = [
+        {
+          $match: { owner : user },
+        },
+        {
+          $lookup: {
+            from: 'ipfs_images',
+            localField: 'images',
+            foreignField: '_id',
+            as: 'images',
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            _v: 0,
+            'bookings._id': 0,
+            'bookings._v': 0,
+          },
         },
       ]
       const account = await Accounts.findOne({ addr: user }).lean()
       account.bookings = await Bookings.aggregate(bookingsPipeline)
+      account.listings = await Listings.aggregate(listingsPipeline)
       // Drop __id and __v
       delete account._id
       delete account.__v
