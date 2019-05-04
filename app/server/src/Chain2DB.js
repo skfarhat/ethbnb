@@ -2,14 +2,6 @@ const Web3 = require('web3')
 const Account = require('./models/Account')
 const Listing = require('./models/Listing')
 const Booking = require('./models/Booking')
-const { contractAddress, jsonInterface } = require('./loadAbi')
-
-const abi = jsonInterface.abi
-
-// Show web3 where it needs to look for the Ethereum node.
-const web3 = new Web3(new Web3.providers.WebsocketProvider(global.constants.PROVIDER_WS))
-// Load ABI, then contract
-const contract = new web3.eth.Contract(abi, contractAddress)
 
 const listingFunctions = {
   price: 'getListingPrice',
@@ -32,6 +24,13 @@ const accountFunctions = {
 //
 module.exports = () => {
   const self = this
+
+  const { contractAddress, jsonInterface } = require('./loadAbi')
+  const abi = jsonInterface.abi
+  // Show web3 where it needs to look for the Ethereum node.
+  const web3 = new Web3(new Web3.providers.WebsocketProvider(global.constants.PROVIDER_WS))
+  // Load ABI, then contract
+  const contract = new web3.eth.Contract(abi, contractAddress)
 
   // ==================================================================
   // DEFINITIONS

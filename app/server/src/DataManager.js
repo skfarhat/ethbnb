@@ -13,7 +13,6 @@ const path = require('path')
 const ipfsAPI = require('ipfs-api')
 const Listings = require('./models/Listing')
 const IPFSImage = require('./models/IPFSImage')
-const { contractAddress, jsonInterface } = require('./loadAbi')
 
 // ============================================================
 // DEFINITIONS
@@ -29,13 +28,6 @@ const feb2019 = dayNb => new Date(`2019-02-${dayNb}`).getTime() / 1000
 
 // Directory path to listing images
 const LISTING_IMGS_PATH = path.join(__dirname, 'imgs/listings')
-
-
-// Show web3 where it needs to look for the Ethereum node.
-const abi = jsonInterface.abi
-const web3 = new Web3(new Web3.providers.WebsocketProvider(global.constants.PROVIDER_WS))
-// Load ABI, then contract
-const contract = new web3.eth.Contract(abi, contractAddress)
 
 const listingMetadata = {
   1: {
@@ -280,73 +272,79 @@ const chainTransactions = [
   },
 ]
 
-const DataManager = {
+const DataManager = () => {
+  const { contractAddress, jsonInterface } = require('./loadAbi')
+  // Show web3 where it needs to look for the Ethereum node.
+  const abi = jsonInterface.abi
+  const web3 = new Web3(new Web3.providers.WebsocketProvider(global.constants.PROVIDER_WS))
+  // Load ABI, then contract
+  const contract = new web3.eth.Contract(abi, contractAddress)
 
-  addTestDataToChain: async () => {
-    logger.silly('addTestDataToChain')
-    const accounts = await web3.eth.getAccounts()
-    // All functions in testData are expected to be non-constant:
-    // we send a transaction to execute each.
-    await Promise.all(chainTransactions.map((chainTX) => {
-      const { name, inputs, clientIndex } = chainTX
-      const inValues = inputs.map(x => x.value)
-      const addr = accounts[clientIndex]
-      return contract.methods[name](...inValues).send({ from: addr, gas: 1000000 })
-    }))
-  },
+  return {
+    addTestDataToChain: async () => {
+      logger.silly('addTestDataToChain')
+      const accounts = await web3.eth.getAccounts()
+      await Promise.all(chainTransactions.map(async (chainTX) => {
+        const { name, inputs, clientIndex } = chainTX
+        const inValues = inputs.map(x => x.value)
+        const addr = accounts[clientIndex]
+        await contract.methods[name](...inValues).send({ from: addr, gas: 1000000 })
+      }))
+    },
 
-  addListingMetadata: async () => {
-    logger.silly('addListingMetadata')
-    await Promise.all(Object.keys(listingMetadata).map(async (lid) => {
-      // Wait for the listing to be inserted
-      while (!await Listings.findOne({ lid })) {
-        sleep(500)
-      }
-      const meta = listingMetadata[lid]
-      if (Array.isArray(meta.images)) {
-        // Replace each image file path in the model
-        // with the ObjectId referencing the actual document.
-        meta.images = await Promise.all(
-          meta.images.map(async imgName => IPFSImage.findOne({ path: imgName })),
-        )
-      }
-      await Listings.findOneAndUpdate({ lid }, meta)
-    }))
-  },
+    addListingMetadata: async () => {
+      logger.silly('addListingMetadata')
+      await Promise.all(Object.keys(listingMetadata).map(async (lid) => {
+        // Wait for the listing to be inserted
+        while (!await Listings.findOne({ lid })) {
+          sleep(500)
+        }
+        const meta = listingMetadata[lid]
+        if (Array.isArray(meta.images)) {
+          // Replace each image file path in the model
+          // with the ObjectId referencing the actual document.
+          meta.images = await Promise.all(
+            meta.images.map(async imgName => IPFSImage.findOne({ path: imgName })),
+          )
+        }
+        await Listings.findOneAndUpdate({ lid }, meta)
+      }))
+    },
 
-  // Return an array of IPFS details of the images added
-  // to IPFS.
-  imagesAddToIPFSAndDB: async () => {
-    logger.silly('images_add_to_ipfs')
-    const ipfs = ipfsAPI('ipfs.infura.io', '5001', { protocol: 'https' })
-    logger.info('IPFS connected')
+    // Return an array of IPFS details of the images added
+    // to IPFS.
+    imagesAddToIPFSAndDB: async () => {
+      logger.silly('images_add_to_ipfs')
+      const ipfs = ipfsAPI('ipfs.infura.io', '5001', { protocol: 'https' })
+      logger.info('IPFS connected')
 
-    // Filter files and keep only image related ones
-    const images = fs.readdirSync(LISTING_IMGS_PATH).filter(filename => ['.png', '.jpg', '.jpeg'].findIndex(x => x === path.extname(filename)) > -1)
+      // Filter files and keep only image related ones
+      const images = fs.readdirSync(LISTING_IMGS_PATH).filter(filename => ['.png', '.jpg', '.jpeg'].findIndex(x => x === path.extname(filename)) > -1)
 
-    // For each image file:
-    //    - Add it to IPFS
-    //    - Add it to local database
-    for (const img of images) {
-      // If image already exists in database, continue without
-      if (await IPFSImage.count({ path: img }) === 0) {
-        try {
-          const filepath = `${LISTING_IMGS_PATH}/${img}`
-          // Add image to ipfs
-          const result = await ipfs.util.addFromFs(filepath, { recursive: true })
-          if (result.length === 0) {
-            throw new Error('ipfs.util.addFromFs returned zero-length result')
+      // For each image file:
+      //    - Add it to IPFS
+      //    - Add it to local database
+      for (const img of images) {
+        // If image already exists in database, continue without
+        if (await IPFSImage.count({ path: img }) === 0) {
+          try {
+            const filepath = `${LISTING_IMGS_PATH}/${img}`
+            // Add image to ipfs
+            const result = await ipfs.util.addFromFs(filepath, { recursive: true })
+            if (result.length === 0) {
+              throw new Error('ipfs.util.addFromFs returned zero-length result')
+            }
+            // Add ipfs image to database
+            await (new IPFSImage(result[0])).save() // get the first item from the array
+            logger.info(`Added image ${filepath} to IPFS and local database.`)
+          } catch (err) {
+            console.log(err)
+            return null
           }
-          // Add ipfs image to database
-          await (new IPFSImage(result[0])).save() // get the first item from the array
-          logger.info(`Added image ${filepath} to IPFS and local database.`)
-        } catch (err) {
-          console.log(err)
-          return null
         }
       }
-    }
-  },
+    },
+  }
 }
 
 module.exports = DataManager
