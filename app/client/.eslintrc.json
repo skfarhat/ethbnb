@@ -10,6 +10,7 @@
         "no-console": 0,
         "quotes": [2, "single"],
         "strict": [2, "never"],
+        "arrow-body-style": 0,
         "react/jsx-uses-react": 2,
         "react/jsx-uses-vars": 2,
         "react/jsx-one-expression-per-line": 0,
