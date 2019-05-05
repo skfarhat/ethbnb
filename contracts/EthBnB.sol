@@ -205,15 +205,15 @@ contract EthBnB {
    * Book a listing
    *
    * @param lid          id of the listing to be booked
-   * @param from_date    start date of the booking
-   * @param nb_days      number of days for which the booking will be made
+   * @param fromDate     start date of the booking
+   * @param nbOfDays     number of days for which the booking will be made
    */
-  function listingBook(uint lid, uint from_date, uint nb_days) public {
+  function listingBook(uint lid, uint fromDate, uint nbOfDays) public {
     require(listings[lid].id != 0, 'No such listing found');
     require(hasAccount(), 'Must have an account before creating a listing');
     address guestAddr = msg.sender;
     uint dbid = listings[lid].dbid;
-    int res = dateBooker.book(dbid, guestAddr, from_date, nb_days);
+    int res = dateBooker.book(dbid, guestAddr, fromDate, nbOfDays);
     // Emit the appropriate event depending on res
     emitBookEvent(res, lid);
     if (res >= 0) {
@@ -246,8 +246,8 @@ contract EthBnB {
     require(stars >= 1 && stars <= 5, 'Stars arg must be in [1,5]');
     Booking storage booking = listings[lid].bookings[bid];
     require(booking.guestAddr == msg.sender || booking.ownerAddr == msg.sender, 'Sender not participated in booking');
-    (uint from_date, uint to_date) = getBookingDates(lid, bid);
-    require(to_date <= now, 'Cannot rate a booking before it ends');
+    (uint fromDate, uint toDate) = getBookingDates(lid, bid);
+    require(toDate <= now, 'Cannot rate a booking before it ends');
     if (booking.guestAddr == msg.sender) {
       // The guest is rating the owner
       require(booking.ownerRating == 0, 'Owner already rated, cannot re-rate');
@@ -308,10 +308,10 @@ contract EthBnB {
     emit UpdateListingEvent(msg.sender, lid);
   }
 
-  function getBookingDates(uint lid, uint bid) public view returns (uint from_date, uint to_date) {
+  function getBookingDates(uint lid, uint bid) public view returns (uint fromDate, uint toDate) {
     require(listings[lid].id == lid, 'Listing does not exist');
     uint dbid = listings[lid].dbid;
-    return dateBooker.get_dates(dbid, bid);
+    return dateBooker.getDates(dbid, bid);
   }
 
   function deleteListing(uint lid) public {

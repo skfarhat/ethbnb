@@ -8,24 +8,22 @@ const COUNTRIES = {
 
 const bigNumberToInt = bn => parseInt(bn.toString())
 
-/** Convenience function
-*
-* Returns seconds timestamp of date in Feb 2019
-* e.g.
-* feb2019(10) returns the timestamp of 10/02/2019 which is 1549756800
-* dayNb = [1..28]
-*/
+// Convenience function
+//
+// Returns seconds timestamp of date in Feb 2019
+// e.g.
+// feb2019(10) returns the timestamp of 10/02/2019 which is 1549756800
+// dayNb = [1..28]
+//
 const feb2019 = dayNb => new Date(`2019-02-${dayNb}`).getTime() / 1000
 
 contract('EthBnB', async (accounts) => {
   const d = { from: accounts[0] }
 
-  /** Eth account that has no corresponding 'Account' in EthBnB contract * */
+  // Eth account that has no corresponding 'Account' in EthBnB contract
   const UNUSED_ACCOUNT = accounts[8]
 
-  /**
- * Checks that hasAccount() returns false when no account has been created
- */
+  // Checks that hasAccount() returns false when no account has been created
   it('Account: hasAcccount() returns false when no account has been created', async () => {
     const bnb = await EthBnB.deployed()
     const account0Exists = await bnb.hasAccount.call({ from: accounts[0] })
@@ -34,77 +32,54 @@ contract('EthBnB', async (accounts) => {
     assert.isFalse(account1Exists, 'Account 1 exists for some reason, shouldn\'t be the case')
   })
 
-  /**
- * Check that we can create an account
- */
+  // Check that we can create an account
   it('Account: hasAccount() createAccount() are correct', async () => {
-    let res
     const bnb = await EthBnB.deployed()
     // Create the account
-    const _shortName = 'sami'
-    res = await bnb.createAccount(_shortName, { from: accounts[0] })
+    const shortName = 'Alex'
+    await bnb.createAccount(shortName, { from: accounts[0] })
     // Check the account exists
     const accountExists = await bnb.hasAccount({ from: accounts[0] })
     assert.isTrue(accountExists, 'createAccount doesn\'t seem to have created an account')
     // Check the name is the same
     const actualName = await bnb.getAccountName(accounts[0], { from: accounts[0] })
-    assert.equal(actualName, _shortName, 'The account shortName does not match what we expect')
+    assert.equal(actualName, shortName, 'The account shortName does not match what we expect')
   })
 
-  /** Create listing without an account */
+  // Create listing without an account
   it('Listing: createListing() fails when user has no \'Account\'', async () => {
     const bnb = await EthBnB.deployed()
     // Create a listing
-    const _location = 'London'
-    const _country = COUNTRIES.GB
-    const _price = 5000
     try {
-      const res = await bnb.createListing(_country, _location, _price, { from: UNUSED_ACCOUNT })
+      await bnb.createListing(COUNTRIES.GB, 'London', 5000, { from: UNUSED_ACCOUNT })
       assert(false, 'Should have thrown an exception')
     } catch (error) {
     // Test pass
     }
   })
 
-  /**
- *  Check that we can create a listing returning a positive listing Id
- */
+  // Check that we can create a listing returning a positive listing Id
   it('Listing: createListing() correct', async () => {
     let res
-    let lid
     const bnb = await EthBnB.deployed()
     // Create account
-    const _shortName = 'Sami'
-    res = await bnb.createAccount(_shortName, d)
+    res = await bnb.createAccount('Alex', d)
     // Create a listing
-    const _location = 'London'
-    const _price = 5000
-    const _country = COUNTRIES.GB
-    res = await bnb.createListing(_country, _location, _price, d)
+    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, d)
     // Check that an event was emitted
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', (ev) => {
-      lid = ev.lid
-      return bigNumberToInt(ev.lid) > 0
-    }, 'CreateListingEvent should be emitted with the id of the created listing')
+    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => bigNumberToInt(ev.lid) > 0, 'CreateListingEvent should be emitted with the id of the created listing')
   })
 
   it('Listing can be booked', async () => {
     let res
     let lid
-    let bid
     const bnb = await EthBnB.deployed()
     // Create account
-    const _shortName = 'Sami'
-    res = await bnb.createAccount(_shortName, d)
+    res = await bnb.createAccount('Alex', d)
     // Create a listing
-    const _location = 'London'
-    const _price = 5000
-    const _country = COUNTRIES.GB
-    res = await bnb.createListing(_country, _location, _price, d)
+    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, d)
     // Check that an event was emitted
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
-    const from_date = feb2019(10)
-    const nb_days = 3
     res = await bnb.listingBook(lid, feb2019(10), 3)
     truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
   })
@@ -115,13 +90,9 @@ contract('EthBnB', async (accounts) => {
     let bid2
     let lid
     const bnb = await EthBnB.deployed()
-    const _shortName = 'Sami'
-    res = await bnb.createAccount(_shortName, d)
+    res = await bnb.createAccount('Alex', d)
     // Create a listing
-    const _location = 'London'
-    const _price = 5000
-    const _country = COUNTRIES.GB
-    res = await bnb.createListing(_country, _location, _price, d)
+    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, d)
     // Check that an event was emitted
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
     res = await bnb.listingBook(lid, feb2019(10), 3)
@@ -137,13 +108,9 @@ contract('EthBnB', async (accounts) => {
     let bid
     const bnb = await EthBnB.deployed()
     // Create account
-    const _shortName = 'Sami'
-    res = await bnb.createAccount(_shortName, d)
+    res = await bnb.createAccount('Alex', d)
     // Create a listing
-    const _location = 'London'
-    const _price = 5000
-    const _country = COUNTRIES.GB
-    res = await bnb.createListing(_country, _location, _price, d)
+    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, d)
     // Get the listing id from the event
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
     // Book the listing and get the booking id
@@ -157,16 +124,11 @@ contract('EthBnB', async (accounts) => {
   it('Cannot cancel inexistent booking', async () => {
     let res
     let lid
-    let bid
     const bnb = await EthBnB.deployed()
     // Create account
-    const _shortName = 'Sami'
-    res = await bnb.createAccount(_shortName, d)
+    res = await bnb.createAccount('Alex', d)
     // Create a listing
-    const _location = 'London'
-    const _price = 5000
-    const _country = COUNTRIES.GB
-    res = await bnb.createListing(_country, _location, _price, d)
+    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, d)
     // Get the listing id from the event
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
     // Cancel inexistent booking booking
@@ -177,17 +139,12 @@ contract('EthBnB', async (accounts) => {
   it('Cannot book more than capacity', async () => {
     let res
     let lid
-    let bid
     const bnb = await EthBnB.deployed()
     // Create account
-    const _shortName = 'Sami'
     const cap = bigNumberToInt(await bnb.BOOKING_CAPACITY.call(d))
-    res = await bnb.createAccount(_shortName, d)
+    res = await bnb.createAccount('Alex', d)
     // Create a listing
-    const _location = 'London'
-    const _price = 5000
-    const _country = COUNTRIES.GB
-    res = await bnb.createListing(_country, _location, _price, d)
+    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, d)
     // Get the listing id from the event
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
     for (let i = 0; i < 5; i++) {
@@ -198,12 +155,9 @@ contract('EthBnB', async (accounts) => {
     truffleAssert.eventEmitted(res, 'BookingNoMoreSpace')
   })
 
-  /**
- * Check that getMyListingIds() returns only one entry for account0
- */
+  // Check that getMyListingIds() returns only one entry for account0
   it('Listing: getListing()', async () => {
     const bnb = await EthBnB.deployed()
-
     try {
       const res = await bnb.getMyListingIds({ from: accounts[0] })
       assert(res.length === 1)
@@ -213,9 +167,7 @@ contract('EthBnB', async (accounts) => {
     }
   })
 
-  /**
- * Test get/set listing price
- */
+  // Test get/set listing price
   it('Listing: get/set listing price()', async () => {
     const bnb = await EthBnB.deployed()
 
@@ -350,7 +302,7 @@ contract('EthBnB', async (accounts) => {
     assert(errorWasThrown, 'Should have failed since account[2] did not participate in the booking')
   })
 
-  it('Rating: cannot rate before booking\'send_date', async () => {
+  it('Rating: cannot rate before booking\'send_date\'', async () => {
     let res
     let lid1
     let bid1

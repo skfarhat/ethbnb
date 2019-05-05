@@ -31,7 +31,7 @@ contract('DateBooker', async (accounts) => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
-    const actualCapacity = await booker.get_capacity.call(id, d)
+    const actualCapacity = await booker.getCapacity.call(id, d)
     assert.equal(CAPACITY, bignumToNum(actualCapacity), 'Registered and actual capacities don\'t match.')
   })
 
@@ -40,7 +40,7 @@ contract('DateBooker', async (accounts) => {
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
     for (let i = 1; i <= CAPACITY; i++ ) {
-      let r = await booker.find_book.call(id, i, d)
+      let r = await booker.findBook.call(id, i, d)
       assert.equal(-1, r, 'Return result should be -1')
     }
   })
@@ -58,21 +58,21 @@ contract('DateBooker', async (accounts) => {
     assert.notEqual(bid1, bid2, 'Bookings should have different bids.')
   })
 
-  it('find_book works for booking just made', async() => {
+  it('findBook works for booking just made', async() => {
     let r
     let bid
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
     r = await booker.book(id, account0, FEB_15, 2, d)
     truffleAssert.eventEmitted(r, 'Book', (ev) => bid = ev.bid)
-    let res = await booker.find_book.call(id, bid, d)
+    let res = await booker.findBook.call(id, bid, d)
     assert.isAtLeast(bignumToNum(res), 0, 'Must have found created booking')
   })
 
   it('Size is 0 when no bookings have been made', async() => {
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
-    let actualSize = await booker.get_size.call(id, d)
+    let actualSize = await booker.getSize.call(id, d)
     assert.equal(bignumToNum(actualSize), 0, 'Size should be zero when no bookings have been made')
   })
 
@@ -81,7 +81,7 @@ contract('DateBooker', async (accounts) => {
     let id = await registerAndGetId(booker, CAPACITY, d)
     await booker.book(id, account0, FEB_15, 2, d)
     await booker.book(id, account0, FEB_18, 2, d)
-    let actualSize = await booker.get_size.call(id, d)
+    let actualSize = await booker.getSize.call(id, d)
     assert(bignumToNum(actualSize), 2, 'Actual size should be 2')
   })
 
@@ -96,7 +96,7 @@ contract('DateBooker', async (accounts) => {
     r = await booker.cancel(id, account0, bid, d)
     truffleAssert.eventEmitted(r, 'Cancellation', (ev) => bid = ev.bid)
     truffleAssert.eventNotEmitted(r, 'PermissionDenied')
-    let actualSize = await booker.get_size.call(id, d)
+    let actualSize = await booker.getSize.call(id, d)
     assert.equal(bignumToNum(actualSize), 1, 'Actual size should be 1')
   })
 
@@ -179,21 +179,5 @@ contract('DateBooker', async (accounts) => {
     r = await booker.cancel(id, accounts[1], bid, d)
     truffleAssert.eventEmitted(r, 'PermissionDenied')
   })
-
-  // it('Can read back the dates (from/To) that have been set', async() => {
-  //   const ID = 3
-  //   const CAPACITY = 5
-  //   let bid
-  //   var booker = await DateBooker.deployed()
-  //   await booker.register(ID, CAPACITY, d)
-  //   let fromDate = 5
-  //   let toDate = 10
-  //   let r = await booker.book(ADDR, fromDate, toDate, d)
-  //   truffleAssert.eventEmitted(r, 'Book', (ev) => bid = ev.bid)
-  //   r = await booker.get_dates_for_book.call(bid, d)
-  //   const [ actualFromDate, actualToDate ] = r
-  //   assert.equal(fromDate, bignumToNum(actualFromDate), 'fromDate does not match actual')
-  //   assert.equal(toDate, bignumToNum(actualToDate), 'toDate does not match actual')
-  // })
 
 })
