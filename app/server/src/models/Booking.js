@@ -10,7 +10,7 @@ const BookingSchema = new Schema({
   // Determined by the host
   guestRating: Number,
   // Determined by the guest
-  hostRating: Number,
+  ownerRating: Number,
 },
 {
   toObject: { virtuals: true },

@@ -112,7 +112,7 @@ const chainTransactions = [
     constant: false,
   },
   {
-    // owner: Host1
+    // owner: Host2
     // lid: 3
     clientIndex: 1,
     name: 'createListing',
@@ -225,7 +225,7 @@ const chainTransactions = [
   // Cambridge (lid=1) owned by Host1 (clientIndex=0) is rated:
   //    5 stars by Guest1 (bid=0)
   //    2 stars by Guest2 (bid=1)
-  // Paris (lid=2) owned by Host1 (clientIndex=0) is rated:
+  // Paris (lid=3) owned by Host2 (clientIndex=0) is rated:
   //    4 stars by Guest1 (bid=0)
   //
   // Host1 rated Guest2 for (bid=1, lid=1)
