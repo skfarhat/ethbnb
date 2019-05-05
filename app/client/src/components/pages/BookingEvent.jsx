@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import Rating from 'react-rating'
 import PropTypes from 'prop-types'
 import moment from 'moment'
-import { rateBooking } from '../../redux/actions'
+import { contractCall, hasPendingTx } from '../../redux/actions'
 
 
 class BookingEvent extends Component {
@@ -14,9 +14,8 @@ class BookingEvent extends Component {
   }
 
   onRatingChange(rating) {
-    const { dispatch, contract, userAddr, lid, bid } = this.props
-    dispatch(rateBooking(lid, bid, rating, contract, userAddr))
-
+    const { dispatch, userAddr, lid, bid } = this.props
+    dispatch(contractCall('rate', [lid, bid, rating], userAddr, { eventName: 'RatingComplete' }))
     // TODO: show something on the UI suggesting we have submitted
     // TODO: set it to readonly after setting or if it was already set (need to do that)
   }
@@ -34,54 +33,46 @@ class BookingEvent extends Component {
   }
 
   getRatingDOM() {
-    const { ownerRating, guestRating, listing, userAddr } = this.props
+    const { ownerRating, guestRating, listing, userAddr, pendingTx, lid, bid } = this.props
     const userIsOwner = userAddr === listing.owner
+    const isRatingTxPending = hasPendingTx(pendingTx, 'rate', [lid, bid], userAddr)
+    console.log('isRatingTxPending', isRatingTxPending)
     // User has not rated if they are the owner and guestRating
     // is not defined (or not-zero)
     // Or, if they are not the owner (they are the guest) and
     // ownerRating is not defined (or not-zero)
-    let ourScore
+    let yourScore
     let theirScore
     if (userIsOwner) {
-      ourScore = (
+      yourScore = (
         <div>
-          {
-            (ownerRating)
-              ? (<p> They rated you </p>) + this.getReactRating(ownerRating, !!ownerRating)
-              : (<p> They have not rated you yet </p>)
-          }
+          { (ownerRating !== 0) ? this.getReactRating(ownerRating, true) : (<span />) }
         </div>
       )
       theirScore = (
         <div>
-          {(guestRating) ? (<p> You rated them </p>) : (<p> Rate them </p>)}
-          {this.getReactRating((guestRating || 3), !!guestRating)}
+          { this.getReactRating((guestRating || 3), isRatingTxPending || !!guestRating) }
         </div>
       )
     } else {
-      ourScore = (
+      yourScore = (
         <div>
-          {
-            (guestRating)
-              ? (<p> They rated you </p>) + this.getReactRating(guestRating, !!guestRating)
-              : (<p> They have not rated you yet </p>)
-          }
+          { (guestRating !== 0) ? this.getReactRating(guestRating, true) : (<span />) }
         </div>
       )
       theirScore = (
         <div>
-          {(ownerRating) ? (<p> You rated them </p>) : (<p> Rate them </p>)}
-          {this.getReactRating(ownerRating || 3, !!ownerRating)}
+          { this.getReactRating(ownerRating || 3, isRatingTxPending || !!ownerRating) }
         </div>
       )
     }
     return (
       <div className="ratings">
         <div key="their-score">
-          {theirScore}
+          Their score: {theirScore}
         </div>
-        <div key="our-score">
-          {ourScore}
+        <div key="your-score">
+          Your score: {yourScore}
         </div>
       </div>
     )
@@ -119,17 +110,18 @@ BookingEvent.propTypes = {
   // from_date: PropTypes.date,
   // to_date: PropTypes.date,
   bid: PropTypes.number.isRequired,
-  contract: PropTypes.object,
   dispatch: PropTypes.func.isRequired,
   guestRating: PropTypes.number,
   lid: PropTypes.number.isRequired,
   listing: PropTypes.object,
   ownerRating: PropTypes.number,
+  pendingTx: PropTypes.object,
   userAddr: PropTypes.string.isRequired,
 }
 
 const mapStateToProps = state => ({
   accounts: state.accounts,
+  pendingTx: state.pendingTx,
   selectedAccountIndex: state.selectedAccountIndex,
 })
 

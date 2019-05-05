@@ -78,6 +78,34 @@ const fetchListingsUsingOptions = (dispatch, state) => {
 // EXPORT FUNCTIONS
 // ============================================================
 
+// Wrapper function for all state-changing calls
+//
+// @funcName     the name of the state-changing function
+// @input        input values to state-changing function
+// @userAddr     address for the account sending the TX
+// @other        anything else that needs to be stored in the txObj
+//               e.g. txHash, eventName
+export const contractCall = (funcName, input, userAddr, other) => {
+  return (dispatch, getState) => {
+    const { contract } = getState()
+    const obj = {
+      from: userAddr,
+      gas: 1000000,
+    }
+    input.push(obj)
+    contract[funcName](...input).then((res) => {
+      console.log(`Transaction '${funcName}' sent: `, res)
+      const { tx: txHash } = res
+      const other1 = {
+        ...other,
+        txHash,
+      }
+      dispatch(addPendingTx(funcName, input, userAddr, other1))
+    }).catch((err) => {
+      console.log(`Transaction '${funcName}' send error ${err}`)
+    })
+  }
+}
 export const bookListing = (contract, ethAddr, lid, fromDate, toDate) => {
   const obj = {
     from: ethAddr,
@@ -208,33 +236,6 @@ export function fetchListingsIfNeeded(opts) {
   return (dispatch, getState) => {
     if (shouldFetchListings(getState())) {
       return dispatch(fetchListings(opts))
-    }
-  }
-}
-
-export function rateBooking(lid, bid, stars, contract, ethAddr) {
-  return (dispatch, getState) => {
-    const obj = {
-      from: ethAddr,
-      gas: 1000000,
-    }
-    if (!contract) {
-      console.log('Cannot make booking when contract is not setup')
-      return
-    }
-    contract.rate(lid, bid, stars, obj).then((res) => {
-      console.log('rateBooking submitted')
-      console.log(res)
-    }).catch((err) => {
-      // TODO: show user alert
-      console.log('error from listingBook')
-      console.log(err)
-    })
-    // TODO: return something here
-    return {
-      type: RATE_BOOKING,
-      ethAddr,
-      lid,
     }
   }
 }
