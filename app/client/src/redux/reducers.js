@@ -5,8 +5,10 @@ import {
   RECEIVE_LISTINGS,
   REMOVE_PENDING_TX,
   REQUEST_LISTINGS,
+  REQUEST_PUBLIC_ACCOUNT,
   SET_ACCOUNTS,
   SET_ETH_EVENTS,
+  SET_PUBLIC_ACCOUNT,
   SET_SEARCH_OPTIONS,
   SET_SELECTED_ACCOUNT,
   SET_WEB3,
@@ -29,6 +31,18 @@ const initialState = {
   contract: null,
   ethEvents: [],
   pendingTx: {},
+  // Store information fetched from '/api/public' here
+  // This should be keyed similar to the REST path
+  // e.g. /api/public/accounts/{accountAddr} should be under
+  // key 'account'
+  public: {
+    // Stores public account information
+    accounts: {},
+    // Stores accounts currently being fetched
+    // so as to avoid multiple calls to fetch the same
+    // resource
+    accountsInTransit: {},
+  },
 }
 
 const rootReducer = (state = initialState, action) => {
@@ -41,6 +55,33 @@ const rootReducer = (state = initialState, action) => {
         web3: action.web3js,
         contract: action.contract,
         accounts,
+      }
+    }
+    case REQUEST_PUBLIC_ACCOUNT: {
+      const addr = action.data
+      return {
+        ...state,
+        public: {
+          ...state.public,
+          accountsInTransit: Object.assign({}, state.public.accountsInTransit, { [addr]: true }),
+        },
+      }
+    }
+    case SET_PUBLIC_ACCOUNT: {
+      console.log('in reducer SET_PUBLIC_ACCOUNT')
+      // action.data contains 'addr', 'name', 'dateCreated'
+      // at the time of writing
+      const { addr } = action.data
+      // Remove the public account from accountsInTransit
+      const { accountsInTransit } = state.public
+      delete accountsInTransit[addr]
+      return {
+        ...state,
+        public: {
+          ...state.public,
+          accounts: Object.assign({}, state.public.accounts, { [addr]: action.data }),
+          accountsInTransit: Object.assign({}, accountsInTransit),
+        },
       }
     }
     case SET_ETH_EVENTS: {

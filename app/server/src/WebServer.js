@@ -24,7 +24,7 @@ module.exports = {
     //
     // Public call to account returns name, addr and dateCreated
     //
-    app.get('/api/public/account/:user', async (req, res) => {
+    app.get('/api/public/accounts/:user', async (req, res) => {
       const { user } = req.params
       const fields = {
         _id: 0,

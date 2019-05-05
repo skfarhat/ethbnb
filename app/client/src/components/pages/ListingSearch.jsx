@@ -29,9 +29,11 @@ class ListingSearch extends Component {
 
     Object.keys(self.props.listings).forEach((key) => {
       const listing = self.props.listings[key]
+      const { publicAccounts } = self.props
+      const ownerInfo = publicAccounts[listing.owner]
       doms.push((
         <div className="listing-mini" key={i}>
-          <ListingMini {...listing} />
+          <ListingMini {...listing} ownerInfo={ownerInfo} />
         </div>
       ))
       layout.push({
@@ -72,6 +74,7 @@ ListingSearch.propTypes = {
 const mapStateToProps = state => ({
   listings: state.listings || [],
   isFetching: state.isFetching,
+  publicAccounts: state.public.accounts,
 })
 
 export default connect(mapStateToProps)(ListingSearch)

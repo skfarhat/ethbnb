@@ -1,5 +1,9 @@
-import { SERVER_NODE_URL } from '../constants/global'
-import { isSet } from '../globals'
+import {
+  SERVER_NODE_URL,
+  SERVER_PUBLIC_URL,
+  isSet,
+  hasKey,
+} from '../constants/global'
 
 // ============================================================
 // EXPORT ACTIONS
@@ -10,18 +14,16 @@ export const ADD_PENDING_TX = 'ADD_PENDING_TX'
 export const REMOVE_PENDING_TX = 'REMOVE_PENDING_TX'
 export const SET_SEARCH_OPTIONS = 'SET_SEARCH_OPTIONS'
 export const REQUEST_LISTINGS = 'REQUEST_LISTINGS'
+export const REQUEST_PUBLIC_ACCOUNT = 'REQUEST_PUBLIC_ACCOUNT'
 export const RECEIVE_LISTINGS = 'RECEIVE_LISTINGS'
 export const RECEIVE_ACCOUNT_INFO = 'RECEIVE_ACCOUNT_INFO'
 export const BOOK_LISTING = 'BOOK_LISTING'
 export const SET_WEB3 = 'SET_WEB3'
 export const SET_ACCOUNTS = 'SET_ACCOUNTS'
+export const SET_PUBLIC_ACCOUNT = 'SET_PUBLIC_ACCCOUNT'
 export const SET_SELECTED_ACCOUNT = 'SET_SELECTED_ACCOUNT'
 export const SET_ETH_EVENTS = 'SET_ETH_EVENTS'
 export const RATE_BOOKING = 'RATE_BOOKING'
-
-// ============================================================
-// FUNCTIONS
-// ============================================================
 
 
 const getListingsURL = (opts) => {
@@ -102,6 +104,25 @@ const shouldFetchListings = (state) => {
   return false
 }
 
+// Fetches the requested public account if it is not already
+// being fetched
+export const fetchPublicAccount = (addr) => {
+  const url = `${SERVER_PUBLIC_URL}accounts/${addr}`
+  return (dispatch, getState) => {
+    const { accountsInTransit, accounts } = getState().public
+    if (!hasKey(accountsInTransit, addr) && !hasKey(accounts, addr)) {
+      dispatch({ type: REQUEST_PUBLIC_ACCOUNT, data: addr })
+      fetch(url)
+        .then(response => response.json())
+        .then(json => dispatch({
+          type: SET_PUBLIC_ACCOUNT,
+          data: json,
+        }))
+        .catch(err => console.log('some error occurred', err))
+    }
+  }
+}
+
 const fetchListingsUsingOptions = (dispatch, state) => {
   // The server expects 'from_date' and 'to_date' in underscore format
   // whereas the client uses camelCase. We convert below.
@@ -119,15 +140,18 @@ const fetchListingsUsingOptions = (dispatch, state) => {
   const url = getListingsURL(opts)
   return fetch(url)
     .then(response => response.json())
-    .then(json => dispatch(({
-      type: RECEIVE_LISTINGS,
-      listings: json,
-    })))
-}
+    .then((listingsJson) => {
+      Object.values(listingsJson).forEach((listing) => {
+        const { owner } = listing
+        dispatch(fetchPublicAccount(owner))
+      })
+      dispatch(({
+        type: RECEIVE_LISTINGS,
+        listings: listingsJson,
+      }))
 
-// ============================================================
-// EXPORT FUNCTIONS
-// ============================================================
+  })
+}
 
 // Wrapper function for all state-changing calls
 //

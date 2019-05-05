@@ -49,8 +49,10 @@ const getMainImageInfo = (images) => {
 
 class ListingMini extends Component {
   render() {
-    const { lid, title, location, country, price, nRatings, totalScore, images } = this.props
+    const { lid, title, location, country,
+      price, nRatings, totalScore, images, owner, ownerInfo } = this.props
     const [hash, ext] = getMainImageInfo(images)
+    let ownerStr = isSet(ownerInfo) ? ownerInfo.name : owner
     return (
       <div className="listing-mini">
         <Link to={`/listing/${lid}`}>
@@ -66,14 +68,11 @@ class ListingMini extends Component {
         <div>
           <em> Location: </em>
           <span className="location">
-            {location}
+            {location} ({country})
           </span>
         </div>
         <div>
-          <em> Country: </em>
-          <span className="country">
-            {country}
-          </span>
+          <em> Owner: {ownerStr} </em>
         </div>
         <div>
           <em> Price: </em>
@@ -93,6 +92,9 @@ ListingMini.defaultProps = {
 ListingMini.propTypes = {
   lid: PropTypes.number.isRequired,
   title: PropTypes.string,
+  location: PropTypes.string.isRequired,
+  owner: PropTypes.string.isRequired,
+  ownerInfo: PropTypes.object,
   country: PropTypes.number.isRequired,
   price: PropTypes.number.isRequired,
   nRatings: PropTypes.number,
