@@ -131,7 +131,8 @@ export const setWeb3Js = (web3js) => {
   return (dispatch) => {
     const { jsonInterface } = window.contractDetails
     const MyContract = TruffleContract(jsonInterface)
-    MyContract.setProvider(web3js.currentProvider)
+    const provider = new web3js.providers.WebsocketProvider('ws://localhost:8545')
+    MyContract.setProvider(provider)
     web3js.eth.getAccounts()
       .then(accounts => MyContract.deployed()
         .then((contract) => {
