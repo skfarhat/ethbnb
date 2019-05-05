@@ -3,8 +3,8 @@ import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { Dropdown } from 'semantic-ui-react'
+import { isSet } from '../../constants/global'
 import { setSelectedAcccountIndex } from '../../redux/actions'
-
 
 const options = [
   {
@@ -16,7 +16,7 @@ const options = [
 ]
 
 const getOptions = (accounts) => {
-  if (!window.isSet(accounts)) {
+  if (!isSet(accounts)) {
     return options
   }
   // Enable the
@@ -34,7 +34,6 @@ class AccountDropdown extends Component {
   }
 
   onAccountMenuChange(ev, data) {
-    console.log('onAccountMenuChange')
     const { dispatch, history } = this.props
     if (data.value === -1) {
       history.push('/account')

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Rating from 'react-rating'
 import PropTypes from 'prop-types'
 import IPFSImage from '../IPFSImage'
+import { isSet } from '../../constants/global'
 
 // Returns the appropriate DOM element
 // given totalScore and nRatings

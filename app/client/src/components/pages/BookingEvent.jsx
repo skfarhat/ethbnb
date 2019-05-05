@@ -5,9 +5,9 @@ import Rating from 'react-rating'
 import PropTypes from 'prop-types'
 import moment from 'moment'
 import { contractCall } from '../../redux/actions'
+import { isSet } from '../../constants/global'
 
 const STARS_INITIAL_VAL = 3
-const isSet = window.isSet
 
 // BookingEvent
 // ------------
@@ -34,11 +34,9 @@ class BookingEvent extends Component {
     }
     dispatch(contractCall('rate', [lid, bid, rating], userAddr, other))
     // TODO: show something on the UI suggesting we have submitted
-    // TODO: set it to readonly after setting or if it was already set (need to do that)
   }
 
   getReactRating(val, readonly) {
-    console.log(`val=${JSON.stringify(val)} readonly=${readonly}`)
     return (
       <Rating
         start={0}
@@ -118,7 +116,6 @@ class BookingEvent extends Component {
   }
 
   render() {
-    console.log('BookingEvent: render()', window.isSet)
     const { price, from_date, to_date, listing } = this.props
     const fromDate1 = moment(from_date.toString()).format('DD/MM/YY')
     const toDate1 = moment(to_date.toString()).format('DD/MM/YY')

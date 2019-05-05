@@ -1,4 +1,5 @@
 import { SERVER_NODE_URL } from '../constants/global'
+import { isSet } from '../globals'
 
 // ============================================================
 // EXPORT ACTIONS
@@ -32,11 +33,6 @@ const getListingsURL = (opts) => {
   }
   const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&')
   return `${SERVER_NODE_URL}api/listings?${queryString}`
-}
-
-// TODO: remove this function
-const txKey = (funcName, input, userAddr) => {
-  return `${userAddr}: ${funcName}(${input.toString()})`
 }
 
 const removePendingTx = (funcName, input, userAddr, other) => {
@@ -110,7 +106,7 @@ const fetchListingsUsingOptions = (dispatch, state) => {
   // The server expects 'from_date' and 'to_date' in underscore format
   // whereas the client uses camelCase. We convert below.
   let opts
-  if (window.isSet(state.searchOptions)) {
+  if (isSet(state.searchOptions)) {
     const { fromDate, toDate, countryCode } = state.searchOptions
     opts = {
       from_date: (fromDate) ? fromDate.getTime() / 1000 : null,

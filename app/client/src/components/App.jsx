@@ -24,9 +24,6 @@ class App extends Component {
     const { dispatch } = this.props
     const web3js = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
     dispatch(setWeb3Js(web3js))
-
-    // Define global variables
-    window.isSet = val => val !== null && typeof (val) !== 'undefined'
   }
 
   render() {
