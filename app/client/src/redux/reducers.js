@@ -49,7 +49,7 @@ const rootReducer = (state = initialState, action) => {
   switch (action.type) {
     case SET_WEB3: {
       const accounts = {}
-      Array.forEach(action.accounts, (act) => accounts[act] = {})
+      Object.values(action.accounts).forEach((addr) => accounts[addr] = {})
       return {
         ...state,
         web3: action.web3js,
