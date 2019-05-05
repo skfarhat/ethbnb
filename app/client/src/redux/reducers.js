@@ -1,7 +1,9 @@
 import {
+  ADD_PENDING_TX,
   BOOK_LISTING,
   RECEIVE_ACCOUNT_INFO,
   RECEIVE_LISTINGS,
+  REMOVE_PENDING_TX,
   REQUEST_LISTINGS,
   SET_ACCOUNTS,
   SET_ETH_EVENTS,
@@ -26,6 +28,7 @@ const initialState = {
   web3: null,
   contract: null,
   ethEvents: [],
+  pendingTx: {},
 }
 
 const rootReducer = (state = initialState, action) => {
@@ -85,6 +88,29 @@ const rootReducer = (state = initialState, action) => {
     case BOOK_LISTING: {
       return state
       // TODO: Update the state
+    }
+    case ADD_PENDING_TX: {
+      // Add the tx to pendingTx in state
+      // and in localStorage
+      const { storageKey } = action.data
+      const storageVal = JSON.stringify(action.data)
+      localStorage.setItem(storageKey, storageVal)
+      return {
+        ...state,
+        pendingTx: Object.assign({}, state.pendingTx, { [storageKey]: storageVal }),
+      }
+    }
+    case REMOVE_PENDING_TX: {
+      // Remove the pendingTx from state
+      // and from localStorage
+      const copyPendingTx = Object.assign({}, state.pendingTx)
+      // TODO: undo this
+      // const { storageKey } = action.data
+      // delete copyPendingTx[storageKey]
+      return {
+        ...state,
+        pendingTx: copyPendingTx,
+      }
     }
     default: {
       return state

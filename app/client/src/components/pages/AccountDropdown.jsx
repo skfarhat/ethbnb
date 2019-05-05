@@ -6,8 +6,6 @@ import { Dropdown } from 'semantic-ui-react'
 import { setSelectedAcccountIndex } from '../../redux/actions'
 
 
-const isSet = val => val !== null && typeof (val) !== 'undefined'
-
 const options = [
   {
     key: 'profile',
@@ -18,7 +16,7 @@ const options = [
 ]
 
 const getOptions = (accounts) => {
-  if (!isSet(accounts)) {
+  if (!window.isSet(accounts)) {
     return options
   }
   // Enable the

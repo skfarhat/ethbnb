@@ -4,6 +4,9 @@ import { SERVER_NODE_URL } from '../constants/global'
 // EXPORT ACTIONS
 // ============================================================
 
+export const LOAD_PENDING_TX_FROM_LOCAL_STORAGE = 'LOAD_PENDING_TX_FROM_LOCAL_STORAGE'
+export const ADD_PENDING_TX = 'ADD_PENDING_TX'
+export const REMOVE_PENDING_TX = 'REMOVE_PENDING_TX'
 export const SET_SEARCH_OPTIONS = 'SET_SEARCH_OPTIONS'
 export const REQUEST_LISTINGS = 'REQUEST_LISTINGS'
 export const RECEIVE_LISTINGS = 'RECEIVE_LISTINGS'
@@ -19,7 +22,6 @@ export const RATE_BOOKING = 'RATE_BOOKING'
 // FUNCTIONS
 // ============================================================
 
-const isSet = val => val !== null && typeof (val) !== 'undefined'
 
 const getListingsURL = (opts) => {
   const params = (isSet(opts)) ? opts : {}
@@ -30,6 +32,60 @@ const getListingsURL = (opts) => {
   }
   const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&')
   return `${SERVER_NODE_URL}api/listings?${queryString}`
+}
+
+// TODO: remove this function
+const txKey = (funcName, input, userAddr) => {
+  return `${userAddr}: ${funcName}(${input.toString()})`
+}
+
+const removePendingTx = (funcName, input, userAddr, other) => {
+  return (dispatch) => {
+    const data = {
+      funcName,
+      input,
+      userAddr,
+      ...other,
+    }
+    setTimeout(() => {
+      dispatch({
+        type: REMOVE_PENDING_TX,
+        data,
+      })
+    }, 5000)
+
+    // TODO: unregister from event
+  }
+}
+
+const addPendingTx = (funcName, input, userAddr, other) => {
+  return (dispatch, getState) => {
+    // Register an event if the eventName field is set.
+    const { eventName } = other
+    if (eventName) {
+      const options = {}
+      const { contract } = getState()
+      const data = {
+        funcName,
+        input,
+        userAddr,
+        ...other,
+      }
+      contract.events[eventName](options, (err, event) => {
+        console.log(err)
+        console.log(event)
+        if (!err) {
+          // On event fire, remove the event from pendingTx
+          console.log(`${eventName} fired. Removing from pendingTx`, event)
+          dispatch(removePendingTx(funcName, input, userAddr, other))
+        }
+      })
+      dispatch({
+        type: ADD_PENDING_TX,
+        data,
+      })
+    }
+  }
 }
 
 const shouldFetchEthEvents = (state, accountAddr) => {
@@ -54,7 +110,7 @@ const fetchListingsUsingOptions = (dispatch, state) => {
   // The server expects 'from_date' and 'to_date' in underscore format
   // whereas the client uses camelCase. We convert below.
   let opts
-  if (isSet(state.searchOptions)) {
+  if (window.isSet(state.searchOptions)) {
     const { fromDate, toDate, countryCode } = state.searchOptions
     opts = {
       from_date: (fromDate) ? fromDate.getTime() / 1000 : null,
@@ -91,19 +147,20 @@ export const contractCall = (funcName, input, userAddr, other) => {
       from: userAddr,
       gas: 1000000,
     }
+    dispatch(addPendingTx(funcName, input, userAddr, other))
     contract.methods[funcName](...input).send(obj).then((res) => {
       console.log(`Transaction '${funcName}' sent: `, res)
-      const { tx: txHash } = res
-      const other1 = {
-        ...other,
-        txHash,
-      }
-      dispatch(addPendingTx(funcName, input, userAddr, other1))
     }).catch((err) => {
       console.log(`Transaction '${funcName}' send error ${err}`)
+      dispatch({
+        type: REMOVE_PENDING_TX,
+
+      })
+      dispatch(removePendingTx(funcName, input, userAddr, other))
     })
   }
 }
+
 export const bookListing = (contract, ethAddr, lid, fromDate, toDate) => {
   const obj = {
     from: ethAddr,
@@ -156,9 +213,11 @@ export const setSelectedAcccountIndex = (idx) => {
 export const setWeb3Js = (web3js) => {
   return (dispatch) => {
     const { jsonInterface, contractAddress } = window.contractDetails
-    const contract = new web3js.eth.Contract(jsonInterface.abi, contractAddress)
+    // We must set the provider before instantiating the contract
+    // so that the provider is passed to the contract instance
     const provider = new web3js.providers.WebsocketProvider('ws://localhost:8545')
     web3js.setProvider(provider)
+    const contract = new web3js.eth.Contract(jsonInterface.abi, contractAddress)
     web3js.eth.getAccounts()
       .then((accounts) => {
         dispatch({

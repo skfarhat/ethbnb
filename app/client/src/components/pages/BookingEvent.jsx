@@ -4,23 +4,41 @@ import { Link } from 'react-router-dom'
 import Rating from 'react-rating'
 import PropTypes from 'prop-types'
 import moment from 'moment'
-import { contractCall, hasPendingTx } from '../../redux/actions'
+import { contractCall } from '../../redux/actions'
 
+const STARS_INITIAL_VAL = 3
+const isSet = window.isSet
 
+// BookingEvent
+// ------------
+//
+// For the initialValue of <Rating /> this component checks
+// the below in order:
+//
+// (1) ownerRating / guestRating if provided by the server
+// (2) a pendingTx that has 'returnVal' set
+// If neither (1) nor (2) then an STARS_INITIAL_VAL is used
 class BookingEvent extends Component {
   constructor(props) {
     super(props)
     this.onRatingChange = this.onRatingChange.bind(this)
+    this.getStorageKey = (lid, bid, userAddr) => `${userAddr} rate(${lid},${bid})`
   }
 
   onRatingChange(rating) {
     const { dispatch, userAddr, lid, bid } = this.props
-    dispatch(contractCall('rate', [lid, bid, rating], userAddr, { eventName: 'RatingComplete' }))
+    const other = {
+      eventName: 'RatingComplete',
+      storageKey: this.getStorageKey(lid, bid, userAddr),
+      returnVal: rating,
+    }
+    dispatch(contractCall('rate', [lid, bid, rating], userAddr, other))
     // TODO: show something on the UI suggesting we have submitted
     // TODO: set it to readonly after setting or if it was already set (need to do that)
   }
 
   getReactRating(val, readonly) {
+    console.log(`val=${JSON.stringify(val)} readonly=${readonly}`)
     return (
       <Rating
         start={0}
@@ -32,11 +50,30 @@ class BookingEvent extends Component {
     )
   }
 
+  // Returns the stars set in pendingTx if there
+  // exists a pendingTx amtching this.getStorageKey()
+  // and if returnVal was set in that pendingTx
+  // Otherwise returns 0
+  getPendingStarsIfExist() {
+    const { pendingTx, lid, bid, userAddr } = this.props
+    const txObjStr = pendingTx[this.getStorageKey(lid, bid, userAddr)]
+    if (isSet(txObjStr)) {
+      const txObj = JSON.parse(txObjStr)
+      if (isSet(txObj.returnVal)) {
+        return txObj.returnVal
+      }
+    }
+    return 0
+  }
+
   getRatingDOM() {
-    const { ownerRating, guestRating, listing, userAddr, pendingTx, lid, bid } = this.props
+    const { ownerRating, guestRating, listing, userAddr } = this.props
     const userIsOwner = userAddr === listing.owner
-    const isRatingTxPending = hasPendingTx(pendingTx, 'rate', [lid, bid], userAddr)
-    console.log('isRatingTxPending', isRatingTxPending)
+
+    // Extract the number of stars from the transaction object
+    // stored in pendingTx
+    const pendingStars = this.getPendingStarsIfExist()
+
     // User has not rated if they are the owner and guestRating
     // is not defined (or not-zero)
     // Or, if they are not the owner (they are the guest) and
@@ -51,7 +88,8 @@ class BookingEvent extends Component {
       )
       theirScore = (
         <div>
-          { this.getReactRating((guestRating || 3), isRatingTxPending || !!guestRating) }
+          { this.getReactRating(guestRating || pendingStars || STARS_INITIAL_VAL,
+            !!pendingStars || !!guestRating) }
         </div>
       )
     } else {
@@ -62,7 +100,8 @@ class BookingEvent extends Component {
       )
       theirScore = (
         <div>
-          { this.getReactRating(ownerRating || 3, isRatingTxPending || !!ownerRating) }
+          { this.getReactRating(ownerRating || pendingStars || STARS_INITIAL_VAL,
+            !!pendingStars || !!ownerRating) }
         </div>
       )
     }
@@ -79,10 +118,10 @@ class BookingEvent extends Component {
   }
 
   render() {
-    const { location, title, price, from_date, to_date, listing } = this.props
+    console.log('BookingEvent: render()', window.isSet)
+    const { price, from_date, to_date, listing } = this.props
     const fromDate1 = moment(from_date.toString()).format('DD/MM/YY')
     const toDate1 = moment(to_date.toString()).format('DD/MM/YY')
-    this.getRatingDOM()
     return (
       <div className="booking-event">
         <h5>
