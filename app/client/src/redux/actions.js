@@ -1,4 +1,3 @@
-import TruffleContract from 'truffle-contract'
 import { SERVER_NODE_URL } from '../constants/global'
 
 // ============================================================
@@ -92,8 +91,7 @@ export const contractCall = (funcName, input, userAddr, other) => {
       from: userAddr,
       gas: 1000000,
     }
-    input.push(obj)
-    contract[funcName](...input).then((res) => {
+    contract.methods[funcName](...input).send(obj).then((res) => {
       console.log(`Transaction '${funcName}' sent: `, res)
       const { tx: txHash } = res
       const other1 = {
@@ -157,24 +155,23 @@ export const setSelectedAcccountIndex = (idx) => {
 
 export const setWeb3Js = (web3js) => {
   return (dispatch) => {
-    const { jsonInterface } = window.contractDetails
-    const MyContract = TruffleContract(jsonInterface)
+    const { jsonInterface, contractAddress } = window.contractDetails
+    const contract = new web3js.eth.Contract(jsonInterface.abi, contractAddress)
     const provider = new web3js.providers.WebsocketProvider('ws://localhost:8545')
-    MyContract.setProvider(provider)
+    web3js.setProvider(provider)
     web3js.eth.getAccounts()
-      .then(accounts => MyContract.deployed()
-        .then((contract) => {
-          dispatch({
-            type: SET_WEB3,
-            web3js,
-            contract,
-            accounts,
-          })
-          dispatch({
-            type: SET_SELECTED_ACCOUNT,
-            selectedAccountIndex: 0,
-          })
-        }))
+      .then((accounts) => {
+        dispatch({
+          type: SET_WEB3,
+          web3js,
+          contract,
+          accounts,
+        })
+        dispatch({
+          type: SET_SELECTED_ACCOUNT,
+          selectedAccountIndex: 0,
+        })
+      })
   }
 }
 
