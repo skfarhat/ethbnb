@@ -54,7 +54,7 @@ module.exports = {
           },
         },
         {
-          $match: { $or: [{ user }, { 'listing.owner': user }] },
+          $match: { $or: [{ guest: user }, { 'listing.owner': user }] },
         },
         {
           $unwind: '$listing',
@@ -62,7 +62,7 @@ module.exports = {
       ]
       const listingsPipeline = [
         {
-          $match: { owner : user },
+          $match: { owner: user },
         },
         {
           $lookup: {
@@ -96,7 +96,7 @@ module.exports = {
 
     app.get('/api/listings', async (req, res) => {
       logger.info('Serving content on /api/listings/')
-      // from_date and to_date are expected to be epoch seconds
+      // fromDate and toDate are expected to be epoch seconds
       // we convert them to milliseconds if they are provided,
       // otherwise they are passed as is (undefined or null)
       const pipeline = [
@@ -125,29 +125,29 @@ module.exports = {
           },
         },
       ]
-      let { from_date, to_date, country_code } = req.query
+      let { fromDate, toDate, countryCode } = req.query
 
       // Date options
       //
-      // @from_date and @to_date are expected to be seconds formatted
+      // @fromDate and @toDate are expected to be seconds formatted
       // and not milliseconds. We have to multiply by 1000 to get a date object.
-      if (isSet(from_date) && isSet(to_date)) {
-        from_date = new Date(from_date * 1000)
-        to_date = new Date(to_date * 1000)
+      if (isSet(fromDate) && isSet(toDate)) {
+        fromDate = new Date(fromDate * 1000)
+        toDate = new Date(toDate * 1000)
         // Add the match object at index 2 of the pipeline
         pipeline.splice(2, 0, {
           $match: {
             $and: [
               {
                 $or: [
-                  { 'bookings.from_date': { $not: { $gte: from_date } } },
-                  { 'bookings.from_date': { $not: { $lt: to_date } } },
+                  { 'bookings.fromDate': { $not: { $gte: fromDate } } },
+                  { 'bookings.fromDate': { $not: { $lt: toDate } } },
                 ],
               },
               {
                 $or: [
-                  { 'bookings.to_date': { $not: { $gte: from_date } } },
-                  { 'bookings.to_date': { $not: { $lt: to_date } } },
+                  { 'bookings.toDate': { $not: { $gte: fromDate } } },
+                  { 'bookings.toDate': { $not: { $lt: toDate } } },
                 ],
               },
             ],
@@ -155,9 +155,9 @@ module.exports = {
         })
       }
       // Country options
-      if (isSet(country_code)) {
+      if (isSet(countryCode)) {
         // Insert at index = 0 of the pipeline
-        pipeline.splice(0, 0, ({ $match: { country: parseInt(country_code, 10) } }))
+        pipeline.splice(0, 0, ({ $match: { country: parseInt(countryCode, 10) } }))
       }
       const response = await Listings.aggregate(pipeline)
       await sleep(2000)

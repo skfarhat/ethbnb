@@ -116,9 +116,9 @@ class BookingEvent extends Component {
   }
 
   render() {
-    const { price, from_date, to_date, listing } = this.props
-    const fromDate1 = moment(from_date.toString()).format('DD/MM/YY')
-    const toDate1 = moment(to_date.toString()).format('DD/MM/YY')
+    const { price, fromDate, toDate, listing } = this.props
+    const fromDate1 = moment(fromDate.toString()).format('DD/MM/YY')
+    const toDate1 = moment(toDate.toString()).format('DD/MM/YY')
     return (
       <div className="booking-event">
         <h5>
@@ -143,8 +143,8 @@ BookingEvent.defaultProps = {
 }
 
 BookingEvent.propTypes = {
-  // from_date: PropTypes.date,
-  // to_date: PropTypes.date,
+  // fromDate: PropTypes.date,
+  // toDate: PropTypes.date,
   bid: PropTypes.number.isRequired,
   dispatch: PropTypes.func.isRequired,
   guestRating: PropTypes.number,

@@ -124,15 +124,15 @@ export const fetchPublicAccount = (addr) => {
 }
 
 const fetchListingsUsingOptions = (dispatch, state) => {
-  // The server expects 'from_date' and 'to_date' in underscore format
+  // The server expects 'fromDate' and 'toDate' in underscore format
   // whereas the client uses camelCase. We convert below.
   let opts
   if (isSet(state.searchOptions)) {
     const { fromDate, toDate, countryCode } = state.searchOptions
     opts = {
-      from_date: (fromDate) ? fromDate.getTime() / 1000 : null,
-      to_date: (toDate) ? toDate.getTime() / 1000 : null,
-      country_code: countryCode,
+      fromDate: (fromDate) ? fromDate.getTime() / 1000 : null,
+      toDate: (toDate) ? toDate.getTime() / 1000 : null,
+      countryCode,
     }
   } else {
     opts = {}

@@ -110,12 +110,12 @@ module.exports = () => {
     const b = {
       bid,
       lid,
-      user: from,
+      guest: from,
     }
     try {
       const r = await contract.methods.getBookingDates(lid, bid).call({ from })
-      b.from_date = r.from_date
-      b.to_date = r.to_date
+      b.fromDate = r.fromDate
+      b.toDate = r.toDate
       return b
     } catch (exc) {
       logger.error(`Failed to call getBookingDates()${exc}`)
@@ -176,10 +176,10 @@ module.exports = () => {
       sleep(WAIT_INTERVAL)
     }
     // True if the guest is the one who is rating the owner
-    const isGuestRater = from === booking.user
+    const isGuestRater = from === booking.guest
     // If the rater = guest, other = owner
     // If rater = owner, other = guest
-    const other = (isGuestRater) ? listing.owner : booking.user
+    const other = (isGuestRater) ? listing.owner : booking.guest
 
     // Update rating for Account 'other'
     await Account.findOneAndUpdate({ addr: other }, { $inc: { nRatings: 1 } })

@@ -2,11 +2,11 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const BookingSchema = new Schema({
-  user: String,
+  guest: String,
   bid: Number,
   lid: Number,
-  from_date: { type: Date, set: setMongoDate },
-  to_date: { type: Date, set: setMongoDate },
+  fromDate: { type: Date, set: setMongoDate },
+  toDate: { type: Date, set: setMongoDate },
   // Determined by the host
   guestRating: Number,
   // Determined by the guest
