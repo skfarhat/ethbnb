@@ -181,47 +181,39 @@ export const contractCall = (funcName, input, userAddr, other) => {
   }
 }
 
-export const bookListing = (contract, ethAddr, lid, fromDate, toDate) => {
-  const obj = {
-    from: ethAddr,
-    gas: 1000000,
-  }
-  if (!contract) {
-    console.log('Cannot make booking when contract is not setup')
-    return
-  }
-  if (!fromDate || !toDate) {
-    console.log('Book button should be disabled when dates are not set.')
-    return
-  }
-  const lid1 = parseInt(lid, 10)
-  const nbOfDays = (toDate - fromDate) / (86400000) // number of milliseconds per day
-  const fromDate1 = fromDate.getTime() / 1000
-
-  // ESTIMATE GAS:
-  //
-  // contract.contract.methods.listingBook(lid1, fromDate1, nbOfDays)
-  //   .estimateGas(obj)
-  //   .then((err, amount) => {
-  //     console.log(err)
-  //     console.log(amount)
-  //   })
-  contract.listingBook(lid1, fromDate1, nbOfDays, obj).then((res) => {
-    console.log('listingBook submitted')
-    console.log(res)
-  }).catch((err) => {
-    // TODO: show user alert
-    console.log('error from listingBook')
-    console.log(err)
-  })
-  return {
-    type: BOOK_LISTING,
-    ethAddr,
-    lid,
-    fromDate,
-    toDate,
-  }
-}
+// export const bookListing = (contract, ethAddr, lid, fromDate, toDate) => {
+//   const obj = {
+//     from: ethAddr,
+//     gas: 1000000,
+//   }
+//   if (!contract) {
+//     console.log('Cannot make booking when contract is not setup')
+//     return
+//   }
+//   // ESTIMATE GAS:
+//   //
+//   // contract.contract.methods.listingBook(lid1, fromDate1, nbOfDays)
+//   //   .estimateGas(obj)
+//   //   .then((err, amount) => {
+//   //     console.log(err)
+//   //     console.log(amount)
+//   //   })
+//   contract.listingBook(lid1, fromDate1, nbOfDays, obj).then((res) => {
+//     console.log('listingBook submitted')
+//     console.log(res)
+//   }).catch((err) => {
+//     // TODO: show user alert
+//     console.log('error from listingBook')
+//     console.log(err)
+//   })
+//   return {
+//     type: BOOK_LISTING,
+//     ethAddr,
+//     lid,
+//     fromDate,
+//     toDate,
+//   }
+// }
 
 export const setSelectedAcccountIndex = (idx) => {
   return {

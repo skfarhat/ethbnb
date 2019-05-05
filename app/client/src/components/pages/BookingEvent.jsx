@@ -3,9 +3,9 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import Rating from 'react-rating'
 import PropTypes from 'prop-types'
-import moment from 'moment'
+
 import { contractCall } from '../../redux/actions'
-import { isSet } from '../../constants/global'
+import { isSet, formatDate } from '../../constants/global'
 
 const STARS_INITIAL_VAL = 3
 
@@ -117,8 +117,8 @@ class BookingEvent extends Component {
 
   render() {
     const { price, fromDate, toDate, listing } = this.props
-    const fromDate1 = moment(fromDate.toString()).format('DD/MM/YY')
-    const toDate1 = moment(toDate.toString()).format('DD/MM/YY')
+    const fromDate1 = formatDate(fromDate)
+    const toDate1 = formatDate(toDate)
     return (
       <div className="booking-event">
         <h5>

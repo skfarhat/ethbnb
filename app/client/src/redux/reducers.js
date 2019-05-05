@@ -68,7 +68,6 @@ const rootReducer = (state = initialState, action) => {
       }
     }
     case SET_PUBLIC_ACCOUNT: {
-      console.log('in reducer SET_PUBLIC_ACCOUNT')
       // action.data contains 'addr', 'name', 'dateCreated'
       // at the time of writing
       const { addr } = action.data

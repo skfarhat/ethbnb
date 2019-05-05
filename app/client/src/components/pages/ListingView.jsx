@@ -3,23 +3,19 @@ import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Button, Loader } from 'semantic-ui-react'
-import { fetchListingsIfNeeded, bookListing } from '../../redux/actions'
+import { fetchListingsIfNeeded, contractCall } from '../../redux/actions'
+import { isSet, formatDate } from '../../constants/global'
 import IPFSImage from '../IPFSImage'
 import '../../css/listing-view.css'
 import EthDatePicker from './EthDatePicker'
 
-const formatDate = (date) => {
-  if (date === null || typeof (date) === 'undefined') {
-    return ''
-  }
-  const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }
-  return date.toLocaleDateString('en-UK', options)
-}
 
 class ListingView extends Component {
   constructor() {
     super()
     this.onBookButtonClicked = this.onBookButtonClicked.bind(this)
+    // Storage key used for 'book' contractCall
+    this.getStorageKey = (lid, fromDate, nbOfDays, userAddr) => `${userAddr} rate(${lid}, ${formatDate(fromDate)}, ${nbOfDays})`
   }
 
   componentDidMount() {
@@ -28,10 +24,29 @@ class ListingView extends Component {
   }
 
   onBookButtonClicked() {
-    const { dispatch, contract, accounts, selectedAccountIndex, fromDate, toDate, match } = this.props
-    const addr = accounts[selectedAccountIndex]
-    const { lid } = match.params
-    dispatch(bookListing(contract, addr, lid, fromDate, toDate))
+    const { dispatch, accounts, selectedAccountIndex, match } = this.props
+    const userAddr = accounts[selectedAccountIndex]
+    const lid = parseInt(match.params.lid, 10)
+    const [fromDate, nbOfDays] = this.getFromDateAndNbOfDays()
+    const other = {
+      eventName: 'BookingComplete',
+      storageKey: this.getStorageKey(lid, fromDate, nbOfDays, userAddr),
+      returnVal: true,
+    }
+    dispatch(contractCall('listingBook', [lid, fromDate, nbOfDays], userAddr, other))
+  }
+
+  // Returns [fromDate, nbOfDays] if 'fromDate' and 'toDate' props
+  // were set, otherwise an empty array is returned
+  getFromDateAndNbOfDays() {
+    const { toDate } = this.props
+    let { fromDate } = this.props
+    if (!fromDate || !toDate) {
+      return []
+    }
+    const nbOfDays = (toDate - fromDate) / (86400000) // number of milliseconds per day
+    fromDate = fromDate.getTime() / 1000
+    return [fromDate, nbOfDays]
   }
 
   getListingDetails(isFetching, listings, lid) {
@@ -100,11 +115,17 @@ class ListingView extends Component {
           </span>
         </div>
         <EthDatePicker />
-        <Button toggle active onClick={this.onBookButtonClicked}>
+        <Button toggle active disabled={this.isDisabled()} onClick={this.onBookButtonClicked}>
           Book listing
         </Button>
       </div>
     )
+  }
+
+  // Returns true if the 'Book listing' button should be active
+  isDisabled() {
+    const { fromDate, toDate } = this.props
+    return !isSet(fromDate) || !isSet(toDate)
   }
 
   render() {
@@ -128,9 +149,16 @@ class ListingView extends Component {
   }
 }
 
+ListingView.defaultTypes = {
+  fromDate: null,
+  toDate: null,
+}
+
 ListingView.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
+  fromDate: PropTypes.object,
+  toDate: PropTypes.object,
 }
 
 const mapStateToProps = (state, ownProps) => ({
