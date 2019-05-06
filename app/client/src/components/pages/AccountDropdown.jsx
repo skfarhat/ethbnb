@@ -1,76 +1,44 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { withRouter } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { Dropdown } from 'semantic-ui-react'
 import { isSet } from '../../constants/global'
 import { setSelectedAcccountIndex } from '../../redux/actions'
 
-const options = [
-  {
-    key: 'profile',
-    value: -1,
-    text: 'Your Profile',
-    disabled: true,
-  },
-]
-
-const getOptions = (accounts) => {
-  if (!isSet(accounts)) {
-    return options
-  }
-  // Enable the
-  options[0].disabled = false
-  return options.concat(
-    accounts.map((adr, idx) => ({ key: adr, value: idx, text: adr.substr(0, 5) })),
-  )
-}
 
 class AccountDropdown extends Component {
-  constructor() {
-    super()
-    this.onAccountMenuChange = this.onAccountMenuChange.bind(this)
-    this.options = options
-  }
-
-  onAccountMenuChange(ev, data) {
-    const { dispatch, history } = this.props
-    if (data.value === -1) {
-      history.push('/account')
-    } else {
-      dispatch(setSelectedAcccountIndex(data.value))
-    }
-  }
-
   render() {
-    const { accounts, selectedAccountIndex } = this.props
-    this.options = getOptions(accounts)
+    const { accounts, dispatch, selectedAccountIndex } = this.props
+    const options = (isSet(accounts))
+      ? accounts.map((addr, idx) => ({ key: addr, value: idx, text: addr.substr(0, 5) }))
+      : []
     return (
       <Dropdown
-        // selection
-        onChange={this.onAccountMenuChange}
-        value={selectedAccountIndex}
-        options={this.options}
         noResultsMessage="No accounts."
+        value={selectedAccountIndex}
+        options={options}
+        loading={options.length === 0}
+        onChange={(data, { value }) => dispatch(setSelectedAcccountIndex(value))}
       />
     )
   }
 }
 
 AccountDropdown.defaultProps = {
+  accunts: null,
   selectedAccountIndex: 0,
 }
 
 AccountDropdown.propTypes = {
+  accounts: PropTypes.array,
   dispatch: PropTypes.func.isRequired,
   selectedAccountIndex: PropTypes.number,
-  history: PropTypes.object.isRequired,
 }
 
 
 const mapStateToProps = state => ({
-  accounts: Object.keys(state.accounts),
+  accounts: state.accounts,
   selectedAccountIndex: state.selectedAccountIndex,
 })
 
-export default connect(mapStateToProps)(withRouter(AccountDropdown))
+export default connect(mapStateToProps)(AccountDropdown)

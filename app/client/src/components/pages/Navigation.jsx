@@ -1,11 +1,13 @@
 import React, { Component } from 'react'
-import { Link } from 'react-router-dom'
+import { connect } from 'react-redux'
+import { withRouter, Link } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import { Menu } from 'semantic-ui-react'
-import AccountDropdown from './AccountDropdown'
 
 
 class Navigation extends Component {
   render() {
+    const { history } = this.props
     return (
       <Menu>
         <Link to="/listing/">
@@ -16,14 +18,20 @@ class Navigation extends Component {
             EthBnB
           </Menu.Item>
         </Link>
+
         <Menu.Menu position="right">
-          <Menu.Item>
-            <AccountDropdown />
-          </Menu.Item>
+          <Menu.Item
+            name='Profile'
+            onClick={() => history.push('/account')}
+          />
         </Menu.Menu>
       </Menu>
     )
   }
 }
 
-export default Navigation
+Navigation.propTypes = {
+  history: PropTypes.object.isRequired,
+}
+
+export default connect()(withRouter(Navigation))

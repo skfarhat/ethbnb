@@ -239,6 +239,10 @@ export const setWeb3Js = (web3js) => {
           accounts,
         })
         dispatch({
+          type: SET_ACCOUNTS,
+          accounts,
+        })
+        dispatch({
           type: SET_SELECTED_ACCOUNT,
           selectedAccountIndex: 0,
         })

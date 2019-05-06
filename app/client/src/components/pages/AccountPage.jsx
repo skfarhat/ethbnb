@@ -3,9 +3,11 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Loader } from 'semantic-ui-react'
 import { fetchEthEvents, fetchEthEventsIfNeeded, fetchAccountInfo } from '../../redux/actions'
+import { isSet } from '../../constants/global'
 import EthEvent from './EthEvent'
 import BookingEvent from './BookingEvent'
 import ListingMini from './ListingMini'
+import AccountDropdown from './AccountDropdown'
 
 class AccountPage extends Component {
   constructor() {
@@ -14,14 +16,11 @@ class AccountPage extends Component {
     this.getSelectedAddr = this.getSelectedAddr.bind(this)
   }
 
-  componentDidMount() {
-    this.fetchAccountInfo()
-  }
-
   componentDidUpdate(prevProps) {
-    const { accountInfo, selectedAccountIndex } = this.props
-    if (!accountInfo || prevProps.selectedAccountIndex !== selectedAccountIndex) {
-      this.fetchAccountInfo()
+    const { accounts, selectedAccountIndex, dispatch } = this.props
+    if (isSet(accounts) && prevProps.selectedAccountIndex !== selectedAccountIndex) {
+      const myAddr = accounts[selectedAccountIndex]
+      dispatch(fetchAccountInfo(myAddr))
     }
   }
 
@@ -41,11 +40,6 @@ class AccountPage extends Component {
     return accounts[selectedAccountIndex]
   }
 
-  fetchAccountInfo() {
-    const { dispatch } = this.props
-    dispatch(fetchAccountInfo(this.getSelectedAddr()))
-  }
-
   handleFetchEvents() {
     const { dispatch, accounts, contract, selectedAccountIndex } = this.props
     const accountAddr = accounts[selectedAccountIndex]
@@ -53,11 +47,29 @@ class AccountPage extends Component {
   }
 
   render() {
-    // TODO: show error message if there is no account and the page is accessed
-    //       e.g. if the user types in /account in the URL but there are no eth accounts.
-    const { accountInfo } = this.props
-    const myAddr = this.getSelectedAddr()
+    const { accountInfo, accounts, selectedAccountIndex, dispatch } = this.props
+    console.log('AccountPage::render', selectedAccountIndex)
+    const loadingDom = (
+      <div>
+        <Loader active />
+        <AccountDropdown />
+      </div>
+    )
+    // If accounts are not set, we return the spinner
+    // and wait for a state update
+    if (!isSet(accounts)) {
+      return loadingDom
+    }
+    const myAddr = accounts[selectedAccountIndex]
+    // At this point we know that accounts is set,
+    // if accountInfo is still not set, dispatch
+    // a request to get it
+    if (!isSet(accountInfo)) {
+      dispatch(fetchAccountInfo(myAddr))
+      return loadingDom
+    }
 
+    // Event related stuff
     // const { events, contract } = this.props
     // const accountEvents = events.filter(event =>
     // Object.prototype.hasOwnProperty.call(event.returnValues, 'from')
@@ -65,11 +77,13 @@ class AccountPage extends Component {
     // const accountEventViews = accountEvents.map((event, idx) =>
     // <EthEvent key={idx} {...event} />)
 
-    if (!accountInfo) {
-      return (<Loader active />)
-    }
     if (!Object.entries(accountInfo).length) {
-      return (<div> <p> No account found </p> </div>)
+      return (
+        <div>
+          <AccountDropdown />
+          No such account
+        </div>
+      )
     }
 
     // My Bookings
@@ -81,8 +95,14 @@ class AccountPage extends Component {
 
     return (
       <div className="accounts-page">
+
         <div className="account-info">
-          <h5> {accountInfo.name} </h5>
+          <div>
+            <h5 style={{ display: 'inline', marginRight: '50px' }}>
+              {accountInfo.name}
+            </h5>
+            <AccountDropdown />
+          </div>
           <p> Date Created {accountInfo.dateCreated} </p>
           <p> Ethereum Address: {accountInfo.addr} </p>
           <p> { this.getMyRating() } </p>
@@ -99,7 +119,7 @@ class AccountPage extends Component {
 }
 
 AccountPage.defaultProps = {
-  accounts: [],
+  accounts: null,
   accountInfo: null,
   contract: null,
   events: [],
@@ -115,7 +135,7 @@ AccountPage.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  accounts: Object.keys(state.accounts),
+  accounts: state.accounts,
   accountInfo: state.accountInfo,
   contract: state.contract,
   events: state.ethEvents,

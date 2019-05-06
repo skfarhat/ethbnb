@@ -23,7 +23,7 @@ const initialState = {
     countryCode: null,
   },
   selectedAccountIndex: 0,
-  accounts: [],
+  accounts: null,
   // Fetched from /api/account/:user
   // contains name, addr, bookings, dateCreated
   accountInfo: null,
@@ -48,13 +48,10 @@ const initialState = {
 const rootReducer = (state = initialState, action) => {
   switch (action.type) {
     case SET_WEB3: {
-      const accounts = {}
-      Object.values(action.accounts).forEach((addr) => accounts[addr] = {})
       return {
         ...state,
         web3: action.web3js,
         contract: action.contract,
-        accounts,
       }
     }
     case REQUEST_PUBLIC_ACCOUNT: {

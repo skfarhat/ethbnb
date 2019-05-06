@@ -100,7 +100,6 @@ class ListingView extends Component {
 
   getListingDetails(lid) {
     const { fromDate, toDate, listings, isFetching } = this.props
-    const { verified } = this.state
     let hash
     let ext
     // If listings is undefined
@@ -212,7 +211,7 @@ ListingView.propTypes = {
 }
 
 const mapStateToProps = (state, ownProps) => ({
-  accounts: Object.keys(state.accounts),
+  accounts: state.accounts,
   contract: state.contract,
   listings: state.listings,
   isFetching: state.isFetching,
