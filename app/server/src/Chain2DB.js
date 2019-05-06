@@ -3,12 +3,6 @@ const Account = require('./models/Account')
 const Listing = require('./models/Listing')
 const Booking = require('./models/Booking')
 
-const listingFunctions = {
-  price: 'getListingPrice',
-  country: 'getListingCountry',
-  location: 'getListingLocation',
-}
-
 const accountFunctions = {
   name: 'getAccountName',
   dateCreated: 'getAccountDateCreated',
@@ -64,44 +58,32 @@ module.exports = () => {
   }
 
   const fetchAndReturnAccount = async (addr) => {
-    let res
     const account = {
       addr,
       nRatings: 0,
       totalScore: 0,
     }
-    for (const field in accountFunctions) {
-      const funcName = accountFunctions[field]
-      try {
-        res = await contract.methods[funcName](addr).call({ addr })
-      } catch (err) {
-        logger.error(`Error: Failed to call function ${funcName}`)
-        logger.error(`Received error:  ${err}`)
-      }
-      account[field] = res
-    }
+    const fields = ['name', 'dateCreated']
+    const res = await contract.methods.getAccountAll(addr).call({ addr })
+    Object.values(fields).forEach((field) => {
+      account[field] = res[field]
+    })
     return account
   }
 
   // Given a listing 'id' and 'from' address, this function reads
   // all of a listing's fields from the blockchain.
   const fetchAndReturnListing = async (lid, from) => {
-    const l = {
+    const listing = {
       lid,
       owner: from,
     }
-    for (const field in listingFunctions) {
-      const funcName = listingFunctions[field]
-      let res
-      try {
-        res = await contract.methods[funcName](lid).call({ from })
-      } catch (err) {
-        logger.error(`Error: Failed to call function ${funcName}`)
-        logger.error(`Received error:  ${err}`)
-      }
-      l[field] = res
-    }
-    return l
+    const fields = ['price', 'owner', 'location', 'country']
+    const res = await contract.methods.getListingAll(lid).call({ from })
+    Object.values(fields).forEach((field) => {
+      listing[field] = res[field]
+    })
+    return listing
   }
 
   // Given a 'bid' and 'from' address, this function reads

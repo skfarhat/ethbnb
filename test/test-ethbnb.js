@@ -36,14 +36,17 @@ contract('EthBnB', async (accounts) => {
   it('Account: hasAccount() createAccount() are correct', async () => {
     const bnb = await EthBnB.deployed()
     // Create the account
-    const shortName = 'Alex'
-    await bnb.createAccount(shortName, { from: accounts[0] })
+    const NAME = 'Alex'
+    const FROM = accounts[0]
+    await bnb.createAccount(NAME, { from: FROM })
     // Check the account exists
-    const accountExists = await bnb.hasAccount({ from: accounts[0] })
+    const accountExists = await bnb.hasAccount({ from: FROM })
     assert.isTrue(accountExists, 'createAccount doesn\'t seem to have created an account')
-    // Check the name is the same
-    const actualName = await bnb.getAccountName(accounts[0], { from: accounts[0] })
-    assert.equal(actualName, shortName, 'The account shortName does not match what we expect')
+
+    const res = await bnb.getAccountAll(FROM, {from: FROM})
+    const { name: actualName, dateCreated: actualDatedCreated,
+            totalScore: actualTotalScore, nRatings: actualNRatings } = res
+    assert.equal(actualName, NAME, 'The account shortName does not match what we expect')
   })
 
   // Create listing without an account
@@ -167,25 +170,39 @@ contract('EthBnB', async (accounts) => {
     }
   })
 
+  it('Listing: getListingAll() returns correct details', async () => {
+    let lid
+    const bnb = await EthBnB.deployed()
+    await bnb.createAccount('Alex', d)
+    const LOCATION = 'London'
+    const PRICE = 5000
+    const COUNTRY = COUNTRIES.GB
+    const { from: OWNER } = d
+    let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, d)
+    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+    res = await bnb.getListingAll(lid, d)
+    const { location: actualLocation, owner: actualOwner, price: actualPrice, country: actualCountry } = res
+    assert.equal(actualLocation, LOCATION)
+    assert.equal(bigNumberToInt(actualPrice), PRICE)
+    assert.equal(actualOwner, OWNER)
+    assert.equal(bigNumberToInt(actualCountry), COUNTRY)
+  })
+
   // Test get/set listing price
   it('Listing: get/set listing price()', async () => {
+    let lid
     const bnb = await EthBnB.deployed()
-
-    try {
-      const res = await bnb.getMyListingIds({ from: accounts[0] })
-      const listingId = res[0]
-
-      // Change it to 500
-      const newPrice = 500
-      await bnb.setListingPrice(listingId, newPrice, { from: accounts[0] })
-
-      // Check that the changes applied
-      const toVerify = await bnb.getListingPrice(listingId, { from: accounts[0] })
-      assert.equal(toVerify.toNumber(), newPrice)
-    } catch (error) {
-      console.log(error)
-      assert(false, 'getListing() should not have thrown an exception')
-    }
+    await bnb.createAccount('Alex', d)
+    const LOCATION = 'London'
+    const PRICE = 5000
+    const COUNTRY = COUNTRIES.GB
+    let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, d)
+    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+    // Change it to 500
+    const newPrice = 500
+    await bnb.setListingPrice(lid, newPrice, { from: accounts[0] })
+    res = await bnb.getListingAll(lid)
+    assert.equal(bigNumberToInt(res.price), newPrice)
   })
 
   // A host has two listings, and gets a booking for each.
@@ -212,10 +229,10 @@ contract('EthBnB', async (accounts) => {
     truffleAssert.eventEmitted(res, 'RatingComplete')
     res = await bnb.rate(lid2, bid2, 5, { from: accounts[2] })
     truffleAssert.eventEmitted(res, 'RatingComplete')
-    const totalScore = await bnb.getAccountTotalScore(accounts[0], { from: accounts[5] }) // Any account can view another's score
-    const totalRatings = await bnb.getAccountNumberOfRatings(accounts[0], { from: accounts[5] }) // Any account can view another's nbRatings
+    res = await bnb.getAccountAll(accounts[0], { from: accounts[5] })
+    const { totalScore, nRatings } = res
     assert(bigNumberToInt(totalScore) === 5 + 1, 'Total score must be 6')
-    assert(bigNumberToInt(totalRatings) === 2, 'Total number of ratings must be 2')
+    assert(bigNumberToInt(nRatings) === 2, 'Total number of ratings must be 2')
 
     // The host rates one of the users
     res = await bnb.rate(lid1, bid1, 4, { from: accounts[0] })

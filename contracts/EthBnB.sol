@@ -1,18 +1,17 @@
 pragma solidity ^0.5.0;
 
-// TODO: change listingId param to lid. Shorter, better.
 import  './DateBooker.sol';
 
-/**
-*
-* Listings:
-* ---------
-* Created listings are stored in the their account's struct as well as in the
-* contract's listings mapping.
-*
-*
-* A calendar day is the minimum duration for a Booking
-*/
+//
+//
+// Listings:
+// ---------
+// Created listings are stored in the their account's struct as well as in the
+// contract's listings mapping.
+//
+//
+// A calendar day is the minimum duration for a Booking
+//
 contract EthBnB {
 
   enum Country {
@@ -90,13 +89,13 @@ contract EthBnB {
 
   uint public BOOKING_CAPACITY = 5;
 
-  /** Listings will have incrementing Ids starting from 1 */
+  // Listings will have incrementing Ids starting from 1
   uint nextListingId = 1;
 
-  /** A list of all listing ids */
+  // A list of all listing ids
   uint[] listingIds;
 
-  /** Reference to deployed smart-contract DateBooker initialised in constructor */
+  // Reference to deployed smart-contract DateBooker initialised in constructor
   DateBooker dateBooker;
 
   // Store all created listings
@@ -117,11 +116,11 @@ contract EthBnB {
   // ACCOUNT
   // -----------------------------------------------------------------------
 
-  /**
-   * Create an account
-   *
-   * The created account will be added to 'accounts'
-   */
+  modifier accountExists(address owner) {
+    require(accounts[owner].owner == owner);
+    _;
+  }
+
   function createAccount(string memory name) public {
     accounts[msg.sender] = Account({
       owner : msg.sender,
@@ -139,24 +138,10 @@ contract EthBnB {
     return accounts[msg.sender].owner == msg.sender;
   }
 
-  function getAccountName(address owner) public view returns (string memory) {
-    require(accounts[owner].owner == owner, 'No such account found');
-    return accounts[owner].name;
-  }
-
-  function getAccountDateCreated(address owner) public view returns (uint) {
-    require(accounts[owner].owner == owner, 'No such account found');
-    return accounts[msg.sender].dateCreated;
-  }
-
-  function getAccountTotalScore(address addr) public view returns (uint) {
-    require(accounts[addr].owner == addr, 'No such account');
-    return accounts[addr].totalScore;
-  }
-
-  function getAccountNumberOfRatings(address addr) public view returns (uint) {
-    require(accounts[addr].owner == addr, 'No such account');
-    return accounts[addr].nRatings;
+  function getAccountAll(address owner) public accountExists(owner) view
+    returns (string memory name, uint dateCreated, uint totalScore, uint nRatings) {
+      Account memory account = accounts[owner];
+      return (account.name, account.dateCreated, account.totalScore, account.nRatings);
   }
 
   // TODO: when implementing:
@@ -169,21 +154,30 @@ contract EthBnB {
   // LISTING
   // -----------------------------------------------------------------------
 
-  /** Returns a list of all listings */
+  modifier listingExists(uint lid) {
+      require(listings[lid].id == lid);
+      _;
+  }
+
+  function getListingAll(uint lid) public  listingExists(lid) view
+    returns (address owner, uint price, string memory location, Country country) {
+      Listing memory l = listings[lid];
+      return (l.owner, l.price, l.location, l.country);
+  }
+
+  // Returns a list of all listings
   function getAllListings() public view returns (uint[] memory) {
     return listingIds;
   }
 
-  /** Returns a list of all of the message sender's listings */
+  // Returns a list of all of the message sender's listings
   function getMyListingIds() public view returns (uint[] memory) {
     require(accounts[msg.sender].owner == msg.sender, 'No account found');
     return accounts[msg.sender].listingIds;
   }
 
-  /**
-   * Creates a new listing for the message sender
-   * and returns the Id of the created listing
-   */
+  // Creates a new listing for the message sender
+  // and returns the Id of the created listing
   function createListing(Country country, string memory location, uint price) public {
     require(hasAccount(), 'Must have an account before creating a listing');
     // Note: enforce a maximum number of listings per user?
@@ -201,13 +195,12 @@ contract EthBnB {
     emit CreateListingEvent(msg.sender, nextListingId++);
   }
 
-  /**
-   * Book a listing
-   *
-   * @param lid          id of the listing to be booked
-   * @param fromDate     start date of the booking
-   * @param nbOfDays     number of days for which the booking will be made
-   */
+  // Book a listing
+  //
+  // @param lid          id of the listing to be booked
+  // @param fromDate     start date of the booking
+  // @param nbOfDays     number of days for which the booking will be made
+  //
   function listingBook(uint lid, uint fromDate, uint nbOfDays) public {
     require(listings[lid].id != 0, 'No such listing found');
     require(hasAccount(), 'Must have an account before creating a listing');
@@ -246,7 +239,7 @@ contract EthBnB {
     require(stars >= 1 && stars <= 5, 'Stars arg must be in [1,5]');
     Booking storage booking = listings[lid].bookings[bid];
     require(booking.guestAddr == msg.sender || booking.ownerAddr == msg.sender, 'Sender not participated in booking');
-    (uint fromDate, uint toDate) = getBookingDates(lid, bid);
+    (, uint toDate) = getBookingDates(lid, bid);
     require(toDate <= now, 'Cannot rate a booking before it ends');
     if (booking.guestAddr == msg.sender) {
       // The guest is rating the owner
@@ -267,12 +260,10 @@ contract EthBnB {
     emit RatingComplete(msg.sender, lid, bid, stars);
   }
 
-  /**
-   * Cancel a booking
-   *
-   * @param lid           id of the listing to be cancelled
-   * @param bid           id of the booking to be cancelled
-   */
+  // Cancel a booking
+  //
+  // @param lid           id of the listing to be cancelled
+  // @param bid           id of the booking to be cancelled
   function listingCancel(uint lid, uint bid) public {
     checkListingId(lid);
     uint dbid = listings[lid].dbid;
@@ -280,26 +271,11 @@ contract EthBnB {
     emitBookCancelEvent(res, lid, bid);
   }
 
-  function getListingCountry(uint lid) public view returns (Country) {
-    checkListingId(lid);
-    return listings[lid].country;
-  }
-
-  function getListingPrice(uint lid) public view returns (uint) {
-    checkListingId(lid);
-    return listings[lid].price;
-  }
-
   function setListingPrice(uint lid, uint price) public {
     checkListingId(lid);
     require(price > 0, 'Price must be > 0');
     listings[lid].price = price;
     emit UpdateListingEvent(msg.sender, lid);
-  }
-
-  function getListingLocation(uint lid) public view returns (string memory) {
-    checkListingId(lid);
-    return listings[lid].location;
   }
 
   function setListingLocation(uint lid, string memory location) public {
@@ -330,7 +306,7 @@ contract EthBnB {
     require(listings[lid].owner == msg.sender, 'Only the owner of a listing make changes to it');
   }
 
-  /** Emits an a booking event depending on the result given */
+  // Emits an a booking event depending on the result given
   function emitBookEvent(int result, uint lid) private {
     if (result == dateBooker.BOOK_CONFLICT()) {
       emit BookingConflict(msg.sender, lid);
@@ -341,7 +317,7 @@ contract EthBnB {
     }
   }
 
-  /** Emits an a booking cancel event depending on the result given */
+  // Emits an a booking cancel event depending on the result given
   function emitBookCancelEvent(int result, uint lid, uint bid) private {
     if (result == dateBooker.NOT_FOUND()) {
       emit BookingNotFound(msg.sender, lid, bid);
