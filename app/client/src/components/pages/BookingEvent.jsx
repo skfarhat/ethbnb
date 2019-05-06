@@ -116,7 +116,7 @@ class BookingEvent extends Component {
   }
 
   render() {
-    const { price, fromDate, toDate, listing } = this.props
+    const { fromDate, toDate, listing } = this.props
     const fromDate1 = formatDate(fromDate)
     const toDate1 = formatDate(toDate)
     return (
