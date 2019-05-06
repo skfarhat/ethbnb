@@ -35,7 +35,6 @@ args.initTestData = (hasKey(args, 'initTestData')) ? args.initTestData === 'true
 const database = Database(constants.db)
 
 database.connectSync().then(async () => {
-
   if (args.initTestData) {
     // Run scripts/setup.sh which compiles the contract and migrates it
     // If needed:

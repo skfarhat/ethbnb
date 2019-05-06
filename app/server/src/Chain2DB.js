@@ -24,7 +24,6 @@ const accountFunctions = {
 //
 module.exports = () => {
   const self = this
-
   const { contractAddress, jsonInterface } = require('./loadAbi')
   const abi = jsonInterface.abi
   // Show web3 where it needs to look for the Ethereum node.
@@ -50,11 +49,11 @@ module.exports = () => {
   // Create a listing model and save it to Mongo
   const addListingToDatabase = async (listing) => {
     logger.silly('addListingToDatbase')
-    const { country, lid } = listing
+    const { lid } = listing
     // {"new: true"} so that the modified/inserted is returned instead
     const listingModel = await Listing.findOneAndUpdate({ lid: listing.lid }, listing, { new: true, upsert: true })
     // Check for existing bookings in the database and update the listing's field
-    const booking = await Booking.findOne({ lid })
+    await Booking.findOne({ lid })
     callbackIfExists(listingModel)
   }
 
@@ -76,8 +75,8 @@ module.exports = () => {
       try {
         res = await contract.methods[funcName](addr).call({ addr })
       } catch (err) {
-        logger.error(`Error: Failed to call function ${funcName
-        }Received error: ${err}`)
+        logger.error(`Error: Failed to call function ${funcName}`)
+        logger.error(`Received error:  ${err}`)
       }
       account[field] = res
     }
@@ -97,7 +96,8 @@ module.exports = () => {
       try {
         res = await contract.methods[funcName](lid).call({ from })
       } catch (err) {
-        logger.error('Error: Failed to call function ', funcName, 'Received error: ', err)
+        logger.error(`Error: Failed to call function ${funcName}`)
+        logger.error(`Received error:  ${err}`)
       }
       l[field] = res
     }
@@ -141,7 +141,7 @@ module.exports = () => {
   // Find the cancelled booking and delete it if present
   const bookingCancelledEventHandler = async (event) => {
     logger.silly('bookingCancelledEventHandler - deleting booking')
-    const { lid, bid, from } = event.returnValues
+    const { bid } = event.returnValues
     const res = await Booking.delete({ bid })
     logger.debug(res)
   }

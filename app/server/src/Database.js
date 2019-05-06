@@ -5,7 +5,7 @@ const Bookings = require('./models/Booking')
 const IPFSImage = require('./models/IPFSImage')
 
 const Database = (options) => {
-  const connectStr = format('mongodb://{host}:{port}/{db_name}', options)
+  const connectStr = `mongodb://${options.host}:${options.port}/${options.db_name}`
   const connectOpts = {
     useNewUrlParser: true,
     autoReconnect: true,

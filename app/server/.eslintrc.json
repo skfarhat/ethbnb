@@ -11,6 +11,7 @@
         "hasKey": "readonly",
         "logger": "readonly",
         "isSet": "readonly",
+        "setMongoDate": "readonly",
         "sleep": "readonly"
     },
     "parserOptions": {

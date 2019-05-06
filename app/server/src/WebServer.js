@@ -125,7 +125,8 @@ module.exports = {
           },
         },
       ]
-      let { fromDate, toDate, countryCode } = req.query
+      const { countryCode } = req.query
+      let { fromDate, toDate } = req.query
 
       // Date options
       //

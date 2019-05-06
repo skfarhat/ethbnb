@@ -338,8 +338,7 @@ const DataManager = () => {
             await (new IPFSImage(result[0])).save() // get the first item from the array
             logger.info(`Added image ${filepath} to IPFS and local database.`)
           } catch (err) {
-            console.log(err)
-            return null
+            logger.error(err)
           }
         }
       }

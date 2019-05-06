@@ -9,9 +9,10 @@
  * rest of the project without having to abuse requires
  * (and relative requires).
  */
+const logger = require('./logger')
+
 module.exports = () => {
-  global.format = require('string-format')
-  global.logger = require('./logger')
+  global.logger = logger
   global.hasKey = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
   global.setMongoDate = dateSec => parseInt(dateSec, 10) * 1000
   global.sleep = waitTimeInMs => new Promise(resolve => setTimeout(resolve, waitTimeInMs))
