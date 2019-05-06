@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Button, Loader } from 'semantic-ui-react'
 import { fetchListingsIfNeeded, contractCall } from '../../redux/actions'
-import { isSet, formatDate } from '../../constants/global'
+import { isSet, formatDate, hasKey } from '../../constants/global'
 import IPFSImage from '../IPFSImage'
 import '../../css/listing-view.css'
 import EthDatePicker from './EthDatePicker'
@@ -14,6 +14,21 @@ class ListingView extends Component {
   constructor() {
     super()
     this.onBookButtonClicked = this.onBookButtonClicked.bind(this)
+    this.verifyAgainstChain = this.verifyAgainstChain.bind(this)
+    this.state = {
+      verified: {
+        // Below are the fields which we verify
+        // against the actual chain data.
+        // They are initialised to undefined meaning
+        // we have not checked yet.
+        // When 'verifyAgainstChain' is called, we either
+        // set them to true or to false and update the UI
+        price: undefined,
+        owner: undefined,
+        location: undefined,
+        country: undefined,
+      },
+    }
     // Storage key used for 'book' contractCall
     this.getStorageKey = (lid, fromDate, nbOfDays, userAddr) => `${userAddr} rate(${lid}, ${formatDate(fromDate)}, ${nbOfDays})`
   }
@@ -49,35 +64,66 @@ class ListingView extends Component {
     return [fromDate, nbOfDays]
   }
 
-  getListingDetails(isFetching, listings, lid) {
-    const { fromDate, toDate } = this.props
+  // Returns the listing object associated with this component
+  // or null if an error occurred:
+  // - no listing with the given id was found
+  // - many listings with same id
+  getListing() {
+    const { listings, match } = this.props
+    const lid = parseInt(match.params.lid, 10)
+    const filtered = listings.filter(o => o.lid === lid)
+    if (filtered.length !== 1) {
+      return null
+    }
+    return filtered[0]
+  }
+
+  getListingField(listing, field) {
+    const { verified } = this.state
+    const getVerified = () => {
+      if (isSet(verified[field])) {
+        return verified[field] ? '✅' : '❌'
+      }
+      return ''
+    }
+    const label = field[0].toUpperCase() + field.substr(1)
+    return (
+      <div key={field}>
+        <em> {label}: </em>
+        <span className={field}>
+          { listing[field] }
+          { getVerified() }
+        </span>
+      </div>
+    )
+  }
+
+  getListingDetails(lid) {
+    const { fromDate, toDate, listings, isFetching } = this.props
+    const { verified } = this.state
     let hash
     let ext
     // If listings is undefined
-    if (listings === null || typeof listings === 'undefined') {
-      return (
-        <Loader active={isFetching} />)
+    if (!isSet(listings)) {
+      return (<Loader active={isFetching} />)
     }
-    // If listings is defined, find the listing with matching lid
-    // if zero or more than one are found, return error
-    const res = listings.filter(o => o.lid === lid)
-    if (res.length !== 1) {
+    // Get the listing for this component
+    const listing = this.getListing()
+    if (!isSet(listing)) {
       return (
         <h4>
           {`Error looking for listing with lid ${lid}`}
         </h4>
       )
     }
-    const l = res[0]
-    if (Array.isArray(l.images) && l.images.length > 0) {
-      const img = l.images[0]
-      if (img && Object.prototype.hasOwnProperty.call(img, 'hash')
-        && Object.prototype.hasOwnProperty.call(img, 'path')) {
+    if (Array.isArray(listing.images) && listing.images.length > 0) {
+      const img = listing.images[0]
+      if (img && hasKey(img, 'hash') && hasKey(img, 'path')) {
         hash = img.hash
         ext = img.path.split('.').pop()
       }
     }
-
+    const fields = ['description', 'location', 'country', 'price']
     return (
       <div>
         <div>
@@ -88,38 +134,42 @@ class ListingView extends Component {
           ext={ext}
         />
         <h5>
-          {l.title}
+          {listing.title}
         </h5>
-        <div>
-          <em> Description: </em>
-          <span className="description">
-            {l.description}
-          </span>
-        </div>
-        <div>
-          <em> Location: </em>
-          <span className="location">
-            {l.location}
-          </span>
-        </div>
-        <div>
-          <em> Country: </em>
-          <span className="country">
-            {l.country}
-          </span>
-        </div>
-        <div>
-          <em> Price: </em>
-          <span className="price">
-            {l.price}
-          </span>
-        </div>
+        {
+          fields.map(field => this.getListingField(listing, field))
+        }
         <EthDatePicker />
         <Button toggle active disabled={this.isDisabled()} onClick={this.onBookButtonClicked}>
           Book listing
         </Button>
       </div>
     )
+  }
+
+  async verifyAgainstChain() {
+    const { contract, accounts, selectedAccountIndex } = this.props
+    const userAddr = accounts[selectedAccountIndex]
+    const listing = this.getListing()
+    const { lid } = listing
+    const { verified } = this.state
+    const obj = {
+      gas: 1000000,
+      from: userAddr,
+    }
+    try {
+      const res = await contract.methods.getListingAll(lid).call(obj)
+      Object.keys(verified).forEach((field) => {
+        // We don't care to check for types here
+        // so we just '==' instead of '==='
+        // eslint-disable-next-line eqeqeq
+        verified[field] = res[field] == listing[field]
+      })
+      this.setState({ verified })
+    } catch (err) {
+      console.log('Failed to call getListingAll()')
+      // TODO: Display UI alert error
+    }
   }
 
   // Returns true if the 'Book listing' button should be active
@@ -129,8 +179,6 @@ class ListingView extends Component {
   }
 
   render() {
-    const { listings, match, isFetching } = this.props
-    const lid = parseInt(match.params.lid, 10)
     return (
       <div className="listing-view">
         <Link
@@ -143,7 +191,8 @@ class ListingView extends Component {
             </Button>
           </div>
         </Link>
-        { this.getListingDetails(isFetching, listings, lid) }
+        { this.getListingDetails() }
+        <Button attached="top" onClick={this.verifyAgainstChain}> Verify </Button>
       </div>
     )
   }
@@ -157,6 +206,7 @@ ListingView.defaultTypes = {
 ListingView.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
+  listings: PropTypes.array,
   fromDate: PropTypes.object,
   toDate: PropTypes.object,
 }
