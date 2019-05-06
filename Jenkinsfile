@@ -11,22 +11,23 @@ pipeline {
 
       stage('Build smart-contract') {
         steps {
-          /* Compile smart-contract */ 
+          /* Compile smart-contract */
           sh('truffle compile')
         }
       }
 
       stage('Test smart-contract') {
         steps {
-          /* Run smart-contract tests */ 
+          sh ('rm -rf build/')
+          /* Run smart-contract tests */
           sh('truffle test')
         }
       }
 
       stage('Run coverage on smart-contract') {
         steps {
-          /* Run coverage */ 
-          /* NOTE: this step may be redundant to previous `truffle test` call */ 
+          /* Run coverage */
+          /* NOTE: this step may be redundant to previous `truffle test` call */
           sh('./node_modules/.bin/solidity-coverage')
         }
       }
@@ -34,15 +35,15 @@ pipeline {
       stage('Lint Client JavaScript code') {
         steps {
           dir('app/client') {
-            /* Run Eslint but make sure it doesn't force build failure */ 
-            sh('eslint --config .eslintrc.json --ext .jsx  --format html -o eslint-output.html src/ || true') 
+            /* Run Eslint but make sure it doesn't force build failure */
+            sh('eslint --config .eslintrc.json --ext .jsx  --format html -o eslint-output.html src/ || true')
           }
         }
       }
 
       stage('Publish Reports') {
         steps {
-          /* Publish Coverage report */ 
+          /* Publish Coverage report */
           publishHTML([
               allowMissing: true,
               alwaysLinkToLastBuild: true,

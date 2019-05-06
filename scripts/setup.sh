@@ -23,6 +23,7 @@ pushd $ROOT_DIR > /dev/null
 # COMPILE CONTRACT
 # ================================================
 echo "Ensure ganache-cli or Ganache is running."
+rm -rf build/
 truffle compile
 
 # ================================================
