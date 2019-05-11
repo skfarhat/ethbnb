@@ -18,6 +18,8 @@ export const REQUEST_PUBLIC_ACCOUNT = 'REQUEST_PUBLIC_ACCOUNT'
 export const RECEIVE_LISTINGS = 'RECEIVE_LISTINGS'
 export const RECEIVE_ACCOUNT_INFO = 'RECEIVE_ACCOUNT_INFO'
 export const BOOK_LISTING = 'BOOK_LISTING'
+export const ADD_MESSAGE = 'ADD_MESSAGE'
+export const REMOVE_MESSAGE = 'REMOVE_MESSAGE'
 export const SET_WEB3 = 'SET_WEB3'
 export const SET_ACCOUNTS = 'SET_ACCOUNTS'
 export const SET_PUBLIC_ACCOUNT = 'SET_PUBLIC_ACCCOUNT'
@@ -149,8 +151,7 @@ const fetchListingsUsingOptions = (dispatch, state) => {
         type: RECEIVE_LISTINGS,
         listings: listingsJson,
       }))
-
-  })
+    })
 }
 
 // Wrapper function for all state-changing calls
@@ -170,11 +171,19 @@ export const contractCall = (funcName, input, userAddr, other) => {
     dispatch(addPendingTx(funcName, input, userAddr, other))
     contract.methods[funcName](...input).send(obj).then((res) => {
       console.log(`Transaction '${funcName}' sent: `, res)
+      const message = {
+        header: 'Transaction sent',
+        text: '',
+        type: 'info',
+      }
+      dispatch({
+        type: ADD_MESSAGE,
+        data: message,
+      })
     }).catch((err) => {
       console.log(`Transaction '${funcName}' send error ${err}`)
       dispatch({
         type: REMOVE_PENDING_TX,
-
       })
       dispatch(removePendingTx(funcName, input, userAddr, other))
     })

@@ -6,6 +6,8 @@ import {
   REMOVE_PENDING_TX,
   REQUEST_LISTINGS,
   REQUEST_PUBLIC_ACCOUNT,
+  ADD_MESSAGE,
+  REMOVE_MESSAGE,
   SET_ACCOUNTS,
   SET_ETH_EVENTS,
   SET_PUBLIC_ACCOUNT,
@@ -43,6 +45,10 @@ const initialState = {
     // resource
     accountsInTransit: {},
   },
+  // Messages the user can see on the UI
+  //
+  // Dismissed messages show be deleted from the list
+  messages: [],
 }
 
 const rootReducer = (state = initialState, action) => {
@@ -78,6 +84,19 @@ const rootReducer = (state = initialState, action) => {
           accounts: Object.assign({}, state.public.accounts, { [addr]: action.data }),
           accountsInTransit: Object.assign({}, accountsInTransit),
         },
+      }
+    }
+    case ADD_MESSAGE: {
+      return {
+        ...state,
+        messages: [...state.messages.slice(0), action.data],
+      }
+    }
+    case REMOVE_MESSAGE: {
+      // TODO: figure out how to remove the index
+      return {
+        ...state,
+        messages: [],
       }
     }
     case SET_ETH_EVENTS: {
