@@ -21,7 +21,11 @@ class Navigation extends Component {
 
         <Menu.Menu position="right">
           <Menu.Item
-            name='Profile'
+            name="New Listing"
+            onClick={() => history.push('/new-listing')}
+          />
+          <Menu.Item
+            name="Profile"
             onClick={() => history.push('/account')}
           />
         </Menu.Menu>

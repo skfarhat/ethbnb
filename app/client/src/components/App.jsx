@@ -6,8 +6,9 @@ import { Message } from 'semantic-ui-react'
 import Web3 from 'web3'
 import ListingView from './pages/ListingView'
 import ListingSearch from './pages/ListingSearch'
-import AccountPage from './pages/AccountPage'
 import Navigation from './pages/Navigation'
+import AccountPage from './pages/AccountPage'
+import NewListing from './pages/NewListing'
 import { setWeb3Js } from '../redux/actions'
 import { isSet } from '../constants/global'
 
@@ -67,6 +68,7 @@ class App extends Component {
           <Route exact path="/listing" component={ListingSearch} />
           <Route exact path="/account" component={AccountPage} />
           <Route path="/listing/:lid" component={ListingView} />
+          <Route path="/new-listing" component={NewListing} />
         </div>
       </Router>
     )

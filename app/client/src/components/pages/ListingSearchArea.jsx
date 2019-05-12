@@ -7,6 +7,7 @@ import EthDatePicker from './EthDatePicker'
 import { fetchListings, setSearchOptions } from '../../redux/actions'
 import '../../css/listing-search.css'
 
+
 class ListingSearchArea extends Component {
   constructor() {
     super()

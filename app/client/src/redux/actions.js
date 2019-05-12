@@ -1,6 +1,7 @@
 import {
   SERVER_NODE_URL,
   SERVER_PUBLIC_URL,
+  SERVER_POST_NEW_LISTING,
   isSet,
   hasKey,
 } from '../constants/global'
@@ -10,6 +11,7 @@ import {
 // ============================================================
 
 export const LOAD_PENDING_TX_FROM_LOCAL_STORAGE = 'LOAD_PENDING_TX_FROM_LOCAL_STORAGE'
+export const ADD_TX = 'ADD_TX'
 export const ADD_PENDING_TX = 'ADD_PENDING_TX'
 export const REMOVE_PENDING_TX = 'REMOVE_PENDING_TX'
 export const SET_SEARCH_OPTIONS = 'SET_SEARCH_OPTIONS'
@@ -168,25 +170,28 @@ export const contractCall = (funcName, input, userAddr, other) => {
       from: userAddr,
       gas: 1000000,
     }
+    // Async
     dispatch(addPendingTx(funcName, input, userAddr, other))
-    contract.methods[funcName](...input).send(obj).then((res) => {
-      console.log(`Transaction '${funcName}' sent: `, res)
-      const message = {
-        header: 'Transaction sent',
-        text: '',
-        type: 'info',
-      }
-      dispatch({
-        type: ADD_MESSAGE,
-        data: message,
+    return contract.methods[funcName](...input).send(obj)
+      .then((tx) => {
+        console.log(`Transaction '${funcName}' sent: `, tx)
+        const message = {
+          header: 'Transaction sent',
+          text: '',
+          type: 'info',
+        // data: tx
+        }
+        dispatch({ type: ADD_TX, data: tx })
+        dispatch({ type: ADD_MESSAGE, data: message })
+        return Promise.resolve(tx)
       })
-    }).catch((err) => {
-      console.log(`Transaction '${funcName}' send error ${err}`)
-      dispatch({
-        type: REMOVE_PENDING_TX,
+      .catch((err) => {
+        console.log(`Transaction '${funcName}' send error ${err}`)
+        return Promise.all([
+          dispatch({ type: REMOVE_PENDING_TX }),
+          dispatch(removePendingTx(funcName, input, userAddr, other)),
+        ])
       })
-      dispatch(removePendingTx(funcName, input, userAddr, other))
-    })
   }
 }
 
@@ -255,6 +260,36 @@ export const setWeb3Js = (web3js) => {
           type: SET_SELECTED_ACCOUNT,
           selectedAccountIndex: 0,
         })
+      })
+  }
+}
+
+export const createListing = (chaindata, metadata, userAddr, other) => {
+  return (dispatch) => {
+    // 1. Send chain-data to blockchain and receive the transactionHash
+    dispatch(contractCall('createListing', chaindata, userAddr, other))
+      .then((tx) => {
+        // 2. Get the transaction hash from the tx object
+        // and send metadata to the backend
+        fetch(SERVER_POST_NEW_LISTING, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...metadata,
+            txHash: tx.transactionHash,
+          }),
+        }).then((res) => {
+          console.log('success posting the metadata, and we got back', res)
+        }).catch((err, data) => {
+          // TODO: show message on the UI
+          console.log('Error posting metadata to backend', err, data)
+        })
+      })
+      .catch((err) => {
+        console.log('encountered an error in createListing', err)
       })
   }
 }

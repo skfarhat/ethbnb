@@ -1,4 +1,5 @@
 import {
+  ADD_TX,
   ADD_PENDING_TX,
   BOOK_LISTING,
   RECEIVE_ACCOUNT_INFO,
@@ -49,6 +50,14 @@ const initialState = {
   //
   // Dismissed messages show be deleted from the list
   messages: [],
+
+  // Recent transactions issue by the client.
+  // At the time of writing this dictionary is not serialised
+  // and only stores those transactions sent since the last page refresh
+  transactions: {
+    // Key: txObj.transactionHash
+    // Object: txObj = { transactionHash, ...}
+  },
 }
 
 const rootReducer = (state = initialState, action) => {
@@ -144,6 +153,14 @@ const rootReducer = (state = initialState, action) => {
     case BOOK_LISTING: {
       return state
       // TODO: Update the state
+    }
+    case ADD_TX: {
+      const tx = action.data
+      const { transactionHash } = tx
+      return {
+        ...state,
+        transactions: Object.assign({}, state.transactions, { [transactionHash]: tx }),
+      }
     }
     case ADD_PENDING_TX: {
       // Add the tx to pendingTx in state

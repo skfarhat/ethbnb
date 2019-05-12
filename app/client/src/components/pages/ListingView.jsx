@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Button, Loader } from 'semantic-ui-react'
 import { fetchListingsIfNeeded, contractCall } from '../../redux/actions'
-import { isSet, formatDate, hasKey } from '../../constants/global'
+import { isSet, formatDate, hasKey, capitaliseWord } from '../../constants/global'
 import IPFSImage from '../IPFSImage'
 import '../../css/listing-view.css'
 import EthDatePicker from './EthDatePicker'
@@ -86,7 +86,7 @@ class ListingView extends Component {
       }
       return ''
     }
-    const label = field[0].toUpperCase() + field.substr(1)
+    const label = capitaliseWord(field)
     return (
       <div key={field}>
         <em> {label}: </em>

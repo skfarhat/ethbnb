@@ -13,7 +13,6 @@ class AccountPage extends Component {
   constructor() {
     super()
     this.handleFetchEvents = this.handleFetchEvents.bind(this)
-    this.getSelectedAddr = this.getSelectedAddr.bind(this)
   }
 
   componentDidUpdate(prevProps) {
@@ -33,11 +32,6 @@ class AccountPage extends Component {
       return `Average rating: ${avgScore} (${nRatings} ${reviewStr})`
     }
     return 'No ratings'
-  }
-
-  getSelectedAddr() {
-    const { accounts, selectedAccountIndex } = this.props
-    return accounts[selectedAccountIndex]
   }
 
   handleFetchEvents() {

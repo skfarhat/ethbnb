@@ -32,3 +32,13 @@
     width: 50%;
     border-radius: 20px
 }
+
+.new-listing {
+  margin: 0 auto 0;
+  width: 70%;
+  text-align: center;
+}
+
+.back-button-div {
+  margin: 20px 0px;
+}
