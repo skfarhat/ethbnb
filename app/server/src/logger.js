@@ -18,7 +18,9 @@ const logger = createLogger({
         colorize(),
         myFormat,
       ),
-      level: 'silly' }),
+      level: 'silly',
+      prettyPrint: obj => JSON.stringify(obj),
+    }),
     // new transports.File({ format: myFormat, filename:
     //    path.resolve(logDir, 'info.log'), level: 'info' }),
     // new transports.File({ format: myFormat, filename:
