@@ -29,33 +29,6 @@ const feb2019 = dayNb => new Date(`2019-02-${dayNb}`).getTime() / 1000
 // Directory path to listing images
 const LISTING_IMGS_PATH = path.join(__dirname, 'imgs/listings')
 
-const listingMetadata = {
-  1: {
-    title: '53 Devonshire-on-Rails',
-    description: 'Welcome to the super awesome Devonshire place.',
-    images: ['1.jpg'],
-  },
-  2: {
-    title: 'Lovely house at Croissy-Sur-Seine',
-    description: `Ouvry Manor - big place - jakuzzi - sauna - lovely spaceous garden - big DIY garage - 4 bedrooms
-    and BABY-FOOT`,
-    images: ['2.jpeg'],
-  },
-  3: {
-    title: 'London Victorian House',
-    description: `Good sized, basic double room in a 3 bed Shared flat situated in the heart of Holborn,
-    East Central London. The flat comprises of a fitted kitchen and a shared bathroom.`,
-    images: ['3.jpg'],
-  },
-  4: {
-    title: 'Beirut Central',
-    description: 'Lovely house',
-  },
-  5: {
-    title: 'Sidon Castle',
-    description: 'Lovely Saida residence next to Ain-el-Helwe. Stay next door to the lovely Im Wassim.',
-  },
-}
 const chainTransactions = [
   // ============================================
   // ACCOUNTS
@@ -98,6 +71,11 @@ const chainTransactions = [
       { value: 600, name: 'price' },
     ],
     constant: false,
+    metadata: {
+      title: '53 Devonshire-on-Rails',
+      description: 'Welcome to the super awesome Devonshire place.',
+      images: ['1.jpg'],
+    },
   },
   {
     // owner: Host1
@@ -110,6 +88,12 @@ const chainTransactions = [
       { value: '1799', name: 'price' },
     ],
     constant: false,
+    metadata: {
+      title: 'London Victorian House',
+      description: `Good sized, basic double room in a 3 bed Shared flat situated in the heart of Holborn,
+    East Central London. The flat comprises of a fitted kitchen and a shared bathroom.`,
+      images: ['3.jpg'],
+    },
   },
   {
     // owner: Host2
@@ -122,6 +106,12 @@ const chainTransactions = [
       { value: '2000', name: 'price' },
     ],
     constant: false,
+    metadata: {
+      title: 'Lovely house at Croissy-Sur-Seine',
+      description: `Ouvry Manor - big place - jakuzzi - sauna - lovely spaceous garden - big DIY garage - 4 bedrooms
+    and BABY-FOOT`,
+      images: ['2.jpeg'],
+    },
   },
   {
     // owner: Host2
@@ -134,6 +124,10 @@ const chainTransactions = [
       { value: '700', name: 'price' },
     ],
     constant: false,
+    metadata: {
+      title: 'Beirut Central',
+      description: 'Lovely house',
+    },
   },
   {
     // owner: Host2
@@ -146,6 +140,10 @@ const chainTransactions = [
       { value: '300', name: 'price' },
     ],
     constant: false,
+    metadata: {
+      title: 'Sidon Castle',
+      description: 'Lovely Saida residence next to Ain-el-Helwe. Stay next door to the lovely Im Wassim.',
+    },
   },
   // ============================================
   // BOOKINGS
@@ -272,76 +270,71 @@ const chainTransactions = [
   },
 ]
 
-const DataManager = () => {
+
+const DataManager = (database) => {
   const { contractAddress, jsonInterface } = require('./loadAbi')
   // Show web3 where it needs to look for the Ethereum node.
   const abi = jsonInterface.abi
   const web3 = new Web3(new Web3.providers.WebsocketProvider(global.constants.PROVIDER_WS))
   // Load ABI, then contract
   const contract = new web3.eth.Contract(abi, contractAddress)
+  const ipfs = ipfsAPI('ipfs.infura.io', '5001', { protocol: 'https' })
+  logger.info('IPFS connected')
+
+  // Loop through all listing's images and upload and add to
+  // database all those that aren't already in there
+  // Maps all images in listing.images to its ObjectId in the
+  // model. If the image is not in the database, it is uploaded
+  // to ipfs.infura then added to the model.
+  const addImagesFromListing = async (listing) => {
+    const images = isSet(listing.images) ? listing.images : []
+    return Promise.all(images.map(async (image) => {
+      // Upload and insert IPFS Image for all ximages
+      // that aren't already in the database
+      if (await IPFSImage.count({ path: image }) === 0) {
+        try {
+          // Upload image
+          const filepath = `${LISTING_IMGS_PATH}/${image}`
+          const result = await ipfs.util.addFromFs(filepath, { recursive: true })
+          if (result.length === 0) {
+            throw new Error('ipfs.util.addFromFs returned zero-length result')
+          }
+          logger.info(`Added image ${filepath} to IPFS and local database.`)
+          // Add image to database
+          await (new IPFSImage(result[0])).save() // get the first item from the array
+        } catch (err) {
+          logger.error(err)
+          return Promise.reject()
+        }
+      }
+      return IPFSImage.findOne({ path: image })
+    }))
+  }
+
+  const metadataMethods = {
+    // listing contains the txHash
+    createListing: async (listing) => {
+      const images = await addImagesFromListing(listing)
+      database.insertListing(Object.assign(listing, { images }))
+    },
+  }
 
   return {
     addTestDataToChain: async () => {
       logger.silly('addTestDataToChain')
       const accounts = await web3.eth.getAccounts()
       await Promise.all(chainTransactions.map(async (chainTX) => {
-        const { name, inputs, clientIndex } = chainTX
+        const { name, inputs, clientIndex, metadata } = chainTX
         const inValues = inputs.map(x => x.value)
         const addr = accounts[clientIndex]
-        await contract.methods[name](...inValues).send({ from: addr, gas: 1000000 })
+        const tx = await contract.methods[name](...inValues).send({ from: addr, gas: 1000000 })
+        // e.g meta might be 'listing'
+        const meta = Object.assign(isSet(metadata) ? metadata : {}, { txHash: tx.transactionHash })
+        const metadataMethod = metadataMethods[name]
+        if (isSet(metadataMethod)) {
+          await metadataMethod(meta)
+        }
       }))
-    },
-
-    addListingMetadata: async () => {
-      logger.silly('addListingMetadata')
-      await Promise.all(Object.keys(listingMetadata).map(async (lid) => {
-        // Wait for the listing to be inserted
-        while (!await Listings.findOne({ lid })) {
-          sleep(500)
-        }
-        const meta = listingMetadata[lid]
-        if (Array.isArray(meta.images)) {
-          // Replace each image file path in the model
-          // with the ObjectId referencing the actual document.
-          meta.images = await Promise.all(
-            meta.images.map(async imgName => IPFSImage.findOne({ path: imgName })),
-          )
-        }
-        await Listings.findOneAndUpdate({ lid }, meta)
-      }))
-    },
-
-    // Return an array of IPFS details of the images added
-    // to IPFS.
-    imagesAddToIPFSAndDB: async () => {
-      logger.silly('images_add_to_ipfs')
-      const ipfs = ipfsAPI('ipfs.infura.io', '5001', { protocol: 'https' })
-      logger.info('IPFS connected')
-
-      // Filter files and keep only image related ones
-      const images = fs.readdirSync(LISTING_IMGS_PATH).filter(filename => ['.png', '.jpg', '.jpeg'].findIndex(x => x === path.extname(filename)) > -1)
-
-      // For each image file:
-      //    - Add it to IPFS
-      //    - Add it to local database
-      for (const img of images) {
-        // If image already exists in database, continue without
-        if (await IPFSImage.count({ path: img }) === 0) {
-          try {
-            const filepath = `${LISTING_IMGS_PATH}/${img}`
-            // Add image to ipfs
-            const result = await ipfs.util.addFromFs(filepath, { recursive: true })
-            if (result.length === 0) {
-              throw new Error('ipfs.util.addFromFs returned zero-length result')
-            }
-            // Add ipfs image to database
-            await (new IPFSImage(result[0])).save() // get the first item from the array
-            logger.info(`Added image ${filepath} to IPFS and local database.`)
-          } catch (err) {
-            logger.error(err)
-          }
-        }
-      }
     },
   }
 }

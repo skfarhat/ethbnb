@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
+const mongooseHidden = require('mongoose-hidden')()
 
-const Schema = mongoose.Schema
 
-const Listing = mongoose.model('listings', new Schema({
+const ListingSchema = new mongoose.Schema({
   owner: String,
   lid: { type: Number, index: true },
   title: String,
@@ -17,6 +17,11 @@ const Listing = mongoose.model('listings', new Schema({
   totalScore: Number,
   // Counts the number of ratings received for this account
   nRatings: Number,
-}))
+  // The hash of the transaction hash responsible
+  // for creating this listing. This field is not exposed.
+  txHash: { type: String, hide: true, default: null },
+})
 
-module.exports = Listing
+ListingSchema.plugin(mongooseHidden)
+
+module.exports = mongoose.model('listings', ListingSchema)

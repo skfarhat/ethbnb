@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const Accounts = require('./models/Account')
-const Listings = require('./models/Listing')
-const Bookings = require('./models/Booking')
+const Listing = require('./models/Listing')
+const Booking = require('./models/Booking')
 const IPFSImage = require('./models/IPFSImage')
 
 const Database = (options) => {
@@ -34,14 +34,34 @@ const Database = (options) => {
       mongoose.connect(connectStr, connectOpts)
     },
 
+    // Create or update a listing document.
+    //
+    // If we find an listing with a matching
+    // transactionHash OR an lid we update it
+    //
+    // To be clear, there are two possible scenarios:
+    //
+    // 1. The backend receives the chain event before it gets the metadata
+    //    update (POST) from the client (unlikely in real case scenarios)
+    // 2. The backend gets the metadata update (POST) before it gets the chain
+    //    event. It must save the metadata details with the transactionHash,
+    //    so that the future call to createListingEventHandler is able to update the
+    //    entry.
+    insertListing: async (listing) => {
+      const upsertObj = { new: true, upsert: true }
+      const { txHash } = listing
+      const res = await Listing.findOneAndUpdate({ txHash }, listing, upsertObj)
+      return res
+    },
+
     // Delete all documents
     clear: async () => {
       // Database clear
       logger.info('Clearing database')
       await Accounts.deleteMany({})
-      await Listings.deleteMany({})
+      await Listing.deleteMany({})
       await IPFSImage.deleteMany({})
-      await Bookings.deleteMany({})
+      await Booking.deleteMany({})
       logger.info('Finished clearing database')
     },
   }

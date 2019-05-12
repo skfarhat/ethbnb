@@ -16,8 +16,8 @@ const accountFunctions = {
 //
 //          callback will be called upon each database insertion if provided
 //
-module.exports = () => {
-  const self = this
+module.exports = (database) => {
+  this.database = database
   const { contractAddress, jsonInterface } = require('./loadAbi')
   const abi = jsonInterface.abi
   // Show web3 where it needs to look for the Ethereum node.
@@ -29,26 +29,10 @@ module.exports = () => {
   // DEFINITIONS
   // ==================================================================
 
-  // Make callback it one has been provided
-  const callbackIfExists = (data) => {
-    if (self.callback) self.callback(data)
-  }
-
   const addAccountToDatabase = async (account) => {
     logger.silly('addAccountToDatabase')
     const { addr } = account
     await Account.findOneAndUpdate({ addr }, account, { new: true, upsert: true })
-  }
-
-  // Create a listing model and save it to Mongo
-  const addListingToDatabase = async (listing) => {
-    logger.silly('addListingToDatbase')
-    const { lid } = listing
-    // {"new: true"} so that the modified/inserted is returned instead
-    const listingModel = await Listing.findOneAndUpdate({ lid: listing.lid }, listing, { new: true, upsert: true })
-    // Check for existing bookings in the database and update the listing's field
-    await Booking.findOne({ lid })
-    callbackIfExists(listingModel)
   }
 
   const addBookingToDatabase = async (booking) => {
@@ -71,8 +55,9 @@ module.exports = () => {
     return account
   }
 
-  // Given a listing 'id' and 'from' address, this function reads
-  // all of a listing's fields from the blockchain.
+  // Given a listing 'lid' and 'from' address, this function reads
+  // all of a listing's fields from the blockchain
+  // and returns a listing object.
   const fetchAndReturnListing = async (lid, from) => {
     const listing = {
       lid,
@@ -109,6 +94,7 @@ module.exports = () => {
     logger.silly('createAccountEventHandler')
     const { from } = event.returnValues
     const account = await fetchAndReturnAccount(from)
+
     await addAccountToDatabase(account)
   }
 
@@ -116,8 +102,10 @@ module.exports = () => {
   const createListingEventHandler = async (event) => {
     logger.silly('createListingEventHandler')
     const { lid, from } = event.returnValues
-    const listing = await fetchAndReturnListing(lid, from)
-    await addListingToDatabase(listing)
+    const { transactionHash } = event
+    // Fetch listing details from the blockchain
+    const listing = Object.assign({ txHash: transactionHash }, await fetchAndReturnListing(lid, from))
+    await database.insertListing(listing)
   }
 
   // Find the cancelled booking and delete it if present
@@ -203,8 +191,7 @@ module.exports = () => {
   return {
     // We register for past and future events of all events in 'eventCallbacks'
     // The callback 'eventDispatcher' is used for each event that arrives.
-    sync: async (callback) => {
-      self.callback = callback
+    sync: async () => {
       for (const eventName in eventCallbacks) {
         // Search the contract events for the hash in the event logs and show matching events.
         await contract.events[eventName]({}, eventDispatcher)
