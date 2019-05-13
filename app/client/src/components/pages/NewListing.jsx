@@ -1,14 +1,14 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Link } from 'react-router-dom'
-import { Form, Input, Button, Loader, TextArea } from 'semantic-ui-react'
-import { Dropdown } from 'semantic-ui-react'
 import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
+import { Form, Input, Button, TextArea } from 'semantic-ui-react'
 import { createListing } from '../../redux/actions'
-// import ListingSearchArea from './ListingSearchArea'
 import CountryPicker from './CountryPicker'
-// import IPFSImage from '../IPFSImage'
 import { capitaliseWord, isSet } from '../../constants/global'
+import Dropzone from './Dropzone'
+
+// import IPFSImage from '../IPFSImage'
 
 class ListingCreate extends Component {
   constructor(props) {
@@ -102,7 +102,6 @@ class ListingCreate extends Component {
   }
 
   saveButtonClicked() {
-    console.log('saveButtonClick')
     const { accounts, selectedAccountIndex, dispatch } = this.props
     const userAddr = accounts[selectedAccountIndex]
     const { title, description, location, country, price } = this.state
@@ -111,11 +110,7 @@ class ListingCreate extends Component {
       title,
       description,
     }
-    const other = {
-      eventName: 'CreateListingEvent',
-      // storageKey: this.getStorageKey(lid, fromDate, nbOfDays, userAddr),
-      // returnVal: true,
-    }
+    const other = { eventName: 'CreateListingEvent' }
     dispatch(createListing(chaindata, metadata, userAddr, other))
   }
 
@@ -135,14 +130,21 @@ class ListingCreate extends Component {
               <TextArea name="description" placeholder="Description.." onChange={this.onChange} />
             </Form>
           </div>
+            <div style={{ "width": "50%", "margin": "0 auto", "border": "lightgrey solid"}}>
+            <Dropzone
+              onDrop={(evt) => console.log('onDrop', evt)}
+            />
+          </div>
         </div>
       </div>
     )
   }
 }
 
-ListingCreate.defaultTypes = {
-
+ListingCreate.propTypes = {
+  accounts: PropTypes.array,
+  dispatch: PropTypes.func.isRequired,
+  selectedAccountIndex: PropTypes.number.isRequired,
 }
 
 const mapStateToProps = state => ({
