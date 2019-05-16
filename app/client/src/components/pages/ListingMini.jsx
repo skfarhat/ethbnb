@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
-import Rating from 'react-rating'
+import EthRating from './EthRating'
 import PropTypes from 'prop-types'
 import IPFSImage from '../IPFSImage'
 import { isSet } from '../../constants/global'
@@ -18,7 +18,7 @@ const getRatingElem = (totalScore, nRatings) => {
   const ratingStr = (nRatings > 1) ? 'ratings' : 'rating'
   return (
     <div className="listing-rating">
-      <Rating
+      <EthRating
         readonly
         initialRating={totalScore / nRatings}
         fractions={2}

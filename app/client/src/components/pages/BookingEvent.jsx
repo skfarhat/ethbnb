@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
-import Rating from 'react-rating'
+import EthRating from './EthRating'
 import PropTypes from 'prop-types'
-
 import { contractCall } from '../../redux/actions'
 import { isSet, formatDate } from '../../constants/global'
 
@@ -12,7 +11,7 @@ const STARS_INITIAL_VAL = 3
 // BookingEvent
 // ------------
 //
-// For the initialValue of <Rating /> this component checks
+// For the initialValue of <EthRating /> this component checks
 // the below in order:
 //
 // (1) ownerRating / guestRating if provided by the server
@@ -26,21 +25,21 @@ class BookingEvent extends Component {
   }
 
   onRatingChange(rating) {
-    const { dispatch, userAddr, lid, bid } = this.props
-    const other = {
-      eventName: 'RatingComplete',
-      storageKey: this.getStorageKey(lid, bid, userAddr),
-      returnVal: rating,
+    if (isSet(rating)) {
+      const { dispatch, userAddr, lid, bid } = this.props
+      const other = {
+        eventName: 'RatingComplete',
+        storageKey: this.getStorageKey(lid, bid, userAddr),
+        returnVal: rating,
+      }
+      dispatch(contractCall('rate', [lid, bid, rating], userAddr, other))
+      // TODO: show something on the UI suggesting we have submitted
     }
-    dispatch(contractCall('rate', [lid, bid, rating], userAddr, other))
-    // TODO: show something on the UI suggesting we have submitted
   }
 
   getReactRating(val, readonly) {
     return (
-      <Rating
-        start={0}
-        stop={5}
+      <EthRating
         readonly={readonly}
         initialRating={val}
         onChange={this.onRatingChange}
