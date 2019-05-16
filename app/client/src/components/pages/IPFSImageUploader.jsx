@@ -36,7 +36,11 @@ const IPFSImageUploader = (props) => {
   // we set the status to 'STATUS_READY'
   useEffect(() => {
     if (allObjsHaveProperty(ipfsImages, 'hash')) {
+      const { onUploadDone } = props
       setStatus(STATUS_READY)
+      if (isSet(onUploadDone)) {
+        onUploadDone(ipfsImages)
+      }
     }
   }, [ipfsImages])
 
@@ -96,5 +100,6 @@ const IPFSImageUploader = (props) => {
     </div>
   )
 }
+
 
 export default IPFSImageUploader

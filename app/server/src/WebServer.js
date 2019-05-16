@@ -181,10 +181,13 @@ module.exports = (database) => {
         //  description: 'some description',
         // }
         const listing = req.body
-        console.log('/api/new-listing: ', listing)
         database.insertListing(listing)
           .then(createdListing => res.json(createdListing))
-          .catch(err => res.json({ message: 'Failed in /api/new-listing', err }))
+          .catch((err) => {
+            logger.error(`Failed to create listing ${err}`)
+            // FIXME: return some other type of error
+            res.json({ message: 'Failed in /api/new-listing', err })
+          })
       })
 
       app.listen(constants.PORT, () => {

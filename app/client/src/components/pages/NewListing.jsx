@@ -15,6 +15,7 @@ class ListingCreate extends Component {
     this.saveButtonClicked = this.saveButtonClicked.bind(this)
     this.onChange = this.onChange.bind(this)
     this.getInput = this.getInput.bind(this)
+    this.onImageUploadDone = this.onImageUploadDone.bind(this)
     this.onCountryPickerChange = this.onCountryPickerChange.bind(this)
     this.state = {
       title: '',
@@ -22,6 +23,7 @@ class ListingCreate extends Component {
       location: '',
       country: '',
       price: '',
+      images: [],
       saveDisable: true,
       // A dictionary with input names as keys
       // and booleans as values. True values indicate
@@ -38,6 +40,8 @@ class ListingCreate extends Component {
     const saveDisable = false
     const { inputErrors } = this.state
     const { value } = evt.target
+
+    // Handle any input checks needed in the if statements below
     let inputError
     if (name === 'title') {
       // Something here?
@@ -62,6 +66,10 @@ class ListingCreate extends Component {
     this.setState({
       country: data.value,
     })
+  }
+
+  onImageUploadDone(images) {
+    this.setState({ images })
   }
 
   getInput(name) {
@@ -102,11 +110,12 @@ class ListingCreate extends Component {
   saveButtonClicked() {
     const { accounts, selectedAccountIndex, dispatch } = this.props
     const userAddr = accounts[selectedAccountIndex]
-    const { title, description, location, country, price } = this.state
+    const { title, description, location, country, price, images } = this.state
     const chaindata = [country, location, price]
     const metadata = {
       title,
       description,
+      images,
     }
     const other = { eventName: 'CreateListingEvent' }
     dispatch(createListing(chaindata, metadata, userAddr, other))
@@ -128,7 +137,9 @@ class ListingCreate extends Component {
               <TextArea name="description" placeholder="Description.." onChange={this.onChange} />
             </Form>
           </div>
-          <IPFSImageUploader />
+          <IPFSImageUploader
+            onUploadDone={this.onImageUploadDone}
+          />
         </div>
       </div>
     )

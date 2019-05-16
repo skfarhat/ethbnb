@@ -281,12 +281,15 @@ const DataManager = (database) => {
   const ipfs = ipfsAPI('ipfs.infura.io', '5001', { protocol: 'https' })
   logger.info('IPFS connected')
 
+  // Returns a list of ObjectIds representing the ipfs_images
+  // in the database.
+  //
   // Loop through all listing's images and upload and add to
   // database all those that aren't already in there
   // Maps all images in listing.images to its ObjectId in the
   // model. If the image is not in the database, it is uploaded
   // to ipfs.infura then added to the model.
-  const addImagesFromListing = async (listing) => {
+  const uploadImgFromFSAndInsertInDB = async (listing) => {
     const images = isSet(listing.images) ? listing.images : []
     return Promise.all(images.map(async (image) => {
       // Upload and insert IPFS Image for all ximages
@@ -300,8 +303,8 @@ const DataManager = (database) => {
             throw new Error('ipfs.util.addFromFs returned zero-length result')
           }
           logger.info(`Added image ${filepath} to IPFS and local database.`)
-          // Add image to database
-          await (new IPFSImage(result[0])).save() // get the first item from the array
+          // We don't need to insert them anymore
+          await database.insertIpfsImage(result[0])
         } catch (err) {
           logger.error(err)
           return Promise.reject()
@@ -314,7 +317,7 @@ const DataManager = (database) => {
   const metadataMethods = {
     // listing contains the txHash
     createListing: async (listing) => {
-      const images = await addImagesFromListing(listing)
+      const images = await uploadImgFromFSAndInsertInDB(listing)
       database.insertListing(Object.assign(listing, { images }))
     },
   }
