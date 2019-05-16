@@ -6,9 +6,7 @@ import { Form, Input, Button, TextArea } from 'semantic-ui-react'
 import { createListing } from '../../redux/actions'
 import CountryPicker from './CountryPicker'
 import { capitaliseWord, isSet } from '../../constants/global'
-import Dropzone from './Dropzone'
-
-// import IPFSImage from '../IPFSImage'
+import IPFSImageUploader from './IPFSImageUploader'
 
 class ListingCreate extends Component {
   constructor(props) {
@@ -130,16 +128,13 @@ class ListingCreate extends Component {
               <TextArea name="description" placeholder="Description.." onChange={this.onChange} />
             </Form>
           </div>
-            <div style={{ "width": "50%", "margin": "0 auto", "border": "lightgrey solid"}}>
-            <Dropzone
-              onDrop={(evt) => console.log('onDrop', evt)}
-            />
-          </div>
+          <IPFSImageUploader />
         </div>
       </div>
     )
   }
 }
+
 
 ListingCreate.propTypes = {
   accounts: PropTypes.array,
