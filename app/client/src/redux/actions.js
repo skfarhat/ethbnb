@@ -331,7 +331,7 @@ export const fetchEthEvents = (contract, accountAddr) => {
   }
 }
 
-export function fetchEthEventsIfNeeded(accountAddr) {
+export const fetchEthEventsIfNeeded = (accountAddr) => {
   return (dispatch, getState) => {
     const state = getState()
     const { contract } = state
@@ -341,14 +341,14 @@ export function fetchEthEventsIfNeeded(accountAddr) {
   }
 }
 
-export function fetchListings() {
+export const fetchListings = () => {
   return (dispatch, getState) => {
     dispatch(({ type: REQUEST_LISTINGS }))
     return fetchListingsUsingOptions(dispatch, getState())
   }
 }
 
-export function fetchListingsIfNeeded(opts) {
+export const fetchListingsIfNeeded = (opts) => {
   return (dispatch, getState) => {
     if (shouldFetchListings(getState())) {
       return dispatch(fetchListings(opts))

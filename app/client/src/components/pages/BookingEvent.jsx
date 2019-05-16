@@ -131,7 +131,7 @@ class BookingEvent extends Component {
         <div>
           {listing.owner}
         </div>
-        {this.getRatingDOM()}
+        { this.getRatingDOM() }
       </div>
     )
   }

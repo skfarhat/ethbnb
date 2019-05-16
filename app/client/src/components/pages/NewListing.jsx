@@ -117,9 +117,9 @@ class ListingCreate extends Component {
       <div className="new-listing">
         { this.getTopButtons() }
         <div>
-          {this.getInput('title')}
-          {this.getInput('price')}
-          {this.getInput('location')}
+          { this.getInput('title') }
+          { this.getInput('price') }
+          { this.getInput('location') }
           <CountryPicker
             onChange={this.onCountryPickerChange}
           />

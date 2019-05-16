@@ -10,7 +10,6 @@ import Navigation from './pages/Navigation'
 import AccountPage from './pages/AccountPage'
 import NewListing from './pages/NewListing'
 import { setWeb3Js } from '../redux/actions'
-import { isSet } from '../constants/global'
 
 
 class App extends Component {

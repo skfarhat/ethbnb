@@ -181,9 +181,8 @@ module.exports = (database) => {
         //  description: 'some description',
         // }
         const listing = req.body
-        const { transactionHash } = listing
         console.log('/api/new-listing: ', listing)
-        database.insertListing(listing, transactionHash)
+        database.insertListing(listing)
           .then(createdListing => res.json(createdListing))
           .catch(err => res.json({ message: 'Failed in /api/new-listing', err }))
       })

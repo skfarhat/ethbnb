@@ -139,7 +139,12 @@ class ListingView extends Component {
           fields.map(field => this.getListingField(listing, field))
         }
         <EthDatePicker />
-        <Button toggle active disabled={this.isDisabled()} onClick={this.onBookButtonClicked}>
+        <Button
+          toggle
+          active
+          disabled={this.isDisabled()}
+          onClick={this.onBookButtonClicked}
+        >
           Book listing
         </Button>
       </div>
