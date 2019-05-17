@@ -10,7 +10,7 @@ export const formatDate = (date) => {
   if (!isSet(date)) {
     return ''
   }
-  return moment(date.toString()).format('DD/MM/YY')
+  return moment(date.toString(), 'DD/MM/YY')
 }
 export const capitaliseWord = (word) => {
   return word[0].toUpperCase() + word.substr(1)

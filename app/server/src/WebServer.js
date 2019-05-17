@@ -130,8 +130,7 @@ module.exports = (database) => {
             },
           },
         ]
-        const { countryCode } = req.query
-        let { fromDate, toDate } = req.query
+        let { countryCode, fromDate, toDate } = req.query
 
         // Date options
         //
@@ -161,9 +160,20 @@ module.exports = (database) => {
           })
         }
         // Country options
+        // Only use the countryCode search options if:
+        // - it is not null or undefined
+        // - it is a number
+        // - it is not -1
         if (isSet(countryCode)) {
-          // Insert at index = 0 of the pipeline
-          pipeline.splice(0, 0, ({ $match: { country: parseInt(countryCode, 10) } }))
+          try {
+            countryCode = parseInt(countryCode, 10)
+            if (countryCode !== -1) {
+              // Insert at index = 0 of the pipeline
+              pipeline.splice(0, 0, ({ $match: { country: parseInt(countryCode, 10) } }))
+            }
+          } catch (err) {
+            // Ignore countryCode if not a number
+          }
         }
         const response = await Listings.aggregate(pipeline)
         await sleep(2000)

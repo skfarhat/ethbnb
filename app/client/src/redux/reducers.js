@@ -1,11 +1,8 @@
 import {
   ADD_TX,
   ADD_PENDING_TX,
-  BOOK_LISTING,
   RECEIVE_ACCOUNT_INFO,
-  RECEIVE_LISTINGS,
   REMOVE_PENDING_TX,
-  REQUEST_LISTINGS,
   REQUEST_PUBLIC_ACCOUNT,
   ADD_MESSAGE,
   REMOVE_MESSAGE,
@@ -16,6 +13,13 @@ import {
   SET_SELECTED_ACCOUNT,
   SET_WEB3,
 } from './actions'
+
+import {
+  RECEIVE_LISTINGS,
+  REQUEST_LISTINGS,
+} from './listingActions'
+
+import { isSet, hasKey } from '../constants/global'
 
 const initialState = {
   isFetching: false,
@@ -129,7 +133,10 @@ const rootReducer = (state = initialState, action) => {
     case SET_SEARCH_OPTIONS: {
       return {
         ...state,
-        searchOptions: Object.assign({}, state.searchOptions, action.opts),
+        searchOptions: {
+          ...state.searchOptions,
+          ...action.data,
+        },
       }
     }
     case REQUEST_LISTINGS: {
@@ -150,10 +157,6 @@ const rootReducer = (state = initialState, action) => {
         lastUpdated: action.receivedAt,
         // didInvalidate: false,
       })
-    case BOOK_LISTING: {
-      return state
-      // TODO: Update the state
-    }
     case ADD_TX: {
       const tx = action.data
       const { transactionHash } = tx

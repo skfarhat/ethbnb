@@ -12,14 +12,10 @@ class CountryPicker extends Component {
       ...countryO,
       value: countryO.code,
     }))
-    this.state = {
-      countryCode: -1,
-    }
   }
 
   render() {
     const { onChange } = this.props
-    const { countryCode } = this.state
     return (
       <div>
         <Dropdown

@@ -7,7 +7,7 @@ import '../../../node_modules/react-grid-layout/css/styles.css'
 import '../../../node_modules/react-resizable/css/styles.css'
 import ListingSearchArea from './ListingSearchArea'
 import ListingMini from './ListingMini'
-import { fetchListingsIfNeeded } from '../../redux/actions'
+import { fetchListingsIfNeeded } from '../../redux/listingActions'
 
 const ReactGridLayout = WidthProvider(RGL)
 

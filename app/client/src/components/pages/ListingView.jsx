@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Button, Loader } from 'semantic-ui-react'
-import { fetchListingsIfNeeded, contractCall } from '../../redux/actions'
+import { contractCall } from '../../redux/actions'
+import { fetchListingsIfNeeded } from '../../redux/listingActions'
 import { isSet, formatDate, hasKey, capitaliseWord } from '../../constants/global'
 import IPFSImage from '../IPFSImage'
 import '../../css/listing-view.css'
@@ -11,11 +12,18 @@ import EthDatePicker from './EthDatePicker'
 
 
 class ListingView extends Component {
-  constructor() {
+  constructor(props) {
     super()
     this.onBookButtonClicked = this.onBookButtonClicked.bind(this)
     this.verifyAgainstChain = this.verifyAgainstChain.bind(this)
+    this.onDateChange = this.onDateChange.bind(this)
+    const { fromDate, toDate } = props
+    // TODO: read fromDate and toDate from the searchOptions if they are provided.
+    //       Otherwise, they are undefined and we must wait for the user to select
+    //       some dates prior to enabling the bookListing button
     this.state = {
+      fromDate,
+      toDate,
       verified: {
         // Below are the fields which we verify
         // against the actual chain data.
@@ -30,12 +38,17 @@ class ListingView extends Component {
       },
     }
     // Storage key used for 'book' contractCall
-    this.getStorageKey = (lid, fromDate, nbOfDays, userAddr) => `${userAddr} rate(${lid}, ${formatDate(fromDate)}, ${nbOfDays})`
+    this.getStorageKey = (lid, fromDate1, nbOfDays, userAddr) => `${userAddr} rate(${lid}, ${formatDate(fromDate1)}, ${nbOfDays})`
   }
 
   componentDidMount() {
     const { dispatch } = this.props
     dispatch(fetchListingsIfNeeded())
+  }
+
+  onDateChange(data) {
+    const [fromDate, toDate] = data
+    // Also think about what happens if the user deselects the dates they had already picked
   }
 
   onBookButtonClicked() {
@@ -99,7 +112,8 @@ class ListingView extends Component {
   }
 
   getListingDetails(lid) {
-    const { fromDate, toDate, listings, isFetching } = this.props
+    const { listings, isFetching } = this.props
+    const { fromDate, toDate } = this.state
     let hash
     let ext
     // If listings is undefined
@@ -138,7 +152,10 @@ class ListingView extends Component {
         {
           fields.map(field => this.getListingField(listing, field))
         }
-        <EthDatePicker />
+        <EthDatePicker
+          onDateChange={this.onDateChange}
+          selected={(!fromDate || !toDate) ? [] : [fromDate, toDate]}
+        />
         <Button
           toggle
           active
@@ -211,8 +228,6 @@ ListingView.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
   listings: PropTypes.array,
-  fromDate: PropTypes.object,
-  toDate: PropTypes.object,
 }
 
 const mapStateToProps = (state, ownProps) => ({
