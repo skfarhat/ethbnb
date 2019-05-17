@@ -19,7 +19,6 @@
     "react-addons-update": "^15.6.2",
     "react-bootstrap": "^0.32.4",
     "react-dom": "^16.5.2",
-    "react-dropzone": "^10.1.4",
     "react-grid-layout": "^0.16.6",
     "react-image": "^2.0.0",
     "react-images-upload": "^1.2.6",

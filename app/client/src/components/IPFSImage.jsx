@@ -45,6 +45,7 @@ class IPFSImage extends Component {
           alt="not found"
           onError={(e) => {
             e.target.onerror = null
+            // FIXME: remove localhost
             e.target.src = 'http://localhost:3000/house-fallback.png'
           }}
         />

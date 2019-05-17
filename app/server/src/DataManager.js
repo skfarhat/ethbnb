@@ -90,7 +90,7 @@ const chainTransactions = [
     constant: false,
     metadata: {
       title: 'London Victorian House',
-      description: `Good sized, basic double room in a 3 bed Shared flat situated in the heart of Holborn,
+      description: `Decent sized, basic double room in a 3 bed Shared flat situated in the heart of Holborn,
     East Central London. The flat comprises of a fitted kitchen and a shared bathroom.`,
       images: ['3.jpg'],
     },
@@ -142,7 +142,7 @@ const chainTransactions = [
     constant: false,
     metadata: {
       title: 'Sidon Castle',
-      description: 'Lovely Saida residence next to Ain-el-Helwe. Stay next door to the lovely Im Wassim.',
+      description: 'Great flat with a nice view!',
     },
   },
   // ============================================
@@ -292,7 +292,7 @@ const DataManager = (database) => {
   const uploadImgFromFSAndInsertInDB = async (listing) => {
     const images = isSet(listing.images) ? listing.images : []
     return Promise.all(images.map(async (image) => {
-      // Upload and insert IPFS Image for all ximages
+      // Upload and insert IPFS Image for all images
       // that aren't already in the database
       if (await IPFSImage.countDocuments({ path: image }) === 0) {
         try {

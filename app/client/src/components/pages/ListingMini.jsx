@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
-import EthRating from './EthRating'
 import PropTypes from 'prop-types'
+import EthRating from './EthRating'
 import IPFSImage from '../IPFSImage'
 import { isSet } from '../../constants/global'
 import { getObjFromCountryCode } from './common'
@@ -63,7 +63,7 @@ class ListingMini extends Component {
     const { lid, title, location, country,
       price, nRatings, totalScore, images, owner, ownerInfo } = this.props
     const [hash, ext] = getMainImageInfo(images)
-    let ownerStr = isSet(ownerInfo) ? ownerInfo.name : owner
+    const ownerStr = isSet(ownerInfo) ? ownerInfo.name : owner
     return (
       <div className="listing-mini">
         <Link to={`/listing/${lid}`}>
