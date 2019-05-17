@@ -36,6 +36,26 @@
 .new-listing {
   margin: 0 auto 0;
   width: 70%;
+  padding: 20px;
+}
+.new-listing > div {
+  padding: 10px;
+}
+.new-listing-container {
+  display: flex;
+  flex-direction: horizontal
+}
+.new-listing > .top-buttons {
+  text-align: center
+}
+.new-listing-inputs {
+  width: 100%;
+  padding: 10px;
+}
+.new-listing-input {
+  margin: 2px;
+}
+.new-listing .ipfs-image-uploader {
   text-align: center;
 }
 

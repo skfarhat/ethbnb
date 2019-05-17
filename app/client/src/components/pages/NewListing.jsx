@@ -80,6 +80,7 @@ class ListingCreate extends Component {
       <div>
         <Input
           name={name}
+          className="new-listing-input"
           placeholder={placeholder}
           error={error}
           onChange={this.onChange}
@@ -125,21 +126,23 @@ class ListingCreate extends Component {
     return (
       <div className="new-listing">
         { this.getTopButtons() }
-        <div>
-          { this.getInput('title') }
-          { this.getInput('price') }
-          { this.getInput('location') }
-          <CountryPicker
-            onChange={this.onCountryPickerChange}
-          />
-          <div>
-            <Form>
-              <TextArea name="description" placeholder="Description.." onChange={this.onChange} />
-            </Form>
-          </div>
+        <div className="new-listing-container">
           <IPFSImageUploader
             onUploadDone={this.onImageUploadDone}
           />
+          <div className="new-listing-inputs">
+            { this.getInput('title') }
+            { this.getInput('price') }
+            { this.getInput('location') }
+            <CountryPicker
+              onChange={this.onCountryPickerChange}
+            />
+            <div>
+              <Form>
+                <TextArea name="description" placeholder="Description.." onChange={this.onChange} />
+              </Form>
+            </div>
+          </div>
         </div>
       </div>
     )

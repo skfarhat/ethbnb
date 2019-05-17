@@ -75,7 +75,7 @@ const IPFSImageUploader = (props) => {
   }
 
   return (
-    <div>
+    <div className="ipfs-image-uploader">
       <Button
         disabled={status !== STATUS_NOT_UPLOADED}
         onClick={ipfsUpload}
