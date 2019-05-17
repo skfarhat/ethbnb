@@ -9,6 +9,13 @@ const Database = (options) => {
   const connectOpts = {
     useNewUrlParser: true,
     autoReconnect: true,
+    // By default, mongoose's findAndUpdate() uses findAndModify() function from the MongoDB
+    // driver. This is deprecated. We would like to use the findAndUpdate() function
+    // from MongoDB, to do so we set this to false.
+    useFindAndModify: false,
+    // As with the above we want to use MongoDB driver's functions instead of the old
+    // and deprecated. Setting this to true is the way to do that.
+    useCreateIndex: true,
   }
 
   const connectSync = async () => new Promise((resolve) => {

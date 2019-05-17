@@ -294,7 +294,7 @@ const DataManager = (database) => {
     return Promise.all(images.map(async (image) => {
       // Upload and insert IPFS Image for all ximages
       // that aren't already in the database
-      if (await IPFSImage.count({ path: image }) === 0) {
+      if (await IPFSImage.countDocuments({ path: image }) === 0) {
         try {
           // Upload image
           const filepath = `${LISTING_IMGS_PATH}/${image}`
