@@ -55,8 +55,8 @@ class ListingSearch extends Component {
           items={3}
           layout={layout}
           cols={3}
-          rowHeight={300}
-          width={300}
+          rowHeight={350}
+          width={350}
           isDraggable={false}
           isResizable={false}
         >
