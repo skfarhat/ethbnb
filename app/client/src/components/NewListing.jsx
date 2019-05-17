@@ -3,9 +3,9 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import { Form, Input, Button, TextArea } from 'semantic-ui-react'
-import { createListing } from '../../redux/listingActions'
+import { createListing } from '../redux/listingActions'
 import CountryPicker from './CountryPicker'
-import { capitaliseWord, isSet } from '../../constants/global'
+import { capitaliseWord, isSet } from '../constants/global'
 import IPFSImageUploader from './IPFSImageUploader'
 
 class ListingCreate extends Component {

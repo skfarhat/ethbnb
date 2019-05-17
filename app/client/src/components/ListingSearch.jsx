@@ -3,11 +3,11 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import RGL, { WidthProvider } from 'react-grid-layout'
 import { Loader } from 'semantic-ui-react'
-import '../../../node_modules/react-grid-layout/css/styles.css'
-import '../../../node_modules/react-resizable/css/styles.css'
+import '../../node_modules/react-grid-layout/css/styles.css'
+import '../../node_modules/react-resizable/css/styles.css'
 import ListingSearchArea from './ListingSearchArea'
 import ListingMini from './ListingMini'
-import { fetchListingsIfNeeded } from '../../redux/listingActions'
+import { fetchListingsIfNeeded } from '../redux/listingActions'
 
 const ReactGridLayout = WidthProvider(RGL)
 

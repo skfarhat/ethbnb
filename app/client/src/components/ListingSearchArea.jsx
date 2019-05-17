@@ -4,10 +4,10 @@ import PropTypes from 'prop-types'
 import { Button, Dropdown } from 'semantic-ui-react'
 import EthDatePicker from './EthDatePicker'
 import { countryOptions } from './common'
-import { isSet } from '../../constants/global'
-import { SET_SEARCH_OPTIONS } from '../../redux/actions'
-import { fetchListings } from '../../redux/listingActions'
-import '../../css/listing-search.css'
+import { isSet } from '../constants/global'
+import { SET_SEARCH_OPTIONS } from '../redux/actions'
+import { fetchListings } from '../redux/listingActions'
+import '../css/listing-search.css'
 
 
 class ListingSearchArea extends Component {

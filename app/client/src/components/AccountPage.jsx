@@ -2,12 +2,12 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Loader } from 'semantic-ui-react'
-import { fetchEthEvents, fetchEthEventsIfNeeded, fetchAccountInfo } from '../../redux/actions'
-import { isSet } from '../../constants/global'
-import EthEvent from './EthEvent'
+import { fetchEthEvents, fetchAccountInfo } from '../redux/actions'
+import { isSet } from '../constants/global'
 import BookingEvent from './BookingEvent'
 import ListingMini from './ListingMini'
 import AccountDropdown from './AccountDropdown'
+// import EthEvent from './EthEvent'
 
 class AccountPage extends Component {
   constructor() {

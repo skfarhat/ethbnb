@@ -3,8 +3,8 @@ import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
 import EthRating from './EthRating'
 import PropTypes from 'prop-types'
-import { contractCall } from '../../redux/actions'
-import { isSet, formatDate } from '../../constants/global'
+import { contractCall } from '../redux/actions'
+import { isSet, formatDate } from '../constants/global'
 
 const STARS_INITIAL_VAL = 3
 

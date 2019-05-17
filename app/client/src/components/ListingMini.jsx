@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import EthRating from './EthRating'
-import IPFSImage from '../IPFSImage'
-import { isSet } from '../../constants/global'
+import IPFSImage from './IPFSImage'
+import { isSet } from '../constants/global'
 import { getObjFromCountryCode } from './common'
 
 // Returns the appropriate DOM element

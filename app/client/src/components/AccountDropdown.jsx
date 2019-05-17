@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Dropdown } from 'semantic-ui-react'
-import { isSet } from '../../constants/global'
-import { setSelectedAcccountIndex } from '../../redux/actions'
+import { isSet } from '../constants/global'
+import { setSelectedAcccountIndex } from '../redux/actions'
 
 
 class AccountDropdown extends Component {

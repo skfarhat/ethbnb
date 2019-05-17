@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import ImageUploader from 'react-images-upload'
 import { Button, Loader } from 'semantic-ui-react'
-import { ipfsFileUpload } from '../IPFS'
-import { isSet } from '../../constants/global'
+import { ipfsFileUpload } from './IPFS'
+import { isSet } from '../constants/global'
 
 const MAX_FILE_SIZE = 5242880 /* 5Mb */
 
