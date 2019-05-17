@@ -18,9 +18,6 @@ class ListingView extends Component {
     this.verifyAgainstChain = this.verifyAgainstChain.bind(this)
     this.onDateChange = this.onDateChange.bind(this)
     const { fromDate, toDate } = props
-    // TODO: read fromDate and toDate from the searchOptions if they are provided.
-    //       Otherwise, they are undefined and we must wait for the user to select
-    //       some dates prior to enabling the bookListing button
     this.state = {
       fromDate,
       toDate,
