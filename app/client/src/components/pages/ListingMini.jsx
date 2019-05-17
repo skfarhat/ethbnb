@@ -4,6 +4,7 @@ import EthRating from './EthRating'
 import PropTypes from 'prop-types'
 import IPFSImage from '../IPFSImage'
 import { isSet } from '../../constants/global'
+import { getObjFromCountryCode } from './common'
 
 // Returns the appropriate DOM element
 // given totalScore and nRatings
@@ -47,6 +48,16 @@ const getMainImageInfo = (images) => {
   return [hash, ext]
 }
 
+const getCountryElem = (code) => {
+  const { flag, text } = getObjFromCountryCode(code)
+  return (
+    <span>
+      {`${text} `}
+      <i className={`${flag} flag`} />
+    </span>
+  )
+}
+
 class ListingMini extends Component {
   render() {
     const { lid, title, location, country,
@@ -66,9 +77,8 @@ class ListingMini extends Component {
         </Link>
         {getRatingElem(totalScore, nRatings)}
         <div>
-          <em> Location: </em>
           <span className="location">
-            {location} ({country})
+            {location}, {getCountryElem(country)}
           </span>
         </div>
         <div>
