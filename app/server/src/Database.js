@@ -65,6 +65,7 @@ const Database = (options) => {
   //    images are inserted to ipfs_images then linked to the inserted listing using
   //    their ObjectIds (see also insertIpfsImage).
   const insertListing = async (listing) => {
+    logger.silly(`database::insertListing ${listing.txHash}`)
     const upsertObj = { new: true, upsert: true }
     const { txHash, images } = listing
     // Listing object that will be inserted

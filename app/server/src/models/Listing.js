@@ -19,7 +19,7 @@ const ListingSchema = new mongoose.Schema({
   nRatings: Number,
   // The hash of the transaction hash responsible
   // for creating this listing. This field is not exposed.
-  txHash: { type: String, hide: true, default: null },
+  txHash: { type: String, unique: true, hide: true, default: null },
 })
 
 ListingSchema.plugin(mongooseHidden)
