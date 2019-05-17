@@ -111,18 +111,20 @@ const shouldFetchListings = (state) => {
 // Fetches the requested public account if it is not already
 // being fetched
 export const fetchPublicAccount = (addr) => {
-  const url = `${SERVER_PUBLIC_URL}accounts/${addr}`
   return (dispatch, getState) => {
-    const { accountsInTransit, accounts } = getState().public
-    if (!hasKey(accountsInTransit, addr) && !hasKey(accounts, addr)) {
-      dispatch({ type: REQUEST_PUBLIC_ACCOUNT, data: addr })
-      fetch(url)
-        .then(response => response.json())
-        .then(json => dispatch({
-          type: SET_PUBLIC_ACCOUNT,
-          data: json,
-        }))
-        .catch(err => console.log('some error occurred', err))
+    if (isSet(addr)) {
+      const url = `${SERVER_PUBLIC_URL}accounts/${addr}`
+      const { accountsInTransit, accounts } = getState().public
+      if (!hasKey(accountsInTransit, addr) && !hasKey(accounts, addr)) {
+        dispatch({ type: REQUEST_PUBLIC_ACCOUNT, data: addr })
+        fetch(url)
+          .then(response => response.json())
+          .then(json => dispatch({
+            type: SET_PUBLIC_ACCOUNT,
+            data: json,
+          }))
+          .catch(err => console.log('some error occurred', err))
+      }
     }
   }
 }
