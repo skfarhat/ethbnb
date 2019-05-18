@@ -11,7 +11,7 @@ import ListingSearch from './ListingSearch'
 import Navigation from './Navigation'
 import AccountPage from './AccountPage'
 import NewListing from './NewListing'
-import { setWeb3Js } from '../redux/actions'
+import { setWeb3Js, REMOVE_MESSAGE } from '../redux/actions'
 
 // Add FontAwesome library to make it accessible in the project
 library.add(faStar)
@@ -20,7 +20,7 @@ class App extends Component {
   constructor() {
     super()
     this.onWindowLoad = this.onWindowLoad.bind(this)
-    this.handleDismiss = this.handleDismiss.bind(this)
+    this.handleMessageDismiss = this.handleMessageDismiss.bind(this)
   }
 
   componentDidMount() {
@@ -33,8 +33,13 @@ class App extends Component {
     dispatch(setWeb3Js(web3js))
   }
 
-  handleDismiss() {
-    console.log('handleDismiss')
+  handleMessageDismiss(key) {
+    // Dispatch an event to remove the message
+    const { dispatch } = this.props
+    dispatch({
+      type: REMOVE_MESSAGE,
+      data: key,
+    })
   }
 
   // Returns DOM representing messages
@@ -48,12 +53,12 @@ class App extends Component {
       warning: false,
       positive: false,
     }
-    Object.values(messages).forEach((message, idx) => {
+    Object.values(messages).forEach((message) => {
       // type should be 'error', 'info', 'warning'
-      const { type, text, header } = message
+      const { type, text, header, key } = message
       allTypes[type] = true
       ret.push(
-        <Message {...allTypes} key={idx}  onDismiss={this.handleDismiss}>
+        <Message key={key} {...allTypes} onDismiss={() => this.handleMessageDismiss(key)}>
           <Message.Header>{header}</Message.Header>
           <p>{text}</p>
         </Message>,
@@ -80,6 +85,7 @@ class App extends Component {
 
 App.propTypes = {
   dispatch: PropTypes.func.isRequired,
+  messages: PropTypes.array.isRequired,
 }
 
 const mapStateToProps = state => ({

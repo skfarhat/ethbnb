@@ -1,5 +1,4 @@
 import {
-  ADD_TX,
   ADD_PENDING_TX,
   RECEIVE_ACCOUNT_INFO,
   REMOVE_PENDING_TX,
@@ -54,14 +53,6 @@ const initialState = {
   //
   // Dismissed messages show be deleted from the list
   messages: [],
-
-  // Recent transactions issue by the client.
-  // At the time of writing this dictionary is not serialised
-  // and only stores those transactions sent since the last page refresh
-  transactions: {
-    // Key: txObj.transactionHash
-    // Object: txObj = { transactionHash, ...}
-  },
 }
 
 const rootReducer = (state = initialState, action) => {
@@ -106,10 +97,15 @@ const rootReducer = (state = initialState, action) => {
       }
     }
     case REMOVE_MESSAGE: {
-      // TODO: figure out how to remove the index
+      // Expects action.data to be the key of the message to be removed.
+      // state.messages is a list of message objects each having a property @key
+      // which allows us to uniquely identify it, and thus remove it.
+      const transactionHash = action.data
+      const { messages } = state
+      const idx = messages.findIndex(msg => msg.key === transactionHash)
       return {
         ...state,
-        messages: [],
+        messages: Array.prototype.concat(messages.slice(0, idx), messages.slice(idx + 1)),
       }
     }
     case SET_ETH_EVENTS: {
@@ -157,14 +153,6 @@ const rootReducer = (state = initialState, action) => {
         lastUpdated: action.receivedAt,
         // didInvalidate: false,
       })
-    case ADD_TX: {
-      const tx = action.data
-      const { transactionHash } = tx
-      return {
-        ...state,
-        transactions: Object.assign({}, state.transactions, { [transactionHash]: tx }),
-      }
-    }
     case ADD_PENDING_TX: {
       // Add the tx to pendingTx in state
       // and in localStorage

@@ -10,7 +10,6 @@ import {
 // ============================================================
 
 export const LOAD_PENDING_TX_FROM_LOCAL_STORAGE = 'LOAD_PENDING_TX_FROM_LOCAL_STORAGE'
-export const ADD_TX = 'ADD_TX'
 export const ADD_PENDING_TX = 'ADD_PENDING_TX'
 export const REMOVE_PENDING_TX = 'REMOVE_PENDING_TX'
 export const SET_SEARCH_OPTIONS = 'SET_SEARCH_OPTIONS'
@@ -125,13 +124,19 @@ export const contractCall = (funcName, input, userAddr, other) => {
     return contract.methods[funcName](...input).send(obj)
       .then((tx) => {
         console.log(`Transaction '${funcName}' sent: `, tx)
+        const { transactionHash } = tx
+        const header = 'Transaction sent'
+        const text = `Transaction (${transactionHash.substr(0, 5)}) for function '${funcName}' sent.`
+        // TODO: would be good to have a class message
+        //       and/or use typescript
+        // Create a message object indexable through the transaction hash
         const message = {
-          header: 'Transaction sent',
-          text: '',
+          header,
+          key: transactionHash,
+          text,
           type: 'info',
-        // data: tx
+          data: Object.assign({}, tx),
         }
-        dispatch({ type: ADD_TX, data: tx })
         dispatch({ type: ADD_MESSAGE, data: message })
         return Promise.resolve(tx)
       })
