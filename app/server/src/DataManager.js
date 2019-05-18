@@ -307,7 +307,7 @@ const DataManager = (database) => {
           await database.insertIpfsImage(result[0])
         } catch (err) {
           logger.error(err)
-          return Promise.reject()
+          return null
         }
       }
       return IPFSImage.findOne({ path: image })
