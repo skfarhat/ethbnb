@@ -35,7 +35,7 @@ class ListingView extends Component {
       },
     }
     // Storage key used for 'book' contractCall
-    this.getStorageKey = (lid, fromDate1, nbOfDays, userAddr) => `${userAddr} rate(${lid}, ${formatDate(fromDate1)}, ${nbOfDays})`
+    this.getStorageKey = (lid, fromDate1, nbOfDays, userAddr) => `${userAddr} rate(${lid}, ${fromDate1}, ${nbOfDays})`
   }
 
   componentDidMount() {
@@ -44,8 +44,18 @@ class ListingView extends Component {
   }
 
   onDateChange(data) {
-    const [fromDate, toDate] = data
-    // Also think about what happens if the user deselects the dates they had already picked
+    if (data === null) {
+      this.setState({
+        fromDate: null,
+        toDate: null,
+      })
+    } else if (data.length === 2) {
+      const [fromDate, toDate] = data
+      this.setState({
+        fromDate,
+        toDate,
+      })
+    }
   }
 
   onBookButtonClicked() {
@@ -64,8 +74,8 @@ class ListingView extends Component {
   // Returns [fromDate, nbOfDays] if 'fromDate' and 'toDate' props
   // were set, otherwise an empty array is returned
   getFromDateAndNbOfDays() {
-    const { toDate } = this.props
-    let { fromDate } = this.props
+    const { toDate } = this.state
+    let { fromDate } = this.state
     if (!fromDate || !toDate) {
       return []
     }
@@ -192,7 +202,7 @@ class ListingView extends Component {
 
   // Returns true if the 'Book listing' button should be active
   isDisabled() {
-    const { fromDate, toDate } = this.props
+    const { fromDate, toDate } = this.state
     return !isSet(fromDate) || !isSet(toDate)
   }
 
