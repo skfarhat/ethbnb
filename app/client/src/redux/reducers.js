@@ -1,4 +1,4 @@
-import moment from 'moment'
+
 import {
   ADD_PENDING_TX,
   REMOVE_PENDING_TX,
@@ -16,7 +16,7 @@ import {
 
 import {
   SET_ETH_ACCOUNTS,
-  SET_SELECTED_ACCOUNT,
+  SET_ACCOUNT,
   REQUEST_PUBLIC_ACCOUNT,
   RECEIVE_ACCOUNT_INFO,
   SET_PUBLIC_ACCOUNT,
@@ -32,13 +32,9 @@ const initialState = {
     toDate: null,
     countryCode: null,
   },
-  selectedAccountIndex: 0,
   accounts: null,
 
-  account: {
-    addr: 0x0,
-    balance: 0,
-  },
+  account: null,
   // Fetched from /api/account/:user
   // contains name, addr, bookings, dateCreated
   accountInfo: null,
@@ -129,12 +125,6 @@ const rootReducer = (state = initialState, action) => {
         accounts: action.accounts,
       }
     }
-    case SET_SELECTED_ACCOUNT: {
-      return {
-        ...state,
-        selectedAccountIndex: action.selectedAccountIndex,
-      }
-    }
     case SET_SEARCH_OPTIONS: {
       return {
         ...state,
@@ -150,17 +140,29 @@ const rootReducer = (state = initialState, action) => {
         // didInvalidate: false,
       })
     }
+    case SET_ACCOUNT: {
+      return {
+        ...state,
+        account: {
+          ...action.data,
+        },
+      }
+    }
     case RECEIVE_ACCOUNT_INFO: {
-      // Convert dates to date objects
-      const bookings = (hasKey(action.data, 'bookings') && isSet(action.data.bookings))
-        ? action.data.bookings.map(b => ({
-          ...b,
-          fromDate: new Date(Date.parse(b.fromDate)),
-          toDate: new Date(Date.parse(b.toDate)),
-        })) : []
-      const accountInfo = {
-        ...action.data,
-        bookings,
+      const isSetLocal = isSet(action.data) && Object.entries(action.data).length !== 0
+      let accountInfo = isSetLocal ? action.data : null
+      if (isSetLocal) {
+        // Convert dates to date objects
+        const bookings = (hasKey(accountInfo, 'bookings') && isSet(accountInfo.bookings))
+          ? accountInfo.bookings.map(b => ({
+            ...b,
+            fromDate: new Date(Date.parse(b.fromDate)),
+            toDate: new Date(Date.parse(b.toDate)),
+          })) : []
+        accountInfo = {
+          ...action.data,
+          bookings,
+        }
       }
       return {
         ...state,

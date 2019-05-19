@@ -157,9 +157,7 @@ BookingEvent.propTypes = {
 }
 
 const mapStateToProps = state => ({
-  accounts: state.accounts,
   pendingTx: state.pendingTx,
-  selectedAccountIndex: state.selectedAccountIndex,
 })
 
 export default connect(mapStateToProps)(BookingEvent)

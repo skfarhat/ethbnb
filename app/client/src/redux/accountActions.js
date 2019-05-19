@@ -6,7 +6,6 @@ import {
 } from '../constants/global'
 
 const SET_ETH_ACCOUNTS = 'SET_ETH_ACCOUNTS'
-const SET_SELECTED_ACCOUNT = 'SET_SELECTED_ACCOUNT'
 const REQUEST_PUBLIC_ACCOUNT = 'REQUEST_PUBLIC_ACCOUNT'
 const RECEIVE_ACCOUNT_INFO = 'RECEIVE_ACCOUNT_INFO'
 const SET_PUBLIC_ACCOUNT = 'SET_PUBLIC_ACCCOUNT'
@@ -34,8 +33,8 @@ const fetchPublicAccount = (addr) => {
   }
 }
 
-const fetchAccountInfo = (user) => {
-  const url = `${SERVER_NODE_URL}api/account/${user}`
+const fetchAccountInfo = (addr) => {
+  const url = `${SERVER_NODE_URL}api/account/${addr}`
   return (dispatch) => {
     fetch(url)
       .then(response => response.json())
@@ -46,15 +45,55 @@ const fetchAccountInfo = (user) => {
   }
 }
 
+//
+const setAccount = (addr) => {
+  return (dispatch, getState) => {
+    const { accounts } = getState()
+    if (!isSet(accounts) || accounts.length === 0) {
+      // No account available to select, we set it to null
+      dispatch({
+        type: SET_ACCOUNT,
+        data: null,
+      })
+    } else if (!isSet(addr)) {
+      // If no address is provided, we pick the default,
+      // in this case, the first eth address from accounts
+      addr = accounts[0]
+    }
+
+    // Set the state.account object
+    dispatch({
+      type: SET_ACCOUNT,
+      data: {
+        addr,
+        balance: 0,
+      },
+    })
+    // Fetch accountInfo data from the backend
+    // and set state.accountInfo
+    dispatch(fetchAccountInfo(addr))
+  }
+}
+
+// Getter function for current account's address
+const getAddr = (state) => {
+  const { account } = state
+  if (isSet(account)) {
+    return account.addr
+  }
+  return null
+}
+
 export {
   SET_ACCOUNT,
   SET_ETH_ACCOUNTS,
-  SET_SELECTED_ACCOUNT,
   REQUEST_PUBLIC_ACCOUNT,
   RECEIVE_ACCOUNT_INFO,
   SET_PUBLIC_ACCOUNT,
 
   // Action functions
+  getAddr,
+  setAccount,
   fetchAccountInfo,
   fetchPublicAccount,
 }

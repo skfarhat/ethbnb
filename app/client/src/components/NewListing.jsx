@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { Form, Input, Button, TextArea } from 'semantic-ui-react'
 import { createListing } from '../redux/listingActions'
 import CountryPicker from './CountryPicker'
+import { getAddr } from '../redux/accountActions'
 import { capitaliseWord, isSet } from '../constants/global'
 import IPFSImageUploader from './IPFSImageUploader'
 
@@ -109,8 +110,7 @@ class ListingCreate extends Component {
   }
 
   saveButtonClicked() {
-    const { accounts, selectedAccountIndex, dispatch } = this.props
-    const userAddr = accounts[selectedAccountIndex]
+    const { addr, dispatch } = this.props
     const { title, description, location, country, price, images } = this.state
     const chaindata = [country, location, price]
     const metadata = {
@@ -119,7 +119,7 @@ class ListingCreate extends Component {
       images,
     }
     const other = { eventName: 'CreateListingEvent' }
-    dispatch(createListing(chaindata, metadata, userAddr, other))
+    dispatch(createListing(chaindata, metadata, addr, other))
   }
 
   render() {
@@ -151,14 +151,11 @@ class ListingCreate extends Component {
 
 
 ListingCreate.propTypes = {
-  accounts: PropTypes.array,
   dispatch: PropTypes.func.isRequired,
-  selectedAccountIndex: PropTypes.number.isRequired,
 }
 
 const mapStateToProps = state => ({
-  accounts: state.accounts,
-  selectedAccountIndex: state.selectedAccountIndex,
+  addr: getAddr(state),
 })
 
 export default connect(mapStateToProps)(ListingCreate)

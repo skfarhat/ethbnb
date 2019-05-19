@@ -5,6 +5,7 @@ import PropTypes from 'prop-types'
 import { Button, Loader } from 'semantic-ui-react'
 import { contractCall } from '../redux/actions'
 import { fetchListingsIfNeeded } from '../redux/listingActions'
+import { getAddr } from '../redux/accountActions'
 import { isSet, formatDate, hasKey, capitaliseWord } from '../constants/global'
 import IPFSImage from './IPFSImage'
 import '../css/listing-view.css'
@@ -59,16 +60,15 @@ class ListingView extends Component {
   }
 
   onBookButtonClicked() {
-    const { dispatch, accounts, selectedAccountIndex, match } = this.props
-    const userAddr = accounts[selectedAccountIndex]
+    const { addr, dispatch, match } = this.props
     const lid = parseInt(match.params.lid, 10)
     const [fromDate, nbOfDays] = this.getFromDateAndNbOfDays()
     const other = {
       eventName: 'BookingComplete',
-      storageKey: this.getStorageKey(lid, fromDate, nbOfDays, userAddr),
+      storageKey: this.getStorageKey(lid, fromDate, nbOfDays, addr),
       returnVal: true,
     }
-    dispatch(contractCall('listingBook', [lid, fromDate, nbOfDays], userAddr, other))
+    dispatch(contractCall('listingBook', [lid, fromDate, nbOfDays], addr, other))
   }
 
   // Returns [fromDate, nbOfDays] if 'fromDate' and 'toDate' props
@@ -176,14 +176,13 @@ class ListingView extends Component {
   }
 
   async verifyAgainstChain() {
-    const { contract, accounts, selectedAccountIndex } = this.props
-    const userAddr = accounts[selectedAccountIndex]
+    const { addr, contract } = this.props
     const listing = this.getListing()
     const { lid } = listing
     const { verified } = this.state
     const obj = {
       gas: 1000000,
-      from: userAddr,
+      from: addr,
     }
     try {
       const res = await contract.methods.getListingAll(lid).call(obj)
@@ -240,14 +239,13 @@ ListingView.propTypes = {
 }
 
 const mapStateToProps = (state, ownProps) => ({
-  accounts: state.accounts,
+  addr: getAddr(state),
   contract: state.contract,
   listings: state.listings,
   isFetching: state.isFetching,
   lid: ownProps.lid,
   fromDate: state.searchOptions.fromDate,
   toDate: state.searchOptions.toDate,
-  selectedAccountIndex: state.selectedAccountIndex,
 })
 
 export default connect(mapStateToProps)(ListingView)

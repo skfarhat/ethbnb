@@ -6,8 +6,8 @@ import {
 } from '../constants/global'
 
 import {
-  SET_SELECTED_ACCOUNT,
   SET_ETH_ACCOUNTS,
+  setAccount,
 } from './accountActions'
 
 // ============================================================
@@ -148,10 +148,10 @@ export const setWeb3Js = (web3js) => {
           type: SET_ETH_ACCOUNTS,
           accounts,
         })
-        dispatch({
-          type: SET_SELECTED_ACCOUNT,
-          selectedAccountIndex: 0,
-        })
+        // Calling setAccount without parameters
+        // sets the account to default (whatever that is
+        // defined as)
+        dispatch(setAccount())
       })
   }
 }
