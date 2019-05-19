@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import { Loader } from 'semantic-ui-react'
 import { fetchEthEvents } from '../redux/actions'
 import { fetchAccountInfo } from '../redux/accountActions'
-import { isSet } from '../constants/global'
+import { isSet, formatDate } from '../constants/global'
 import BookingEvent from './BookingEvent'
 import ListingMini from './ListingMini'
 import AccountDropdown from './AccountDropdown'
@@ -98,7 +98,7 @@ class AccountPage extends Component {
             </h5>
             <AccountDropdown />
           </div>
-          <p> Date Created {accountInfo.dateCreated} </p>
+          <p> Date Created {formatDate(accountInfo.dateCreated)} </p>
           <p> Ethereum Address: {accountInfo.addr} </p>
           <p> { this.getMyRating() } </p>
         </div>

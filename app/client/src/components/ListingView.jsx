@@ -234,6 +234,8 @@ ListingView.defaultTypes = {
 ListingView.propTypes = {
   isFetching: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
+  fromDate: PropTypes.instanceOf(Date),
+  toDate: PropTypes.instanceOf(Date),
   listings: PropTypes.array,
 }
 

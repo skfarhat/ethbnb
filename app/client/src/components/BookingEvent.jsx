@@ -139,11 +139,13 @@ class BookingEvent extends Component {
 BookingEvent.defaultProps = {
   guestRating: 0,
   ownerRating: 0,
+  fromDate: null,
+  toDate: null,
 }
 
 BookingEvent.propTypes = {
-  // fromDate: PropTypes.date,
-  // toDate: PropTypes.date,
+  fromDate: PropTypes.instanceOf(Date),
+  toDate: PropTypes.instanceOf(Date),
   bid: PropTypes.number.isRequired,
   dispatch: PropTypes.func.isRequired,
   guestRating: PropTypes.number,
