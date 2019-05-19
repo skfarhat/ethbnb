@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Dropdown } from 'semantic-ui-react'
 import { isSet } from '../constants/global'
-import { setSelectedAcccountIndex } from '../redux/actions'
+import { SET_SELECTED_ACCOUNT } from '../redux/accountActions'
 
 
 class AccountDropdown extends Component {
@@ -18,7 +18,10 @@ class AccountDropdown extends Component {
         value={selectedAccountIndex}
         options={options}
         loading={options.length === 0}
-        onChange={(data, { value }) => dispatch(setSelectedAcccountIndex(value))}
+        onChange={(data, { value }) => dispatch({
+          type: SET_SELECTED_ACCOUNT,
+          selectedAccountIndex: value,
+        })}
       />
     )
   }

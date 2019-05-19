@@ -5,6 +5,11 @@ import {
   hasKey,
 } from '../constants/global'
 
+import {
+  SET_SELECTED_ACCOUNT,
+  SET_ACCOUNTS,
+} from './accountActions'
+
 // ============================================================
 // EXPORT ACTIONS
 // ============================================================
@@ -13,15 +18,10 @@ export const LOAD_PENDING_TX_FROM_LOCAL_STORAGE = 'LOAD_PENDING_TX_FROM_LOCAL_ST
 export const ADD_PENDING_TX = 'ADD_PENDING_TX'
 export const REMOVE_PENDING_TX = 'REMOVE_PENDING_TX'
 export const SET_SEARCH_OPTIONS = 'SET_SEARCH_OPTIONS'
-export const REQUEST_PUBLIC_ACCOUNT = 'REQUEST_PUBLIC_ACCOUNT'
 
-export const RECEIVE_ACCOUNT_INFO = 'RECEIVE_ACCOUNT_INFO'
 export const ADD_MESSAGE = 'ADD_MESSAGE'
 export const REMOVE_MESSAGE = 'REMOVE_MESSAGE'
 export const SET_WEB3 = 'SET_WEB3'
-export const SET_ACCOUNTS = 'SET_ACCOUNTS'
-export const SET_PUBLIC_ACCOUNT = 'SET_PUBLIC_ACCCOUNT'
-export const SET_SELECTED_ACCOUNT = 'SET_SELECTED_ACCOUNT'
 export const SET_ETH_EVENTS = 'SET_ETH_EVENTS'
 export const RATE_BOOKING = 'RATE_BOOKING'
 
@@ -83,28 +83,6 @@ const shouldFetchEthEvents = (state, accountAddr) => {
   return !isFetchingEthEvents
 }
 
-
-// Fetches the requested public account if it is not already
-// being fetched
-export const fetchPublicAccount = (addr) => {
-  return (dispatch, getState) => {
-    if (isSet(addr)) {
-      const url = `${SERVER_PUBLIC_URL}accounts/${addr}`
-      const { accountsInTransit, accounts } = getState().public
-      if (!hasKey(accountsInTransit, addr) && !hasKey(accounts, addr)) {
-        dispatch({ type: REQUEST_PUBLIC_ACCOUNT, data: addr })
-        fetch(url)
-          .then(response => response.json())
-          .then(json => dispatch({
-            type: SET_PUBLIC_ACCOUNT,
-            data: json,
-          }))
-          .catch(err => console.log('some error occurred', err))
-      }
-    }
-  }
-}
-
 // Wrapper function for all state-changing calls
 //
 // @funcName     the name of the state-changing function
@@ -150,13 +128,6 @@ export const contractCall = (funcName, input, userAddr, other) => {
   }
 }
 
-export const setSelectedAcccountIndex = (idx) => {
-  return {
-    type: SET_SELECTED_ACCOUNT,
-    selectedAccountIndex: idx,
-  }
-}
-
 export const setWeb3Js = (web3js) => {
   return (dispatch) => {
     const { jsonInterface, contractAddress } = window.contractDetails
@@ -182,18 +153,6 @@ export const setWeb3Js = (web3js) => {
           selectedAccountIndex: 0,
         })
       })
-  }
-}
-
-export const fetchAccountInfo = (user) => {
-  const url = `${SERVER_NODE_URL}api/account/${user}`
-  return (dispatch) => {
-    fetch(url)
-      .then(response => response.json())
-      .then(json => dispatch({
-        type: RECEIVE_ACCOUNT_INFO,
-        data: json,
-      }))
   }
 }
 

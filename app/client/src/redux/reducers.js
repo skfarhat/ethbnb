@@ -1,15 +1,11 @@
+import moment from 'moment'
 import {
   ADD_PENDING_TX,
-  RECEIVE_ACCOUNT_INFO,
   REMOVE_PENDING_TX,
-  REQUEST_PUBLIC_ACCOUNT,
   ADD_MESSAGE,
   REMOVE_MESSAGE,
-  SET_ACCOUNTS,
   SET_ETH_EVENTS,
-  SET_PUBLIC_ACCOUNT,
   SET_SEARCH_OPTIONS,
-  SET_SELECTED_ACCOUNT,
   SET_WEB3,
 } from './actions'
 
@@ -17,6 +13,14 @@ import {
   RECEIVE_LISTINGS,
   REQUEST_LISTINGS,
 } from './listingActions'
+
+import {
+  SET_ACCOUNTS,
+  SET_SELECTED_ACCOUNT,
+  REQUEST_PUBLIC_ACCOUNT,
+  RECEIVE_ACCOUNT_INFO,
+  SET_PUBLIC_ACCOUNT,
+} from './accountActions'
 
 import { isSet, hasKey } from '../constants/global'
 
@@ -30,6 +34,11 @@ const initialState = {
   },
   selectedAccountIndex: 0,
   accounts: null,
+
+  account: {
+    addr: 0x0,
+    balance: 0,
+  },
   // Fetched from /api/account/:user
   // contains name, addr, bookings, dateCreated
   accountInfo: null,
@@ -141,11 +150,23 @@ const rootReducer = (state = initialState, action) => {
         // didInvalidate: false,
       })
     }
-    case RECEIVE_ACCOUNT_INFO:
+    case RECEIVE_ACCOUNT_INFO: {
+      // Convert dates to date objects
+      const bookings = (hasKey(action.data, 'bookings') && isSet(action.data.bookings))
+        ? action.data.bookings.map(b => ({
+          ...b,
+          fromDate: new Date(Date.parse(b.fromDate)),
+          toDate: new Date(Date.parse(b.toDate)),
+        })) : []
+      const accountInfo = {
+        ...action.data,
+        bookings,
+      }
       return {
         ...state,
-        accountInfo: action.data,
+        accountInfo,
       }
+    }
     case RECEIVE_LISTINGS:
       return Object.assign({}, state, {
         isFetching: false,
@@ -165,6 +186,7 @@ const rootReducer = (state = initialState, action) => {
       }
     }
     case REMOVE_PENDING_TX: {
+      // FIXME:
       // Remove the pendingTx from state
       // and from localStorage
       const copyPendingTx = Object.assign({}, state.pendingTx)

@@ -2,10 +2,10 @@ import {
   SERVER_NODE_URL,
   SERVER_POST_NEW_LISTING,
   isSet,
-
 } from '../constants/global'
 
-import { contractCall, fetchPublicAccount } from './actions'
+import { contractCall } from './actions'
+import { fetchPublicAccount } from './accountActions'
 
 // ============================================================
 // EXPORT ACTIONS
