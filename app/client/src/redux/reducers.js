@@ -15,7 +15,7 @@ import {
 } from './listingActions'
 
 import {
-  SET_ACCOUNTS,
+  SET_ETH_ACCOUNTS,
   SET_SELECTED_ACCOUNT,
   REQUEST_PUBLIC_ACCOUNT,
   RECEIVE_ACCOUNT_INFO,
@@ -123,7 +123,7 @@ const rootReducer = (state = initialState, action) => {
         ethEvents: action.events,
       }
     }
-    case SET_ACCOUNTS: {
+    case SET_ETH_ACCOUNTS: {
       return {
         ...state,
         accounts: action.accounts,

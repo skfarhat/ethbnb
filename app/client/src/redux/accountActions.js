@@ -5,11 +5,12 @@ import {
   hasKey,
 } from '../constants/global'
 
-const SET_ACCOUNTS = 'SET_ACCOUNTS'
+const SET_ETH_ACCOUNTS = 'SET_ETH_ACCOUNTS'
 const SET_SELECTED_ACCOUNT = 'SET_SELECTED_ACCOUNT'
 const REQUEST_PUBLIC_ACCOUNT = 'REQUEST_PUBLIC_ACCOUNT'
 const RECEIVE_ACCOUNT_INFO = 'RECEIVE_ACCOUNT_INFO'
 const SET_PUBLIC_ACCOUNT = 'SET_PUBLIC_ACCCOUNT'
+const SET_ACCOUNT = 'SET_ACCOUNT'
 
 
 // Fetches the requested public account if it is not already
@@ -46,7 +47,8 @@ const fetchAccountInfo = (user) => {
 }
 
 export {
-  SET_ACCOUNTS,
+  SET_ACCOUNT,
+  SET_ETH_ACCOUNTS,
   SET_SELECTED_ACCOUNT,
   REQUEST_PUBLIC_ACCOUNT,
   RECEIVE_ACCOUNT_INFO,

@@ -7,7 +7,7 @@ import {
 
 import {
   SET_SELECTED_ACCOUNT,
-  SET_ACCOUNTS,
+  SET_ETH_ACCOUNTS,
 } from './accountActions'
 
 // ============================================================
@@ -145,7 +145,7 @@ export const setWeb3Js = (web3js) => {
           accounts,
         })
         dispatch({
-          type: SET_ACCOUNTS,
+          type: SET_ETH_ACCOUNTS,
           accounts,
         })
         dispatch({
