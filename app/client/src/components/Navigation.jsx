@@ -3,11 +3,14 @@ import { connect } from 'react-redux'
 import { withRouter, Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { Menu } from 'semantic-ui-react'
-
+import { isSet } from '../constants/global'
 
 class Navigation extends Component {
   render() {
-    const { history } = this.props
+    const { history, account } = this.props
+    const balanceDOM = (isSet(account))
+      ? (<Menu.Item> Balance: {account.balance} ETH </Menu.Item>)
+      : ''
     return (
       <Menu>
         <Link to="/listing/">
@@ -18,7 +21,9 @@ class Navigation extends Component {
             EthBnB
           </Menu.Item>
         </Link>
-
+        <Menu.Menu position="right">
+          {balanceDOM}
+        </Menu.Menu>
         <Menu.Menu position="right">
           <Menu.Item
             name="New Listing"
@@ -34,8 +39,18 @@ class Navigation extends Component {
   }
 }
 
-Navigation.propTypes = {
-  history: PropTypes.object.isRequired,
+Navigation.defaultTypes = {
+  account: null,
 }
 
-export default connect()(withRouter(Navigation))
+Navigation.propTypes = {
+  history: PropTypes.object.isRequired,
+  account: PropTypes.object,
+}
+
+
+const mapStateToProps = state => ({
+  account: state.account,
+})
+
+export default connect(mapStateToProps)(withRouter(Navigation))

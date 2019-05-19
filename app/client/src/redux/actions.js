@@ -8,6 +8,7 @@ import {
 import {
   SET_ETH_ACCOUNTS,
   setAccount,
+  updateAccountBalance,
 } from './accountActions'
 
 // ============================================================
@@ -116,6 +117,7 @@ export const contractCall = (funcName, input, userAddr, other) => {
           data: Object.assign({}, tx),
         }
         dispatch({ type: ADD_MESSAGE, data: message })
+        dispatch(updateAccountBalance())
         return Promise.resolve(tx)
       })
       .catch((err) => {

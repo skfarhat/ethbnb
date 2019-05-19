@@ -11,6 +11,14 @@ const RECEIVE_ACCOUNT_INFO = 'RECEIVE_ACCOUNT_INFO'
 const SET_PUBLIC_ACCOUNT = 'SET_PUBLIC_ACCCOUNT'
 const SET_ACCOUNT = 'SET_ACCOUNT'
 
+// Getter function for current account's address
+const getAddr = (state) => {
+  const { account } = state
+  if (isSet(account)) {
+    return account.addr
+  }
+  return null
+}
 
 // Fetches the requested public account if it is not already
 // being fetched
@@ -45,6 +53,33 @@ const fetchAccountInfo = (addr) => {
   }
 }
 
+// Update the balance of the default account
+const updateAccountBalance = () => {
+  return (dispatch, getState) => {
+    const { web3, account } = getState()
+    web3.eth.getBalance(getAddr(getState())).then((wei) => {
+      const eth = web3.utils.fromWei(wei, 'ether')
+      dispatch({
+        type: SET_ACCOUNT,
+        data: {
+          ...account,
+          balance: eth,
+        },
+      })
+    })
+  }
+}
+
+// This action sets the state.account to the eth account corresponding
+// to the passed @addr. If @addr is undefined or null, the function sets
+// updates state.account to the default account. The default account is
+// the first in state.accounts (index 0).
+//
+// This action also dispatches:
+//  - fetchAccountInfo
+//  - updateAccountBalance
+//
+// @addr      a string address of the eth account
 //
 const setAccount = (addr) => {
   return (dispatch, getState) => {
@@ -60,28 +95,20 @@ const setAccount = (addr) => {
       // in this case, the first eth address from accounts
       addr = accounts[0]
     }
-
-    // Set the state.account object
     dispatch({
       type: SET_ACCOUNT,
       data: {
         addr,
-        balance: 0,
       },
     })
+
+    // Update eth balance
+    dispatch(updateAccountBalance())
+
     // Fetch accountInfo data from the backend
     // and set state.accountInfo
     dispatch(fetchAccountInfo(addr))
   }
-}
-
-// Getter function for current account's address
-const getAddr = (state) => {
-  const { account } = state
-  if (isSet(account)) {
-    return account.addr
-  }
-  return null
 }
 
 export {
@@ -93,6 +120,7 @@ export {
 
   // Action functions
   getAddr,
+  updateAccountBalance,
   setAccount,
   fetchAccountInfo,
   fetchPublicAccount,
