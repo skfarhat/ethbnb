@@ -3,8 +3,6 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 import { Message } from 'semantic-ui-react'
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { faStar } from '@fortawesome/free-solid-svg-icons'
 import Web3 from 'web3'
 import ListingView from './ListingView'
 import ListingSearch from './ListingSearch'
@@ -13,8 +11,6 @@ import AccountPage from './AccountPage'
 import NewListing from './NewListing'
 import { setWeb3Js, REMOVE_MESSAGE } from '../redux/actions'
 
-// Add FontAwesome library to make it accessible in the project
-library.add(faStar)
 
 class App extends Component {
   constructor() {
