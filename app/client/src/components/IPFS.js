@@ -19,7 +19,7 @@ const ipfsFileUpload = async (file) => {
       try {
         // Upload buffer to IPFS
         const result = await ipfs.files.add(buf)
-        console.log('finished uploading', result)
+        console.log('Finished uploading', result)
         fulfill({ ...result[0] })
       } catch (err) {
         console.log('IPFS: ipfsFileUpload - exception thrown with error ', err)

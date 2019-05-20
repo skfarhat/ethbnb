@@ -63,7 +63,6 @@ class ListingCreate extends Component {
   }
 
   onCountryPickerChange(evt, data) {
-    console.log('onCountryPickerChange')
     this.setState({
       country: data.value,
     })

@@ -1,5 +1,3 @@
-import moment from 'moment'
-
 const SERVER_NODE_URL = 'http://localhost:3001/'
 const SERVER_PUBLIC_URL = `${SERVER_NODE_URL}api/public/`
 const SERVER_POST_NEW_LISTING = `${SERVER_NODE_URL}api/new-listing`
