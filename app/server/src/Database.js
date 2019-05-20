@@ -75,6 +75,14 @@ const Database = (options) => {
     logger.silly(`database::insertListing ${listing.txHash}`)
     const upsertObj = { new: true, upsert: true }
     const { txHash, images } = listing
+
+    // If no transaction hash is provided we will not insert anything
+    if (!isSet(txHash)) {
+      logger.warn('Won\'t insert listing without a txHash.')
+      console.log(listing)
+      return null
+    }
+
     // Listing object that will be inserted
     let toInsertListing = listing
     // Insert all 'images' provided in listing (if any)
