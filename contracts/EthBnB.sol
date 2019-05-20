@@ -44,7 +44,6 @@ contract EthBnB {
     address owner;
     string name;
     uint dateCreated;
-    uint[] listingIds; // REVIEW: check if this is really needed and used
     // Account's average rating (out of 5) can be computed as
     // totalScore / totalRatings
     uint totalScore;
@@ -92,9 +91,6 @@ contract EthBnB {
   // Listings will have incrementing Ids starting from 1
   uint nextListingId = 1;
 
-  // A list of all listing ids
-  uint[] listingIds;
-
   // Reference to deployed smart-contract DateBooker initialised in constructor
   DateBooker dateBooker;
 
@@ -127,7 +123,6 @@ contract EthBnB {
       name : name,
       // TODO: recheck block.timestamp used for date here
       dateCreated : block.timestamp,
-      listingIds: new uint[](0), // gives an array of 0 zeros
       totalScore: 0,
       nRatings: 0
     });
@@ -165,17 +160,6 @@ contract EthBnB {
       return (l.owner, l.price, l.location, l.country);
   }
 
-  // Returns a list of all listings
-  function getAllListings() public view returns (uint[] memory) {
-    return listingIds;
-  }
-
-  // Returns a list of all of the message sender's listings
-  function getMyListingIds() public view returns (uint[] memory) {
-    require(accounts[msg.sender].owner == msg.sender, 'No account found');
-    return accounts[msg.sender].listingIds;
-  }
-
   // Creates a new listing for the message sender
   // and returns the Id of the created listing
   function createListing(Country country, string memory location, uint price) public {
@@ -190,8 +174,6 @@ contract EthBnB {
       price: price,
       dbid: dbid
     });
-    accounts[msg.sender].listingIds.push(nextListingId);
-    listingIds.push(nextListingId);
     emit CreateListingEvent(msg.sender, nextListingId++);
   }
 

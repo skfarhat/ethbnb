@@ -158,18 +158,6 @@ contract('EthBnB', async (accounts) => {
     truffleAssert.eventEmitted(res, 'BookingNoMoreSpace')
   })
 
-  // Check that getMyListingIds() returns only one entry for account0
-  it('Listing: getListing()', async () => {
-    const bnb = await EthBnB.deployed()
-    try {
-      const res = await bnb.getMyListingIds({ from: accounts[0] })
-      assert(res.length === 1)
-      assert(res[0] !== 0)
-    } catch (error) {
-      assert(false, 'getListing() should not have thrown an exception')
-    }
-  })
-
   it('Listing: getListingAll() returns correct details', async () => {
     let lid
     const bnb = await EthBnB.deployed()
