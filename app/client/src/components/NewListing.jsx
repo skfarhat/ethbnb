@@ -128,6 +128,7 @@ class ListingCreate extends Component {
         { this.getTopButtons() }
         <div className="new-listing-container">
           <IPFSImageUploader
+            autoUpload
             onUploadDone={this.onImageUploadDone}
           />
           <div className="new-listing-inputs">
