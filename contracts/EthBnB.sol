@@ -15,7 +15,21 @@ import  './DateBooker.sol';
 contract EthBnB {
 
   enum Country {
-    AF, AX, AL, DZ, AS, AD, AO, AI, AG, AR, AM, AW, AU, AT, AZ, BS, BH, BD, BB, BY, BE, BZ, BJ, BM, BT, BO, BA, BW, BV, BR, VG, BN, BG, BF, BI, TC, KH, CM, CA, CV, KY, CF, TD, CL, CN, CX, CC, CO, KM, CG, CD, CK, CR, CI, HR, CU, CY, CZ, DK, DJ, DM, DO, EC, EG, SV, GB, GQ, ER, EE, ET, EU, FK, FO, FJ, FI, FR, GF, PF, TF, GA, GM, GE, DE, GH, GI, GR, GL, GD, GP, GU, GT, GW, GN, GY, HT, HM, HN, HK, HU, IS, IN, IO, ID, IR, IQ, IE, IL, IT, JM, JP, JO, KZ, KE, KI, KW, KG, LA, LV, LB, LS, LR, LY, LI, LT, LU, MO, MK, MG, MW, MY, MV, ML, MT, MH, MQ, MR, MU, YT, MX, FM, MD, MC, MN, ME, MS, MA, MZ, NA, NR, NP, AN, NL, NC, PG, NZ, NI, NE, NG, NU, NF, KP, MP, NO, OM, PK, PW, PS, PA, PY, PE, PH, PN, PL, PT, PR, QA, RE, RO, RU, RW, SH, KN, LC, PM, VC, WS, SM, GS, ST, SA, SN, CS, RS, SC, SL, SG, SK, SI, SB, SO, ZA, KR, ES, LK, SD, SR, SJ, SZ, SE, CH, SY, TW, TJ, TZ, TH, TL, TG, TK, TO, TT, TN, TR, TM, TV, UG, UA, AE, US, UY, UM, VI, UZ, VU, VA, VE, VN, WF, EH, YE, ZM, ZW
+    AF, AX, AL, DZ, AS, AD, AO, AI, AG, AR, AM, AW, AU, AT, AZ, BS, BH,
+    BD, BB, BY, BE, BZ, BJ, BM, BT, BO, BA, BW, BV, BR, VG, BN, BG, BF,
+    BI, TC, KH, CM, CA, CV, KY, CF, TD, CL, CN, CX, CC, CO, KM, CG, CD,
+    CK, CR, CI, HR, CU, CY, CZ, DK, DJ, DM, DO, EC, EG, SV, GB, GQ, ER,
+    EE, ET, EU, FK, FO, FJ, FI, FR, GF, PF, TF, GA, GM, GE, DE, GH, GI,
+    GR, GL, GD, GP, GU, GT, GW, GN, GY, HT, HM, HN, HK, HU, IS, IN, IO,
+    ID, IR, IQ, IE, IL, IT, JM, JP, JO, KZ, KE, KI, KW, KG, LA, LV, LB,
+    LS, LR, LY, LI, LT, LU, MO, MK, MG, MW, MY, MV, ML, MT, MH, MQ, MR,
+    MU, YT, MX, FM, MD, MC, MN, ME, MS, MA, MZ, NA, NR, NP, AN, NL, NC,
+    PG, NZ, NI, NE, NG, NU, NF, KP, MP, NO, OM, PK, PW, PS, PA, PY, PE,
+    PH, PN, PL, PT, PR, QA, RE, RO, RU, RW, SH, KN, LC, PM, VC, WS, SM,
+    GS, ST, SA, SN, CS, RS, SC, SL, SG, SK, SI, SB, SO, ZA, KR, ES, LK,
+    SD, SR, SJ, SZ, SE, CH, SY, TW, TJ, TZ, TH, TL, TG, TK, TO, TT, TN,
+    TR, TM, TV, UG, UA, AE, US, UY, UM, VI, UZ, VU, VA, VE, VN, WF, EH,
+    YE, ZM, ZW
   }
 
   struct Listing {
@@ -38,7 +52,7 @@ contract EthBnB {
     uint dbid;
     // Bookings for the given listing
     mapping(uint => Booking) bookings;
-   }
+  }
 
   struct Account {
     address owner;
@@ -137,7 +151,7 @@ contract EthBnB {
     returns (string memory name, uint dateCreated, uint totalScore, uint nRatings) {
       Account memory account = accounts[owner];
       return (account.name, account.dateCreated, account.totalScore, account.nRatings);
-  }
+    }
 
   // TODO: when implementing:
   // prevent account deletion when there are listings associated or something
@@ -150,15 +164,15 @@ contract EthBnB {
   // -----------------------------------------------------------------------
 
   modifier listingExists(uint lid) {
-      require(listings[lid].id == lid);
-      _;
+    require(listings[lid].id == lid, 'No such listing found');
+    _;
   }
 
-  function getListingAll(uint lid) public  listingExists(lid) view
+  function getListingAll(uint lid) public listingExists(lid) view
     returns (address owner, uint price, string memory location, Country country) {
       Listing memory l = listings[lid];
       return (l.owner, l.price, l.location, l.country);
-  }
+    }
 
   // Creates a new listing for the message sender
   // and returns the Id of the created listing
@@ -183,27 +197,27 @@ contract EthBnB {
   // @param fromDate     start date of the booking
   // @param nbOfDays     number of days for which the booking will be made
   //
-  function listingBook(uint lid, uint fromDate, uint nbOfDays) public {
-    require(listings[lid].id != 0, 'No such listing found');
-    require(hasAccount(), 'Must have an account before creating a listing');
-    address guestAddr = msg.sender;
-    uint dbid = listings[lid].dbid;
-    int res = dateBooker.book(dbid, guestAddr, fromDate, nbOfDays);
-    // Emit the appropriate event depending on res
-    emitBookEvent(res, lid);
-    if (res >= 0) {
-      uint bid = uint(res);
-      // Save the booking
-      listings[lid].bookings[bid] = Booking({
-        bid: bid,
-        lid: lid,
-        ownerAddr: listings[lid].owner,
-        guestAddr: guestAddr,
-        ownerRating: 0,
-        guestRating: 0
-      });
+  function listingBook(uint lid, uint fromDate, uint nbOfDays)
+    public listingExists {
+      require(hasAccount(), 'Must have an account before creating a listing');
+      address guestAddr = msg.sender;
+      uint dbid = listings[lid].dbid;
+      int res = dateBooker.book(dbid, guestAddr, fromDate, nbOfDays);
+      // Emit the appropriate event depending on res
+      emitBookEvent(res, lid);
+      if (res >= 0) {
+        uint bid = uint(res);
+        // Save the booking
+        listings[lid].bookings[bid] = Booking({
+          bid: bid,
+          lid: lid,
+          ownerAddr: listings[lid].owner,
+          guestAddr: guestAddr,
+          ownerRating: 0,
+          guestRating: 0
+        });
+      }
     }
-  }
 
   // Rate the booking 1-5 stars
   //
