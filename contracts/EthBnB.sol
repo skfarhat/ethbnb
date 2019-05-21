@@ -1,6 +1,7 @@
 pragma solidity ^0.5.0;
 
-import  './DateBooker.sol';
+import './DateBooker.sol';
+import './Purchase.sol';
 
 //
 //
@@ -52,10 +53,12 @@ contract EthBnB {
     uint dbid;
     // Bookings for the given listing
     mapping(uint => Booking) bookings;
+
+    // uint256 balance;
   }
 
   struct Account {
-    address owner;
+    address payable owner;
     string name;
     uint dateCreated;
     // Account's average rating (out of 5) can be computed as
@@ -176,8 +179,9 @@ contract EthBnB {
 
   // Creates a new listing for the message sender
   // and returns the Id of the created listing
-  function createListing(Country country, string memory location, uint price) public {
+  function createListing(Country country, string memory location, uint price) public payable {
     require(hasAccount(), 'Must have an account before creating a listing');
+    // require(msg.value )
     // Note: enforce a maximum number of listings per user?
     uint dbid = dateBooker.register(BOOKING_CAPACITY);
     listings[nextListingId] = Listing({
@@ -186,7 +190,8 @@ contract EthBnB {
       country: country,
       location: location,
       price: price,
-      dbid: dbid
+      dbid: dbid//,
+      // balance: msg.value
     });
     emit CreateListingEvent(msg.sender, nextListingId++);
   }
@@ -198,7 +203,7 @@ contract EthBnB {
   // @param nbOfDays     number of days for which the booking will be made
   //
   function listingBook(uint lid, uint fromDate, uint nbOfDays)
-    public listingExists {
+    public listingExists(lid) {
       require(hasAccount(), 'Must have an account before creating a listing');
       address guestAddr = msg.sender;
       uint dbid = listings[lid].dbid;
@@ -218,6 +223,10 @@ contract EthBnB {
         });
       }
     }
+
+  function listingClose(uint lid) public {
+    require(false);
+  }
 
   // Rate the booking 1-5 stars
   //

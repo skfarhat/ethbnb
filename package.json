@@ -21,10 +21,12 @@
   "homepage": "https://github.com/skfarhat/ethbnb#readme",
   "devDependencies": {
     "solidity-coverage": "^0.5.11",
-    "truffle-assertions": "^0.7.2"
+    "truffle-assertions": "^0.7.2",
+    "web3": "^1.0.0-beta.33"
   },
   "dependencies": {
     "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.17.2",
     "truffle-contract": "^3.0.6"
   }
 }
