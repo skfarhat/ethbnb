@@ -102,7 +102,6 @@ contract DateBooker {
   function cancel(uint id, address bookerAddr, uint bid) public returns (int) {
     int idx = findBook(id, bid);
     if (idx < 0) {
-      // Cannot remove in-existent entry
       emit CancellationError(id, NOT_FOUND);
       return NOT_FOUND;
     }
@@ -111,7 +110,6 @@ contract DateBooker {
     Entry storage curr = _data.d[udx];
     // Check permission
     if (curr.bookerAddr != bookerAddr) {
-      // Permission Denied
       emit PermissionDenied(id, bid);
     }
     if ( hasSpace(id) ) {
@@ -135,7 +133,6 @@ contract DateBooker {
 
   function book(uint id, address bookerAddr, uint fromDate, uint nbOfDays) public returns (int) {
     require(nbOfDays > 0, 'Cannot have non-positive days');
-    // Check that there is space
     if ( !hasSpace(id) ) {
       emit NoMoreSpace(id);
       return NO_MORE_SPACE;
