@@ -6,6 +6,12 @@ const COUNTRIES = {
   GB: 226, US: 227,
 }
 
+/**
+ * Formats the provided day-date string to the format accepted by listing book
+ * @param  {string} dateStr day-date string of the form '2019-02-13'
+ * @return {int}    date formatted such that bookListing() likes it
+ */
+const formatDate = (dateStr) => new Date(dateStr).getTime() / 1000
 const fromFinney = price => web3.utils.toWei(`${price}`, 'finney')
 
 contract('EthBnB', async (accounts) => {
@@ -19,10 +25,10 @@ contract('EthBnB', async (accounts) => {
     try {
       // we create a listing and stake the same price
       await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: stakeWei })
+      assert(false, 'Should have thrown an exception')
     } catch (e) {
-      return
+      // Pass
     }
-    assert(false, 'Should have thrown an exception')
   })
 
   it('Owner must stake at least 2 x price and it has to be a multiple of price', async () => {
@@ -36,10 +42,10 @@ contract('EthBnB', async (accounts) => {
     await bnb.createAccount('Host', { from: host })
     try {
       await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: stakeWei })
+      assert(false, 'Should have thrown an exception')
     } catch (e) {
-      return
+      // Pass
     }
-    assert(false, 'Should have thrown an exception')
   })
 
   it('listingCreate works when the host provides an acceptable stake (n x price)', async () => {
@@ -59,21 +65,36 @@ contract('EthBnB', async (accounts) => {
   })
 
   it('Neither host nor guest can rate before booking end', async () => {
+    let lid
+    let res
     const bnb = await EthBnB.deployed()
     const [host, guest] = accounts
     const priceFinney = 800
     const priceWei = fromFinney(priceFinney)
     const stakeWei = fromFinney(priceFinney * 3)
+    const guestStakeWei = fromFinney(priceFinney * 2)
+    // We create accounts and a listing providing a valid stake (x3)
     await bnb.createAccount('Host', { from: host })
     await bnb.createAccount('Guest', { from: guest })
-    await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: stakeWei })
-    assert(false, 'Not implemented')
-    // TODO: complete this
+    res = await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: stakeWei })
+    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+    // Guest books the listing and provides appropriate payment
+    res = await bnb.listingBook(lid, formatDate('2019-02-02'), 3, { from: guest, value: guestStakeWei })
+    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
+
+    // Host rates the guest
+    try {
+      res = await bnb.rate(lid1, bid1, 1, { from: accounts[1] })
+      assert(false, 'Rating should fail because the booking has not elapsed')
+    } catch(err) {
+      // Pass
+    }
   })
 
-  it('Bookings fail when there isn\'t stake value has run out', async () => {
+  it('Bookings fail when the stake value has run out', async () => {
     // Third booking should fail because stake run out
     let lid
+    let res
     const bnb = await EthBnB.deployed()
     const [host, guest1, guest2, guest3] = accounts
     const priceFinney = 800
@@ -83,17 +104,22 @@ contract('EthBnB', async (accounts) => {
     await bnb.createAccount('Host', { from: host })
     await bnb.createAccount('Guest1', { from: guest1 })
     await bnb.createAccount('Guest1', { from: guest2 })
-    const res = await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: hostStakeWei })
+    res = await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: hostStakeWei })
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
-    await bnb.listingBook(lid, new Date('2019-02-02').getTime() / 1000, 1, { from: guest1, value: guestStake })
-    await bnb.listingBook(lid, new Date('2019-04-02').getTime() / 1000, 1, { from: guest2, value: guestStake })
+    res = await bnb.listingBook(lid, formatDate('2019-02-02'), 1, { from: guest1, value: guestStake })
+    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
+    res = await bnb.listingBook(lid, formatDate('2019-04-02'), 1, { from: guest2, value: guestStake })
+    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
     try {
-      await bnb.listingBook(lid, new Date('2019-06-02').getTime() / 1000, 1, { from: guest3, value: guestStake })
+      await bnb.listingBook(lid, formatDate('2019-06-02'), 1, { from: guest3, value: guestStake })
       assert(false, 'Third booking should fail')
     } catch(err) {
-      assert(true)
+      // Pass
     }
   })
+
+  // TODO: how do we test that it only succeeds after the given day has passed?
+  // can we mock the system date somehow?
 
   it('Listing can be closed and stake is returned to host', async () => {
     assert(false, 'Not implemented')
