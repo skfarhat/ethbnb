@@ -34,7 +34,7 @@ contract EthBnB {
 
   struct Listing {
 
-    uint id;
+    uint lid;
 
     address owner;
 
@@ -164,7 +164,7 @@ contract EthBnB {
   // -----------------------------------------------------------------------
 
   modifier listingExists(uint lid) {
-    require(listings[lid].id == lid, 'No such listing found');
+    require(listings[lid].lid == lid, 'No such listing found');
     _;
   }
 
@@ -181,7 +181,7 @@ contract EthBnB {
     // Note: enforce a maximum number of listings per user?
     uint dbid = dateBooker.register(BOOKING_CAPACITY);
     listings[nextListingId] = Listing({
-      id : nextListingId,
+      lid : nextListingId,
       owner: msg.sender,
       country: country,
       location: location,
@@ -198,7 +198,7 @@ contract EthBnB {
   // @param nbOfDays     number of days for which the booking will be made
   //
   function listingBook(uint lid, uint fromDate, uint nbOfDays)
-    public listingExists {
+    public listingExists(lid) {
       require(hasAccount(), 'Must have an account before creating a listing');
       address guestAddr = msg.sender;
       uint dbid = listings[lid].dbid;
@@ -231,7 +231,7 @@ contract EthBnB {
   // @param stars   unsigned integer between 1 and 5, anything else
   //                will emit an error
   function rate(uint lid, uint bid, uint stars) public {
-    require(listings[lid].id == lid && listings[lid].bookings[bid].bid == bid, 'No such listing or booking');
+    require(listings[lid].lid == lid && listings[lid].bookings[bid].bid == bid, 'No such listing or booking');
     require(stars >= 1 && stars <= 5, 'Stars arg must be in [1,5]');
     Booking storage booking = listings[lid].bookings[bid];
     require(booking.guestAddr == msg.sender || booking.ownerAddr == msg.sender, 'Sender not participated in booking');
@@ -281,7 +281,7 @@ contract EthBnB {
   }
 
   function getBookingDates(uint lid, uint bid) public view returns (uint fromDate, uint toDate) {
-    require(listings[lid].id == lid, 'Listing does not exist');
+    require(listings[lid].lid == lid, 'Listing does not exist');
     uint dbid = listings[lid].dbid;
     return dateBooker.getDates(dbid, bid);
   }
@@ -298,7 +298,7 @@ contract EthBnB {
     // Make sure account exists
     require(accounts[msg.sender].owner == msg.sender);
     // Make sure listing exists and properly associated with account
-    require(listings[lid].id != 0, 'No such listing found');
+    require(listings[lid].lid != 0, 'No such listing found');
     require(listings[lid].owner == msg.sender, 'Only the owner of a listing make changes to it');
   }
 
