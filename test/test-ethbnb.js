@@ -8,13 +8,14 @@ const COUNTRIES = {
 
 const bigNumberToInt = bn => parseInt(bn.toString())
 
-// Convenience function
-//
-// Returns seconds timestamp of date in Feb 2019
-// e.g.
-// feb2019(10) returns the timestamp of 10/02/2019 which is 1549756800
-// dayNb = [1..28]
-//
+/**
+ * Convenience function
+ *
+ * @param  {int} dayNb in range [1..28]
+ * @return {int} seconds timestamp of date in Feb 2019
+ *               e.g. feb2019(10) returns the timestamp of 10/02/2019
+ *               which is 1549756800
+ */
 const feb2019 = dayNb => new Date(`2019-02-${dayNb}`).getTime() / 1000
 
 contract('EthBnB', async (accounts) => {

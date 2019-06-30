@@ -54,7 +54,7 @@ contract EthBnB {
     // Bookings for the given listing
     mapping(uint => Booking) bookings;
 
-    // uint256 balance;
+    uint256 balance;
   }
 
   struct Account {
@@ -78,6 +78,11 @@ contract EthBnB {
     // Rating assigned to the guest by the owner
     // defaults to 0 which means nothing was set
     uint guestRating;
+
+    // When a booking is made, the listing balance (staked by the host)
+    // along with the value staked by the guest are added to the balance here.
+    // The listing balance is obviously decreased.
+    uint balance;
   }
 
   // =======================================================================
@@ -85,6 +90,7 @@ contract EthBnB {
   // =======================================================================
 
   event Log(string functionName, string msg);
+  event Error(int code);
 
   // Account events
   event CreateAccountEvent(address from);
@@ -179,9 +185,12 @@ contract EthBnB {
 
   // Creates a new listing for the message sender
   // and returns the Id of the created listing
+  //
+  // When the listing create the smart-contract will have had the 2xprice amount
+  // added to its balance.
   function createListing(Country country, string memory location, uint price) public payable {
     require(hasAccount(), 'Must have an account before creating a listing');
-    // require(msg.value )
+    require(msg.value >= 2*price, 'Must stake at least x2 the price');
     // Note: enforce a maximum number of listings per user?
     uint dbid = dateBooker.register(BOOKING_CAPACITY);
     listings[nextListingId] = Listing({
@@ -190,8 +199,8 @@ contract EthBnB {
       country: country,
       location: location,
       price: price,
-      dbid: dbid//,
-      // balance: msg.value
+      dbid: dbid,
+      balance: msg.value
     });
     emit CreateListingEvent(msg.sender, nextListingId++);
   }
@@ -203,17 +212,22 @@ contract EthBnB {
   // @param nbOfDays     number of days for which the booking will be made
   //
   function listingBook(uint lid, uint fromDate, uint nbOfDays)
-    public listingExists(lid) {
-      require(hasAccount(), 'Must have an account before creating a listing');
-      address guestAddr = msg.sender;
-      uint dbid = listings[lid].dbid;
+    public payable listingExists(lid) {
+      require(hasAccount(), 'Guest must have an account before booking');
+      Listing memory listing = listings[lid];
+      uint256 stake = 2*listing.price;
+      require(msg.value >= stake, 'Guest must stake twice the price');
+      uint dbid = listing.dbid;
       int res = dateBooker.book(dbid, fromDate, nbOfDays);
+
+      // TODO: make sure we return any more moneys than necessary
+
       // Emit the appropriate event depending on res
       emitBookEvent(res, lid);
       if (res >= 0) {
         uint bid = uint(res);
         // Save the booking
-        listings[lid].bookings[bid] = Booking({
+        listing.bookings[bid] = Booking({
           bid: bid,
           lid: lid,
           ownerAddr: listings[lid].owner,
@@ -221,11 +235,21 @@ contract EthBnB {
           ownerRating: 0,
           guestRating: 0
         });
+        // Add the amount paid by the sender to the balance
+        listing.balance -= stake;
+        // Add the amounts staked by the guest and by the host
+        // to the booking balance
+        booking.balance += (2 * stake);
+        // If the guest staked more than necessary, we refund them
+        msg.sender.transfer(msg.value - stake)
       }
     }
 
   function listingClose(uint lid) public {
     require(false);
+    // TODO:
+    //  - require that there are no pending bookings
+    //  - return the balance in the listing
   }
 
   // Rate the booking 1-5 stars
@@ -257,10 +281,20 @@ contract EthBnB {
     else if (booking.ownerAddr == msg.sender) {
       // The owner is rating the guest
       require(booking.guestRating == 0, 'Guest already rated, cannot re-rate');
-      // Assing the rating and adjust their account
+      // Adding the rating and adjust their account
       booking.guestRating = stars;
       accounts[booking.guestAddr].totalScore += stars;
       accounts[booking.guestAddr].nRatings++;
+    }
+    // If both have rated one another, we release the funds as below:
+    // Guest receives:    price
+    // Listing receives:  2*price
+    // Owner:             price
+    //
+    if (booking.ownerRating != 0 && booking.guestRating != 0) {
+      // TODO: continue here
+      // Release
+      listing.owner.transfer()
     }
     emit RatingComplete(msg.sender, lid, bid, stars);
   }
