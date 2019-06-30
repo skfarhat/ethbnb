@@ -19,9 +19,9 @@ contract DateBooker {
   // =============================================================
 
   event Register(uint id);
-  event Book(uint id, uint bid);
   event Cancellation(uint id, uint bid);
   event NoMoreSpace(uint id);
+  event BookSuccess(uint id, uint bid);
   event BookConflict(uint id, uint bid);
   event PermissionDenied(uint id, uint bid);
   event CancellationError(uint id, int errno);
@@ -163,7 +163,7 @@ contract DateBooker {
     if (_data.end == _data.start) {
       _data.end = INVALID;
     }
-    emit Book(id, _data.size);
+    emit BookSuccess(id, _data.size);
     return int(_data.size++);
   }
 
