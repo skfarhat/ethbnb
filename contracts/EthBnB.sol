@@ -202,7 +202,7 @@ contract EthBnB {
       require(hasAccount(), 'Must have an account before creating a listing');
       address guestAddr = msg.sender;
       uint dbid = listings[lid].dbid;
-      int res = dateBooker.book(dbid, guestAddr, fromDate, nbOfDays);
+      int res = dateBooker.book(dbid, fromDate, nbOfDays);
       // Emit the appropriate event depending on res
       emitBookEvent(res, lid);
       if (res >= 0) {
@@ -263,7 +263,7 @@ contract EthBnB {
   function listingCancel(uint lid, uint bid) public {
     checkListingId(lid);
     uint dbid = listings[lid].dbid;
-    int res = dateBooker.cancel(dbid, msg.sender, bid);
+    int res = dateBooker.cancel(dbid, bid);
     emitBookCancelEvent(res, lid, bid);
   }
 

@@ -46,9 +46,8 @@ contract DateBooker {
     // Any second of a given day is enough to represent that day.
     uint fromDate;
     uint toDate;
-    // TODO: remove this, and just rely on the one in EthBnB
-    // Address of this entrie's booker
-    address bookerAddr;
+    // Address of the account that created this entry
+    address owner;
   }
 
   struct Data {
@@ -84,7 +83,7 @@ contract DateBooker {
         used: false,
         fromDate: 0,
         toDate: 0,
-        bookerAddr: address(0)
+        owner: address(0)
       });
     }
     emit Register(nextId);
@@ -96,10 +95,9 @@ contract DateBooker {
    *
    *
    * @param id          id used in register()
-   * @param bookerAddr  address of the entrie's booker
    * @param bid         booking id to be cancelled
    */
-  function cancel(uint id, address bookerAddr, uint bid) public returns (int) {
+  function cancel(uint id, uint bid) public returns (int) {
     int idx = findBook(id, bid);
     if (idx < 0) {
       emit CancellationError(id, NOT_FOUND);
@@ -109,7 +107,7 @@ contract DateBooker {
     uint udx = uint(idx);
     Entry storage curr = _data.d[udx];
     // Check permission
-    if (curr.bookerAddr != bookerAddr) {
+    if (curr.owner != tx.origin) {
       emit PermissionDenied(id, bid);
     }
     if ( hasSpace(id) ) {
@@ -120,7 +118,7 @@ contract DateBooker {
       _data.d[_data.d[_data.end].prev].next = udx;
       _data.d[_data.end].prev = udx;
     }
-    curr.bookerAddr = address(0);
+    curr.owner = address(0);
     curr.used = false;
     _data.end = udx;
     if (_data.end == _data.start) {
@@ -131,7 +129,7 @@ contract DateBooker {
     return int(bid);
   }
 
-  function book(uint id, address bookerAddr, uint fromDate, uint nbOfDays) public returns (int) {
+  function book(uint id, uint fromDate, uint nbOfDays) public returns (int) {
     require(nbOfDays > 0, 'Cannot have non-positive days');
     if ( !hasSpace(id) ) {
       emit NoMoreSpace(id);
@@ -151,7 +149,7 @@ contract DateBooker {
     _data.d[_data.end].fromDate = fromDate;
     _data.d[_data.end].bid = _data.size;
     _data.d[_data.end].used = true;
-    _data.d[_data.end].bookerAddr = bookerAddr;
+    _data.d[_data.end].owner = tx.origin;
 
     if ( isEmpty(id) ) {
       _data.start = _data.end;

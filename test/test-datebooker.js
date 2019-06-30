@@ -39,7 +39,7 @@ contract('DateBooker', async (accounts) => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
-    for (let i = 1; i <= CAPACITY; i++ ) {
+    for (let i = 1; i <= CAPACITY; i++) {
       let r = await booker.findBook.call(id, i, d)
       assert.equal(-1, r, 'Return result should be -1')
     }
@@ -51,9 +51,9 @@ contract('DateBooker', async (accounts) => {
     let bid2
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
-    r = await booker.book(id, account0, FEB_15, 1, d)
+    r = await booker.book(id, FEB_15, 1, d)
     truffleAssert.eventEmitted(r, 'BookSuccess', (ev) => bid1 = ev.bid)
-    r = await booker.book(id, account0, FEB_17, 2, d)
+    r = await booker.book(id, FEB_17, 2, d)
     truffleAssert.eventEmitted(r, 'BookSuccess', (ev) => bid2 = ev.bid)
     assert.notEqual(bid1, bid2, 'Bookings should have different bids.')
   })
@@ -63,7 +63,7 @@ contract('DateBooker', async (accounts) => {
     let bid
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
-    r = await booker.book(id, account0, FEB_15, 2, d)
+    r = await booker.book(id, FEB_15, 2, d)
     truffleAssert.eventEmitted(r, 'BookSuccess', (ev) => bid = ev.bid)
     let res = await booker.findBook.call(id, bid, d)
     assert.isAtLeast(bignumToNum(res), 0, 'Must have found created booking')
@@ -79,8 +79,8 @@ contract('DateBooker', async (accounts) => {
   it('Size is 2 when 2 bookings have been made', async() => {
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
-    await booker.book(id, account0, FEB_15, 2, d)
-    await booker.book(id, account0, FEB_18, 2, d)
+    await booker.book(id, FEB_15, 2, d)
+    await booker.book(id, FEB_18, 2, d)
     let actualSize = await booker.getSize.call(id, d)
     assert(bignumToNum(actualSize), 2, 'Actual size should be 2')
   })
@@ -90,10 +90,10 @@ contract('DateBooker', async (accounts) => {
     let bid
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
-    r = await booker.book(id, account0, FEB_15, 2, d) // to FEB_17
-    r = await booker.book(id, account0, FEB_18, 3, d) // to FEB_21
+    r = await booker.book(id, FEB_15, 2, d) // to FEB_17
+    r = await booker.book(id, FEB_18, 3, d) // to FEB_21
     truffleAssert.eventEmitted(r, 'BookSuccess', (ev) => bid = ev.bid)
-    r = await booker.cancel(id, account0, bid, d)
+    r = await booker.cancel(id, bid, d)
     truffleAssert.eventEmitted(r, 'Cancellation', (ev) => bid = ev.bid)
     truffleAssert.eventNotEmitted(r, 'PermissionDenied')
     let actualSize = await booker.getSize.call(id, d)
@@ -107,9 +107,9 @@ contract('DateBooker', async (accounts) => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
-    r = await booker.book(id, account0, FEB_15, 2, d)
+    r = await booker.book(id, FEB_15, 2, d)
     truffleAssert.eventNotEmitted(r, 'BookConflict')
-    r = await booker.book(id, account0, FEB_18, 3, d)
+    r = await booker.book(id, FEB_18, 3, d)
     truffleAssert.eventNotEmitted(r, 'BookConflict')
   })
 
@@ -121,9 +121,9 @@ contract('DateBooker', async (accounts) => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
-    r = await booker.book(id, account0, FEB_15, 3, d)
+    r = await booker.book(id, FEB_15, 3, d)
     truffleAssert.eventEmitted(r, 'BookSuccess', (ev) => (true))
-    r = await booker.book(id, account0, FEB_17, 3, d)
+    r = await booker.book(id, FEB_17, 3, d)
     truffleAssert.eventEmitted(r, 'BookConflict', (ev) => (true))
   })
 
@@ -135,9 +135,9 @@ contract('DateBooker', async (accounts) => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
-    r = await booker.book(id, account0, FEB_15, 3, d)
+    r = await booker.book(id, FEB_15, 3, d)
     truffleAssert.eventEmitted(r, 'BookSuccess')
-    r = await booker.book(id, account0, FEB_10, 6, d)
+    r = await booker.book(id, FEB_10, 6, d)
     truffleAssert.eventEmitted(r, 'BookConflict')
   })
 
@@ -149,10 +149,10 @@ contract('DateBooker', async (accounts) => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
-    r = await booker.book(id, account0, FEB_15, 3, d)
+    r = await booker.book(id, FEB_15, 3, d)
     truffleAssert.eventEmitted(r, 'BookSuccess')
     truffleAssert.eventNotEmitted(r, 'BookConflict')
-    r = await booker.book(id, account0, FEB_18, 2, d)
+    r = await booker.book(id, FEB_18, 2, d)
     truffleAssert.eventEmitted(r, 'BookSuccess')
     truffleAssert.eventNotEmitted(r, 'BookConflict')
   })
@@ -162,11 +162,11 @@ contract('DateBooker', async (accounts) => {
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
     for (let i = 0; i < CAPACITY; i++) {
-      r = await booker.book(id, account0, FEB_15 + 86400*i, 1, d)
+      r = await booker.book(id, FEB_15 + 86400*i, 1, d)
       truffleAssert.eventNotEmitted(r, 'NoMoreSpace')
       truffleAssert.eventNotEmitted(r, 'BookConflict')
     }
-    r = await booker.book(id, account0, 71, 72, d) // we don't care about the arguments here
+    r = await booker.book(id, 71, 72, d) // we don't care about the arguments here
     truffleAssert.eventEmitted(r, 'NoMoreSpace')
   })
 
@@ -174,9 +174,9 @@ contract('DateBooker', async (accounts) => {
     let bid
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
-    r = await booker.book(id, account0, FEB_15, 2, d)
+    r = await booker.book(id, FEB_15, 2, d)
     truffleAssert.eventEmitted(r, 'BookSuccess', (ev) => bid = ev.bid)
-    r = await booker.cancel(id, accounts[1], bid, d)
+    r = await booker.cancel(id, bid, { from: accounts[1] })
     truffleAssert.eventEmitted(r, 'PermissionDenied')
   })
 
