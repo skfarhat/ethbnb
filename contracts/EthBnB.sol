@@ -292,14 +292,16 @@ contract EthBnB {
       accounts[booking.guestAddr].nRatings++;
     }
     // If both have rated one another, we release the funds as below:
-    // Guest receives:    price
-    // Listing receives:  2*price
-    // Owner:             price
+    // Guest receives:    booking.balance
+    // Listing receives:  2 x booking.balance
+    // Owner:             booking.balance
     //
     if (booking.ownerRating != 0 && booking.guestRating != 0) {
-      // TODO: continue here
-      // Release
-      // listing.owner.transfer()
+        // TODO: BUG: if not divisible by 4, we could lose some money (?!)
+      uint256 stake = booking.balance / 4;
+      listings[lid].balance += stake * 2;
+      accounts[booking.ownerAddr].owner.transfer(stake);
+      accounts[booking.guestAddr].owner.transfer(stake);
     }
     emit RatingComplete(msg.sender, lid, bid, stars);
   }
