@@ -98,12 +98,7 @@ contract('EthBnB', async (accounts) => {
     assert(false, 'Third booking should fail')
   })
 
-  describe('Balances are correct', async () => {
-
-    // Check that the below change following the creation of a listing:
-    // - the contract balance increments
-    // - the host's balance decreases
-    it('After listing creation', async() => {
+  it('Balances are correct - after listing creation', async() => {
       const bnb = await EthBnB.deployed()
       let lid
       let res
@@ -128,10 +123,38 @@ contract('EthBnB', async (accounts) => {
       // Host balance will likely decrement by more, since they pay for the processing of the application
       assert(hostBalanceDiff >= hostStakeWei, 'Host balance must have decremented by at least stake amount')
       truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
-    })
-    it('After booking', async() => {
+  })
 
-    })
+  it('Balances are correct - after listing booking', async() => {
+      const bnb = await EthBnB.deployed()
+      let lid
+      let res
+      let bid
+      const [,,,host, guest] = accounts
+      const priceFinney = 800
+      const priceWei = fromFinney(priceFinney)
+      const hostStakeWei = fromFinney(priceFinney * 2)
+      const guestStakeWei = fromFinney(priceFinney * 2)
+      await bnb.createAccount('Host', { from: host })
+      await bnb.createAccount('Guest', { from: guest })
+
+      res = await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: hostStakeWei })
+      truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+
+      // Snapshot balances before and after listing booking
+      const guestBalanceBefore = await web3.eth.getBalance(guest)
+      const contractBalanceBefore = await web3.eth.getBalance(bnb.address)
+      res = await bnb.listingBook(lid, feb2019(10), 1, { from: guest, value: guestStakeWei })
+      truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.lid)
+      const guestBalanceAfter = await web3.eth.getBalance(guest)
+      const contractBalanceAfter = await web3.eth.getBalance(bnb.address)
+
+      const contractBalanceDiff = contractBalanceAfter - contractBalanceBefore
+      const guestBalanceDiff = guestBalanceBefore - guestBalanceAfter
+
+      assert(contractBalanceDiff == guestStakeWei, 'Contract balance must have incremented by stake amount')
+      // Guest balance will likely decrement by more, since they pay for the processing of the application
+      assert(guestBalanceDiff >= guestStakeWei, 'Host balance must have decremented by at least stake amount')
   })
 
   // TODO: how do we test that it only succeeds after the given day has passed?
