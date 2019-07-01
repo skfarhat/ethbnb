@@ -1,7 +1,6 @@
 pragma solidity ^0.5.0;
 
 import './DateBooker.sol';
-import './Purchase.sol';
 
 //
 //
@@ -82,7 +81,7 @@ contract EthBnB {
     // When a booking is made, the listing balance (staked by the host)
     // along with the value staked by the guest are added to the balance here.
     // The listing balance is obviously decreased.
-    uint balance;
+    uint256 balance;
   }
 
   // =======================================================================
@@ -214,34 +213,40 @@ contract EthBnB {
   function listingBook(uint lid, uint fromDate, uint nbOfDays)
     public payable listingExists(lid) {
       require(hasAccount(), 'Guest must have an account before booking');
-      Listing memory listing = listings[lid];
-      uint256 stake = 2*listing.price;
-      require(msg.value >= stake, 'Guest must stake twice the price');
+      Listing storage listing = listings[lid];
+      uint256 stake = 2 * listing.price;
+      address guestAddr = msg.sender;
       uint dbid = listing.dbid;
+
+      // Ensure both guest and host have staked the same
+      require(msg.value >= stake, 'Guest must stake twice the price');
+      require(listing.balance >= stake, 'Listing must have stake amount in its balance');
+
+      // Refund with any amount exceeding the stake
+      msg.sender.transfer(msg.value - stake);
+
+      // Try to book.
+      // If successful, create a booking event with the balance amount
+      // If unsuccessful, refund the stake to guest
       int res = dateBooker.book(dbid, fromDate, nbOfDays);
-
-      // TODO: make sure we return any more moneys than necessary
-
-      // Emit the appropriate event depending on res
       emitBookEvent(res, lid);
       if (res >= 0) {
         uint bid = uint(res);
-        // Save the booking
-        listing.bookings[bid] = Booking({
+         // Save the booking
+         listing.bookings[bid] = Booking({
           bid: bid,
           lid: lid,
           ownerAddr: listings[lid].owner,
           guestAddr: guestAddr,
           ownerRating: 0,
-          guestRating: 0
+          guestRating: 0,
+          // Add the amounts staked by the guest
+          // and by the host to the booking balance
+          balance: 2 * stake
         });
-        // Add the amount paid by the sender to the balance
+
+        // Decrement the listing balance
         listing.balance -= stake;
-        // Add the amounts staked by the guest and by the host
-        // to the booking balance
-        booking.balance += (2 * stake);
-        // If the guest staked more than necessary, we refund them
-        msg.sender.transfer(msg.value - stake)
       }
     }
 
@@ -294,7 +299,7 @@ contract EthBnB {
     if (booking.ownerRating != 0 && booking.guestRating != 0) {
       // TODO: continue here
       // Release
-      listing.owner.transfer()
+      // listing.owner.transfer()
     }
     emit RatingComplete(msg.sender, lid, bid, stars);
   }

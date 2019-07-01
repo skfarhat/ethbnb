@@ -1,4 +1,4 @@
-const web3 = require('web3')
+// const web3 = require('web3')
 const truffleAssert = require('truffle-assertions')
 
 const EthBnB = artifacts.require('EthBnB')
@@ -6,19 +6,20 @@ const COUNTRIES = {
   GB: 226, US: 227,
 }
 
-/**
- * Convenience function
- *
- * @param  {int} dayNb in range [1..28]
- * @return {int}       seconds timestamp of date in Feb 2019
- *                     e.g. feb2019(10) returns the timestamp of 10/02/2019
- *                          which is 1549756800
- */
-const feb2019 = dayNb => new Date(`2019-02-${dayNb}`).getTime() / 1000
-
-const fromFinney = price => web3.utils.toWei(`${price}`, 'finney')
-
 contract('EthBnB', async (accounts) => {
+
+  /**
+   * Convenience function
+   *
+   * @param  {int} dayNb in range [1..28]
+   * @return {int}       seconds timestamp of date in Feb 2019
+   *                     e.g. feb2019(10) returns the timestamp of 10/02/2019
+   *                          which is 1549756800
+   */
+  const feb2019 = dayNb => new Date(`2019-02-${dayNb}`).getTime() / 1000
+
+  const fromFinney = price => web3.utils.toWei(`${price}`, 'finney')
+
   it('Owner must stake at least 2 x price', async () => {
     const bnb = await EthBnB.deployed()
     const [host] = accounts
@@ -97,6 +98,42 @@ contract('EthBnB', async (accounts) => {
     assert(false, 'Third booking should fail')
   })
 
+  describe('Balances are correct', async () => {
+
+    // Check that the below change following the creation of a listing:
+    // - the contract balance increments
+    // - the host's balance decreases
+    it('After listing creation', async() => {
+      const bnb = await EthBnB.deployed()
+      let lid
+      let res
+      let bid
+      const [host] = accounts
+      const priceFinney = 800
+      const priceWei = fromFinney(priceFinney)
+      const hostStakeWei = fromFinney(priceFinney * 3)
+      await bnb.createAccount('Host', { from: host })
+
+      // Snapshot balances before and after listing creation
+      const hostBalanceBefore = await web3.eth.getBalance(host)
+      const contractBalanceBefore = await web3.eth.getBalance(bnb.address)
+      res = await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: hostStakeWei })
+      const hostBalanceAfter = await web3.eth.getBalance(host)
+      const contractBalanceAfter = await web3.eth.getBalance(bnb.address)
+
+      const contractBalanceDiff = contractBalanceAfter - contractBalanceBefore
+      const hostBalanceDiff = hostBalanceBefore - hostBalanceAfter
+
+      assert(contractBalanceDiff == hostStakeWei, 'Contract balance must have incremented by stake amount')
+      // Host balance will likely decrement by more, since they pay for the processing of the application
+      assert(hostBalanceDiff >= hostStakeWei, 'Host balance must have decremented by at least stake amount')
+      truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+    })
+    it('After booking', async() => {
+
+    })
+  })
+
   // TODO: how do we test that it only succeeds after the given day has passed?
   // can we mock the system date somehow?
 
@@ -108,6 +145,9 @@ contract('EthBnB', async (accounts) => {
     assert(false, 'Not implemented')
   })
 
+  it('Contract refunds the guest if the booking fails', async () => {
+    assert(false, 'Not implemented')
+  })
 
 
   // it('Neither host nor guest can rate before booking end', async () => {
