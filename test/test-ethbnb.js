@@ -69,9 +69,10 @@ contract('EthBnB', async (accounts) => {
   it('Listing can be booked', async () => {
     let res
     const bnb = await EthBnB.deployed()
-    res = await bnb.createAccount('Alex', d)
+    res = await bnb.createAccount('Alex', { from: accounts[0] })
+    res = await bnb.createAccount('Alex', { from: accounts[1] })
     const lid = await createListingDefault(bnb, accounts[0])
-    await bookListingDefault(bnb, accounts[0], lid, feb2019(10), 3)
+    await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
   })
 
   it('Listing can be deleted and cannot be accessed afterwards', async () => {
@@ -110,34 +111,42 @@ contract('EthBnB', async (accounts) => {
     res = await bnb.createAccount('Mary', { from : accounts[1] })
     const lid = await createListingDefault(bnb, accounts[0])
     const bid = await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
-    // Cancel the booking
     res = await bnb.listingCancel(lid, bid, { from: accounts[0] })
     truffleAssert.eventEmitted(res, 'BookingCancelled')
   })
 
-  it('Cannot cancel inexistent booking', async () => {
+  it('Listing: Owner cannot book their own listing', async () => {
     let res
     const bnb = await EthBnB.deployed()
     res = await bnb.createAccount('Alex', { from : accounts[0] })
     const lid = await createListingDefault(bnb, accounts[0])
-    // Cancel in-existent booking booking
-    res = await bnb.listingCancel(lid, /* inexistent id */ 128348, { from: accounts[0] })
-    truffleAssert.eventEmitted(res, 'BookingNotFound')
+    try {
+      await bnb.listingBook(lid, feb2019(10), 3, { from: accounts[0], value: fromFinney(2 * DEFAULT_LISTING_PRICE)})
+    } catch (err) {
+      assert(err.toString().search('Owner cannot book their own listing') > -1, 'Unexpected exception message')
+      return
+    }
+    assert(false, 'listingBook should have failed')
   })
 
-  it('Cannot book more than capacity', async () => {
+  it('Listing: Deleting a listing fails when there are unfinished bookings', async () => {
     let res
-    let bid
     const bnb = await EthBnB.deployed()
-    res = await bnb.createAccount('Alex', { from : accounts[0] })
-    res = await bnb.createAccount('Mary', { from : accounts[1] })
-    const lid = await createListingDefault(bnb, accounts[0])
-    for (let i = 0; i < BOOKING_CAPACITY; i++) {
-      res = await bnb.listingBook(lid, feb2019(18) + i * 86400, 1, { from: accounts[1], value: fromFinney(DEFAULT_LISTING_PRICE * 2)})
-      truffleAssert.eventNotEmitted(res, 'BookingNoMoreSpace')
+    const futureDate = new Date('3119-02-11').getTime() / 1000
+
+    res = await bnb.createAccount('Alex', d)
+    let lid = await createListingDefault(bnb, accounts[0])
+    // Make a booking way in the future ensuring it's end-date will be
+    // less than the block.timestamp
+    const bid = await bookListingDefault(bnb, accounts[1], lid, futureDate, 3)
+    // listingDelete should fail
+    try {
+      res = await bnb.listingDelete(lid)
+    } catch(err) {
+      assert(err.toString().search('Cannot delete listing when there are active bookings') > -1, 'Unexpected exception message')
+      return
     }
-    res = await bnb.listingBook(lid, /* irrelevant arg */ 23423, 1, { from: accounts[1], value: fromFinney(DEFAULT_LISTING_PRICE * 2)})
-    truffleAssert.eventEmitted(res, 'BookingNoMoreSpace')
+    assert(false, 'listingDelete should have failed')
   })
 
   it('Listing: getListingAll() returns correct details', async () => {
@@ -174,6 +183,48 @@ contract('EthBnB', async (accounts) => {
     await bnb.setListingPrice(lid, newPrice, { from: accounts[0] })
     res = await bnb.getListingAll(lid)
     assert.equal(bigNumberToInt(res.price), newPrice)
+  })
+
+  it('Cannot cancel in-existent booking', async () => {
+    let res
+    const bnb = await EthBnB.deployed()
+    res = await bnb.createAccount('Alex', { from : accounts[0] })
+    const lid = await createListingDefault(bnb, accounts[0])
+    res = await bnb.listingCancel(lid, /* in-existent id */ 128348, { from: accounts[0] })
+    truffleAssert.eventEmitted(res, 'BookingNotFound')
+  })
+
+  // TODO: implement cancelBooking
+  // it('Only booking owner can cancel it', async () => {
+  //   let res
+  //   const bnb = await EthBnB.deployed()
+  //   res = await bnb.createAccount('Alex', { from : accounts[0] })
+  //   res = await bnb.createAccount('Mary', { from : accounts[1] })
+  //   res = await bnb.createAccount('John', { from : accounts[2] })
+  //   const lid = await createListingDefault(bnb, accounts[0])
+  //   const bid = await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
+  //   try {
+  //     res = await bnb.listingCancel(lid, bid, { from: accounts[2] })
+  //   } catch (err) {
+  //     console.log('the message we got is', err)
+  //     return
+  //   }
+  //   assert(false, 'Expected listingCancel to fail')
+  // })
+
+  it('Cannot book more than capacity', async () => {
+    let res
+    let bid
+    const bnb = await EthBnB.deployed()
+    res = await bnb.createAccount('Alex', { from : accounts[0] })
+    res = await bnb.createAccount('Mary', { from : accounts[1] })
+    const lid = await createListingDefault(bnb, accounts[0])
+    for (let i = 0; i < BOOKING_CAPACITY; i++) {
+      res = await bnb.listingBook(lid, feb2019(18) + i * 86400, 1, { from: accounts[1], value: fromFinney(DEFAULT_LISTING_PRICE * 2)})
+      truffleAssert.eventNotEmitted(res, 'BookingNoMoreSpace')
+    }
+    res = await bnb.listingBook(lid, /* irrelevant arg */ 23423, 1, { from: accounts[1], value: fromFinney(DEFAULT_LISTING_PRICE * 2)})
+    truffleAssert.eventEmitted(res, 'BookingNoMoreSpace')
   })
 
   // A host has two listings, and gets a booking for each.
@@ -284,19 +335,4 @@ contract('EthBnB', async (accounts) => {
     assert(false, 'Should not be able to rate a booking whose end date is in the future')
   })
 
-  it('Owner cannot book their own listing', async () => {
-    assert(false, 'Not implemented')
-  })
-
-  it('Only booking owner can cancel it', async () => {
-    assert(false, 'Not implemented')
-  })
-
-  it('Listing: setting a listing price fails when there is not enough staked ', async () => {
-    assert(false, 'Not implemented')
-  })
-
-  it('Listing: Closing a listing fails when there are unfinished bookings', async () => {
-    assert(false, 'Not implemented')
-  })
 })

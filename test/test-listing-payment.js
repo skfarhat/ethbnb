@@ -247,6 +247,9 @@ contract('EthBnB', async (accounts) => {
     assert(balance3 == balance4, 'Contract balance should not increase when a failed booking occurs')
   })
 
+  it('Listing: setting a listing price fails when there is not enough staked ', async () => {
+    assert(false, 'Not implemented')
+  })
 
   it('User must increase stake in order to set the price', async() => {
     assert(false, 'Not implemented')

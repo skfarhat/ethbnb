@@ -218,6 +218,8 @@ contract EthBnB {
       address guestAddr = msg.sender;
       uint dbid = listing.dbid;
 
+      require(listing.owner != msg.sender, 'Owner cannot book their own listing');
+
       // Ensure both guest and host have staked the same
       require(msg.value >= stake, 'Guest must stake twice the price');
       require(listing.balance >= stake, 'Listing must have stake amount in its balance');
@@ -260,7 +262,7 @@ contract EthBnB {
 
     // Check that there are no active bookings before we proceed
     uint activeBookings = dateBooker.getActiveBookingsCount(listing.dbid);
-    require(activeBookings == 0, 'Can\'t delete listing when there are active bookings');
+    require(activeBookings == 0, 'Cannot delete listing when there are active bookings');
 
     // Return listing balance to its owner
     uint toReturn = listing.balance;
@@ -350,14 +352,6 @@ contract EthBnB {
     uint dbid = listings[lid].dbid;
     return dateBooker.getDates(dbid, bid);
   }
-
-  function deleteListing(uint lid) public {
-    checkListingId(lid);
-    // TODO: check that there are no pending bookings, before deleting
-    delete listings[lid];
-    emit DeleteListingEvent(msg.sender, lid);
-  }
-
 
   function checkListingId(uint lid) view private {
     // Make sure account exists
