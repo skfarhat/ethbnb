@@ -120,7 +120,7 @@ contract('EthBnB', async (accounts) => {
     const bnb = await EthBnB.deployed()
     res = await bnb.createAccount('Alex', { from : accounts[0] })
     const lid = await createListingDefault(bnb, accounts[0])
-    // Cancel inexistent booking booking
+    // Cancel in-existent booking booking
     res = await bnb.listingCancel(lid, /* inexistent id */ 128348, { from: accounts[0] })
     truffleAssert.eventEmitted(res, 'BookingNotFound')
   })
@@ -208,13 +208,10 @@ contract('EthBnB', async (accounts) => {
     let res
     let lid1; let bid1
     const bnb = await EthBnB.deployed()
-    // Accounts
     res = await bnb.createAccount('Host', { from: accounts[0] })
     res = await bnb.createAccount('Guest1', { from: accounts[1] })
     const lid = await createListingDefault(bnb, accounts[0])
     const bid = await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
-
-    // Rating
     res = await bnb.rate(lid, bid, 1, { from: accounts[1] })
     truffleAssert.eventEmitted(res, 'RatingComplete')
     let errorWasThrown = false
@@ -231,7 +228,6 @@ contract('EthBnB', async (accounts) => {
     let lid1; let
       bid1
     const bnb = await EthBnB.deployed()
-    // Accounts
     res = await bnb.createAccount('Host', { from: accounts[0] })
     res = await bnb.createAccount('Guest1', { from: accounts[1] })
     const lid = await createListingDefault(bnb, accounts[0])
@@ -257,7 +253,6 @@ contract('EthBnB', async (accounts) => {
     let lid1; let
       bid1
     const bnb = await EthBnB.deployed()
-    // Accounts
     res = await bnb.createAccount('Host', { from: accounts[0] })
     res = await bnb.createAccount('Guest1', { from: accounts[1] })
     res = await bnb.createAccount('Guest1', { from: accounts[2] })
@@ -276,7 +271,6 @@ contract('EthBnB', async (accounts) => {
     let res
     const bnb = await EthBnB.deployed()
     const date = new Date('3119-02-11').getTime() / 1000
-    // Accounts
     res = await bnb.createAccount('Host', { from: accounts[0] })
     res = await bnb.createAccount('Guest1', { from: accounts[1] })
     const lid = await createListingDefault(bnb, accounts[0])

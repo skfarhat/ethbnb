@@ -247,6 +247,8 @@ contract EthBnB {
 
         // Decrement the listing balance
         listing.balance -= stake;
+      } else {
+        msg.sender.transfer(stake);
       }
     }
 
