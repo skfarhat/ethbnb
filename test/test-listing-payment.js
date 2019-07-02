@@ -213,7 +213,7 @@ contract('EthBnB', async (accounts) => {
   // TODO: how do we test that it only succeeds after the given day has passed?
   // can we mock the system date somehow?
 
-  it('Listing can be closed and stake is returned to host', async () => {
+  it('Listing can be deleted and stake is returned to host', async () => {
     assert(false, 'Not implemented')
   })
 

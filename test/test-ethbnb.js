@@ -17,6 +17,7 @@ const bigNumberToInt = bn => parseInt(bn.toString())
  *               which is 1549756800
  */
 const feb2019 = dayNb => new Date(`2019-02-${dayNb}`).getTime() / 1000
+const fromFinney = price => web3.utils.toWei(`${price}`, 'finney')
 
 contract('EthBnB', async (accounts) => {
   const d = { from: accounts[0] }
@@ -86,6 +87,28 @@ contract('EthBnB', async (accounts) => {
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
     res = await bnb.listingBook(lid, feb2019(10), 3)
     truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
+  })
+
+  it('Listing can be deleted and cannot be accessed afterwards', async () => {
+    let res
+    let lid
+    const bnb = await EthBnB.deployed()
+    res = await bnb.createAccount('Alex', d)
+    const priceFinney = 8
+    const priceWei = fromFinney(priceFinney)
+    const hostStakeWei = fromFinney(priceFinney * 2)
+    res = await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: accounts[0], value: hostStakeWei })
+    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+    res = await bnb.listingDelete(lid)
+    truffleAssert.eventEmitted(res, 'DeleteListingEvent', ev => lid = ev.lid)
+    // We expect the below to fail since there is no such listing
+    try {
+        let x = await bnb.getListingAll(lid);
+    } catch(e) {
+        assert(e.toString().search('No such listing found') > -1, 'The exception message did not match expectations')
+        return
+    }
+    assert(false, 'Should have thrown exception as there is should be no listing after deletion.')
   })
 
   it('Two bookings on the same listing have different bids.', async () => {
@@ -195,23 +218,8 @@ contract('EthBnB', async (accounts) => {
   })
 
   it('Listing: Closing a listing fails when there are unfinished bookings', async () => {
-    let lid
-    const bnb = await EthBnB.deployed()
-    await bnb.createAccount('Alex', d)
-    const LOCATION = 'London'
-    const PRICE = 5000
-    const COUNTRY = COUNTRIES.GB
-    let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, d)
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
-    // Change it to 500
-    const newPrice = 500
-    await bnb.setListingPrice(lid, newPrice, { from: accounts[0] })
-    res = await bnb.getListingAll(lid)
-    assert.equal(bigNumberToInt(res.price), newPrice)
+    assert(false, 'unimplemented')
   })
-
-
-
 
   // A host has two listings, and gets a booking for each.
   // His guests rate him

@@ -250,11 +250,24 @@ contract EthBnB {
       }
     }
 
-  function listingClose(uint lid) public {
-    require(false);
-    // TODO:
-    //  - require that there are no pending bookings
-    //  - return the balance in the listing
+  // Returns the listing balance to its owner and deletes the listing
+  //
+  // Only if there are no active bookings.
+  function listingDelete(uint lid) public listingExists(lid) {
+    Listing storage listing = listings[lid];
+
+    // Check that there are no active bookings before we proceed
+    uint activeBookings = dateBooker.getActiveBookingsCount(listing.dbid);
+    require(activeBookings == 0, 'Can\'t delete listing when there are active bookings');
+
+    // Return listing balance to its owner
+    uint toReturn = listing.balance;
+    listing.balance = 0;
+    accounts[listing.owner].owner.transfer(toReturn);
+
+    // Delete listing's storage
+    delete listings[lid];
+    emit DeleteListingEvent(msg.sender, lid);
   }
 
   // Rate the booking 1-5 stars
