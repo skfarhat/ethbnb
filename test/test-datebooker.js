@@ -111,7 +111,6 @@ contract('DateBooker', async (accounts) => {
     r = await booker.book(id, futureFeb(5), 3, d) // date way in the future
     truffleAssert.eventEmitted(r, 'BookSuccess', (ev) => bid = ev.bid)
     let activeCount = await booker.getActiveBookingsCount.call(id, d)
-    let now = await booker.getNow.call(d)
     assert(activeCount == 1, 'There should only be one active')
   })
 
@@ -136,10 +135,10 @@ contract('DateBooker', async (accounts) => {
     assert(activeCount == 2, 'There should be two active')
   })
 
-
-  it('getActiveBookingsCount() returns 0 when all have been cancelled', async() => {
-
-  })
+  // TODO: uncomment and implement
+  // it('getActiveBookingsCount() returns 0 when all have been cancelled', async() => {
+  //    assert(false, 'Not implemented')
+  // })
 
   // No conflict
   // [15/02      17/02]
