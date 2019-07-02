@@ -19,6 +19,7 @@ const bigNumberToInt = bn => parseInt(bn.toString())
 const feb2019 = dayNb => new Date(`2019-02-${dayNb}`).getTime() / 1000
 const fromFinney = price => web3.utils.toWei(`${price}`, 'finney')
 
+const BOOKING_CAPACITY = 5  // TODO: would be better to read this from the contract
 const DEFAULT_LISTING_PRICE = 8
 const DEFAULT_LISTING_PRICE_WEI = fromFinney(DEFAULT_LISTING_PRICE)
 
@@ -34,8 +35,8 @@ contract('EthBnB', async (accounts) => {
    */
   const createListingDefault = async (bnb, account) => {
     let lid
-    // We will send 8 times the price amount, to ensure many bookings can be achieved using the default-created listing
-    const d = { from: account, value: fromFinney(DEFAULT_LISTING_PRICE * 8) }
+    // We will send 20 times the price amount, to ensure many bookings can be achieved using the default-created listing
+    const d = { from: account, value: fromFinney(DEFAULT_LISTING_PRICE * 20) }
     const res = await bnb.createListing(COUNTRIES.GB, 'London', DEFAULT_LISTING_PRICE_WEI, d)
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
     return lid
@@ -173,7 +174,7 @@ contract('EthBnB', async (accounts) => {
     res = await bnb.createAccount('Alex', { from : accounts[0] })
     res = await bnb.createAccount('Mary', { from : accounts[1] })
     const lid = await createListingDefault(bnb, accounts[0])
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < BOOKING_CAPACITY; i++) {
       res = await bnb.listingBook(lid, feb2019(18) + i * 86400, 1, { from: accounts[1], value: fromFinney(DEFAULT_LISTING_PRICE * 2)})
       truffleAssert.eventNotEmitted(res, 'BookingNoMoreSpace')
     }
@@ -189,7 +190,7 @@ contract('EthBnB', async (accounts) => {
     const PRICE = 5000
     const COUNTRY = COUNTRIES.GB
     const { from: OWNER } = d
-    let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, d)
+    let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, { from: accounts[0], value: fromFinney(DEFAULT_LISTING_PRICE * 2) })
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
     res = await bnb.getListingAll(lid, d)
     const { location: actualLocation, owner: actualOwner, price: actualPrice, country: actualCountry } = res
@@ -199,6 +200,7 @@ contract('EthBnB', async (accounts) => {
     assert.equal(bigNumberToInt(actualCountry), COUNTRY)
   })
 
+  // TODO: rework this test case
   // Test get/set listing price
   it('Listing: get/set listing price()', async () => {
     let lid
@@ -207,7 +209,7 @@ contract('EthBnB', async (accounts) => {
     const LOCATION = 'London'
     const PRICE = 5000
     const COUNTRY = COUNTRIES.GB
-    let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, d)
+    let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, { from: accounts[0], value: fromFinney(DEFAULT_LISTING_PRICE * 2) })
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
     // Change it to 500
     const newPrice = 500
@@ -216,29 +218,19 @@ contract('EthBnB', async (accounts) => {
     assert.equal(bigNumberToInt(res.price), newPrice)
   })
 
-  it('Listing: Closing a listing fails when there are unfinished bookings', async () => {
-    assert(false, 'unimplemented')
-  })
-
   // A host has two listings, and gets a booking for each.
   // His guests rate him
   it('Rating: a user twice, check their totalScore and nRatings', async () => {
     let res
-    let lid1; let lid2; let bid1; let bid2
     const bnb = await EthBnB.deployed()
     res = await bnb.createAccount('Host', { from: accounts[0] })
     res = await bnb.createAccount('Guest1', { from: accounts[1] })
     res = await bnb.createAccount('Guest2', { from: accounts[2] })
-    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, { from: accounts[0] })
-    // Get the listing id from the event
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid1 = ev.lid)
-    res = await bnb.createListing(COUNTRIES.FR, 'London', 5000, d)
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid2 = ev.lid)
-    // Two bookings from the two users
-    res = await bnb.listingBook(lid1, feb2019(10), 3, { from: accounts[1] })
-    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid1 = ev.bid)
-    res = await bnb.listingBook(lid2, feb2019(10), 3, { from: accounts[2] })
-    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid2 = ev.bid)
+    const lid1 = await createListingDefault(bnb, accounts[0])
+    const lid2 = await createListingDefault(bnb, accounts[0])
+    const bid1 = await bookListingDefault(bnb, accounts[1], lid1, feb2019(10), 3)
+    const bid2 = await bookListingDefault(bnb, accounts[2], lid2, feb2019(10), 3)
+
     // Two ratings from the two users
     res = await bnb.rate(lid1, bid1, 1, { from: accounts[1] })
     truffleAssert.eventEmitted(res, 'RatingComplete')
@@ -261,18 +253,15 @@ contract('EthBnB', async (accounts) => {
     // Accounts
     res = await bnb.createAccount('Host', { from: accounts[0] })
     res = await bnb.createAccount('Guest1', { from: accounts[1] })
-    // Listing
-    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, { from: accounts[0] })
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid1 = ev.lid)
-    // Booking
-    res = await bnb.listingBook(lid1, feb2019(10), 3, { from: accounts[1] })
-    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid1 = ev.bid)
+    const lid = await createListingDefault(bnb, accounts[0])
+    const bid = await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
+
     // Rating
-    res = await bnb.rate(lid1, bid1, 1, { from: accounts[1] })
+    res = await bnb.rate(lid, bid, 1, { from: accounts[1] })
     truffleAssert.eventEmitted(res, 'RatingComplete')
     let errorWasThrown = false
     try {
-      res = await bnb.rate(lid1, bid1, 5, { from: accounts[1] })
+      res = await bnb.rate(lid, bid, 5, { from: accounts[1] })
     } catch (err) {
       errorWasThrown = true
     }
@@ -287,23 +276,18 @@ contract('EthBnB', async (accounts) => {
     // Accounts
     res = await bnb.createAccount('Host', { from: accounts[0] })
     res = await bnb.createAccount('Guest1', { from: accounts[1] })
-    // Listing
-    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, { from: accounts[0] })
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid1 = ev.lid)
-    // Booking
-    res = await bnb.listingBook(lid1, feb2019(10), 3, { from: accounts[1] })
-    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid1 = ev.bid)
-
+    const lid = await createListingDefault(bnb, accounts[0])
+    const bid = await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
     let errorWasThrown = false
     try {
-      res = await bnb.rate(lid1, bid1, 0, { from: accounts[1] })
+      res = await bnb.rate(lid, bid, 0, { from: accounts[1] })
     } catch (err) {
       errorWasThrown = true
     }
     assert(errorWasThrown, 'Rating below 1 should have failed')
     errorWasThrown = false
     try {
-      res = await bnb.rate(lid1, bid1, 6, { from: accounts[1] })
+      res = await bnb.rate(lid, bid, 6, { from: accounts[0] })
     } catch (err) {
       errorWasThrown = true
     }
@@ -367,4 +351,11 @@ contract('EthBnB', async (accounts) => {
     assert(false, 'Not implemented')
   })
 
+  it('Listing: setting a listing price fails when there is not enough staked ', async () => {
+    assert(false, 'Not implemented')
+  })
+
+  it('Listing: Closing a listing fails when there are unfinished bookings', async () => {
+    assert(false, 'Not implemented')
+  })
 })
