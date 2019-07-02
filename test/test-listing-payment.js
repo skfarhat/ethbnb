@@ -1,10 +1,17 @@
-// const web3 = require('web3')
 const truffleAssert = require('truffle-assertions')
-
 const EthBnB = artifacts.require('EthBnB')
-const COUNTRIES = {
-  GB: 226, US: 227,
-}
+
+const {
+  feb2019,
+  fromFinney,
+  // bigNumberToInt,
+  createListingDefault,
+  bookListingDefault,
+  BOOKING_CAPACITY,
+  DEFAULT_LISTING_PRICE,
+  DEFAULT_LISTING_PRICE_WEI,
+  COUNTRIES
+} = require('./test-utils')
 
 contract('EthBnB', async (accounts) => {
 
@@ -17,6 +24,22 @@ contract('EthBnB', async (accounts) => {
    *                          which is 1549756800
    */
   const feb2019 = dayNb => new Date(`2019-02-${dayNb}`).getTime() / 1000
+
+  /**
+   * Create a default listing and return its id
+   * function will assert if no CreateListingEvent is fired
+   *
+   * @bnb           the deployed contract
+   * @account       the account that should create the listing
+   */
+  const createListingDefault = async (bnb, account) => {
+    let lid
+    // We will send 20 times the price amount, to ensure many bookings can be achieved using the default-created listing
+    const d = { from: account, value: fromFinney(DEFAULT_LISTING_PRICE * 20) }
+    const res = await bnb.createListing(COUNTRIES.GB, 'London', DEFAULT_LISTING_PRICE_WEI, d)
+    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+    return lid
+  }
 
   const fromFinney = price => web3.utils.toWei(`${price}`, 'finney')
 
