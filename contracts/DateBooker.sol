@@ -3,6 +3,8 @@ pragma solidity ^0.5.0;
 // TODO: introduce needed modifiers and require() in functions
 //       checks on data[id]
 
+// FIXME: consider introducing a cleanup function that cancels inactive bookings.
+
 contract DateBooker {
 
   // =============================================================
@@ -54,6 +56,7 @@ contract DateBooker {
     uint start;
     uint end;
     uint capacity;
+    // Counts the number of bookings that have been made but not cancelled
     uint size;
     mapping(uint => Entry) d;
   }
@@ -136,8 +139,8 @@ contract DateBooker {
       return NO_MORE_SPACE;
     }
     // Check that there are no date intersections
-    fromDate = timestampToDay(fromDate);
-    uint toDate = fromDate + nbOfDays;
+    uint toDate = dayToTimestamp(timestampToDay(fromDate) + nbOfDays);
+    emit Log(toDate);
     int ret = findBookWithIntersectingDates(id, fromDate, toDate);
     if (ret >= 0) {
       emit BookConflict(id, uint(ret));
@@ -165,6 +168,10 @@ contract DateBooker {
   // =============================================================
   // CONSTANT FUNCTIONS
   // =============================================================
+
+  function getNow() public view returns (uint) {
+      return now;
+  }
 
   function findBookWithIntersectingDates(uint id, uint fromDate, uint toDate) private view returns (int) {
     if (isEmpty(id)) {
@@ -194,6 +201,24 @@ contract DateBooker {
     return (_data.d[i].bid == bid) ? int(i) : NOT_FOUND;
   }
 
+  /**
+   * Returns the number of bookings for which the end date is after "now"
+   */
+  function getActiveBookingsCount(uint id) public view returns (uint count) {
+    Data storage _data = data[id];
+    uint i = _data.start;
+    uint j = 0;
+    uint last = _data.d[i].prev;
+    uint size = getSize(id);
+    while (j < size) {
+      if (_data.d[i].toDate > now)
+        count++;
+      i = _data.d[i].next;
+      j++;
+    }
+    return count;
+  }
+
   function getSize(uint id) view public returns (uint) {
     return data[id].size;
   }
@@ -214,7 +239,7 @@ contract DateBooker {
     int idx = findBook(id, bid);
     require(idx >= 0, 'Cannot get dates for non-present bid.');
     Entry storage entry = data[id].d[uint(idx)];
-    return (daytoTimestamp(entry.fromDate), daytoTimestamp(entry.toDate));
+    return (entry.fromDate, entry.toDate);
   }
 
   function datesIntersect(uint from1, uint to1, uint from2, uint to2) private pure returns (bool) {
@@ -226,7 +251,7 @@ contract DateBooker {
     return uint(timestamp / 86400);
   }
 
-  function daytoTimestamp(uint day) private pure returns (uint) {
+  function dayToTimestamp(uint day) private pure returns (uint) {
     return uint(day * 86400);
   }
 

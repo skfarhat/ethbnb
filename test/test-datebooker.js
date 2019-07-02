@@ -20,6 +20,7 @@ contract('DateBooker', async (accounts) => {
   const FEB_15 = 1550188800 // February 15 2019 - 00:00
   const FEB_17 = 1550361600 // February 17 2019 - 00:00
   const FEB_18 = 1550448000 // February 18 2019 - 00:00
+  const futureFeb = dayNb => new Date(`3019-02-${dayNb}`).getTime() / 1000
 
   it('Register event fired upon registration', async() => {
     let r
@@ -98,6 +99,46 @@ contract('DateBooker', async (accounts) => {
     truffleAssert.eventNotEmitted(r, 'PermissionDenied')
     let actualSize = await booker.getSize.call(id, d)
     assert.equal(bignumToNum(actualSize), 1, 'Actual size should be 1')
+  })
+
+  it('getActiveBookingsCount() returns 2, when 2 in the past and one in the future', async() => {
+    let r
+    let bid
+    var booker = await DateBooker.deployed()
+    let id = await registerAndGetId(booker, CAPACITY, d)
+    r = await booker.book(id, FEB_15, 2, d) // to FEB_17
+    r = await booker.book(id, FEB_18, 3, d) // to FEB_21
+    r = await booker.book(id, futureFeb(5), 3, d) // date way in the future
+    truffleAssert.eventEmitted(r, 'BookSuccess', (ev) => bid = ev.bid)
+    let activeCount = await booker.getActiveBookingsCount.call(id, d)
+    let now = await booker.getNow.call(d)
+    assert(activeCount == 1, 'There should only be one active')
+  })
+
+  it('getActiveBookingsCount() returns 0 when nothing was booked', async() => {
+    let r
+    let bid
+    var booker = await DateBooker.deployed()
+    let id = await registerAndGetId(booker, CAPACITY, d)
+    let activeCount = await booker.getActiveBookingsCount.call(id, d)
+    assert(activeCount == 0, 'There should be zero active when nothing was booked.')
+  })
+
+
+  it('getActiveBookingsCount() returns 2 when 2 bookings in the future', async() => {
+    let r
+    let bid
+    var booker = await DateBooker.deployed()
+    let id = await registerAndGetId(booker, 2, d)
+    r = await booker.book(id, futureFeb(3), 2, d)
+    r = await booker.book(id, futureFeb(10), 3, d)
+    let activeCount = await booker.getActiveBookingsCount.call(id, d)
+    assert(activeCount == 2, 'There should be two active')
+  })
+
+
+  it('getActiveBookingsCount() returns 0 when all have been cancelled', async() => {
+
   })
 
   // No conflict
