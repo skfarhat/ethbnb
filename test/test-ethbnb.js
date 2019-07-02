@@ -19,8 +19,41 @@ const bigNumberToInt = bn => parseInt(bn.toString())
 const feb2019 = dayNb => new Date(`2019-02-${dayNb}`).getTime() / 1000
 const fromFinney = price => web3.utils.toWei(`${price}`, 'finney')
 
+const DEFAULT_LISTING_PRICE = 8
+const DEFAULT_LISTING_PRICE_WEI = fromFinney(DEFAULT_LISTING_PRICE)
+
 contract('EthBnB', async (accounts) => {
   const d = { from: accounts[0] }
+
+  /**
+   * Create a default listing and return its id
+   * function will assert if no CreateListingEvent is fired
+   *
+   * @bnb           the deployed contract
+   * @account       the account that should create the listing
+   */
+  const createListingDefault = async (bnb, account) => {
+    let lid
+    // We will send 8 times the price amount, to ensure many bookings can be achieved using the default-created listing
+    const d = { from: account, value: fromFinney(DEFAULT_LISTING_PRICE * 8) }
+    const res = await bnb.createListing(COUNTRIES.GB, 'London', DEFAULT_LISTING_PRICE_WEI, d)
+    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+    return lid
+  }
+
+  /**
+   * Books the listing using default values.
+   *
+   * @bnb                         the deployed contract
+   * @account                     the account that should book the listing
+   * @lid, fromDate, nbOfDays     same parameters that would have otherwise been passed to listingBook
+   */
+  const bookListingDefault = async (bnb, account, lid, fromDate, nbOfDays) => {
+    let bid
+    res = await bnb.listingBook(lid, fromDate, nbOfDays, { from: account, value: fromFinney(DEFAULT_LISTING_PRICE * 2) })
+    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
+    return bid
+  }
 
   // Eth account that has no corresponding 'Account' in EthBnB contract
   const UNUSED_ACCOUNT = accounts[8]
@@ -67,38 +100,26 @@ contract('EthBnB', async (accounts) => {
   it('Listing: createListing() correct', async () => {
     let res
     const bnb = await EthBnB.deployed()
-    // Create account
     res = await bnb.createAccount('Alex', d)
-    // Create a listing
-    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, d)
-    // Check that an event was emitted
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => bigNumberToInt(ev.lid) > 0, 'CreateListingEvent should be emitted with the id of the created listing')
+    const lid = await createListingDefault(bnb, accounts[0])
+    assert (lid > 0, 'The listing id should be greater than zero')
   })
 
   it('Listing can be booked', async () => {
     let res
-    let lid
     const bnb = await EthBnB.deployed()
-    // Create account
     res = await bnb.createAccount('Alex', d)
-    // Create a listing
-    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, d)
-    // Check that an event was emitted
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
-    res = await bnb.listingBook(lid, feb2019(10), 3)
-    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
+    const lid = await createListingDefault(bnb, accounts[0])
+    await bookListingDefault(bnb, accounts[0], lid, feb2019(10), 3)
+    // res = await bnb.listingBook(lid, feb2019(10), 3)
+    // truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
   })
 
   it('Listing can be deleted and cannot be accessed afterwards', async () => {
     let res
-    let lid
     const bnb = await EthBnB.deployed()
     res = await bnb.createAccount('Alex', d)
-    const priceFinney = 8
-    const priceWei = fromFinney(priceFinney)
-    const hostStakeWei = fromFinney(priceFinney * 2)
-    res = await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: accounts[0], value: hostStakeWei })
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+    let lid = await createListingDefault(bnb, accounts[0])
     res = await bnb.listingDelete(lid)
     truffleAssert.eventEmitted(res, 'DeleteListingEvent', ev => lid = ev.lid)
     // We expect the below to fail since there is no such listing
@@ -113,72 +134,50 @@ contract('EthBnB', async (accounts) => {
 
   it('Two bookings on the same listing have different bids.', async () => {
     let res
-    let bid1
-    let bid2
-    let lid
     const bnb = await EthBnB.deployed()
-    res = await bnb.createAccount('Alex', d)
-    // Create a listing
-    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, d)
-    // Check that an event was emitted
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
-    res = await bnb.listingBook(lid, feb2019(10), 3)
-    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid1 = ev.bid)
-    res = await bnb.listingBook(lid, feb2019(20), 3)
-    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid2 = ev.bid)
+    res = await bnb.createAccount('Alex', { from : accounts[0] })
+    res = await bnb.createAccount('Mary', { from : accounts[1] })
+    res = await bnb.createAccount('Joey', { from : accounts[2] })
+    const lid = await createListingDefault(bnb, accounts[0])
+    const bid1 = await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
+    const bid2 = await bookListingDefault(bnb, accounts[2], lid, feb2019(20), 3)
     assert.notEqual(bid1, bid2, 'Bookings on the same listing must have different bids.')
   })
 
   it('Listing can be cancelled', async () => {
     let res
-    let lid
-    let bid
     const bnb = await EthBnB.deployed()
-    // Create account
-    res = await bnb.createAccount('Alex', d)
-    // Create a listing
-    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, d)
-    // Get the listing id from the event
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
-    // Book the listing and get the booking id
-    res = await bnb.listingBook(lid, feb2019(10), 3, d)
-    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
+    res = await bnb.createAccount('Alex', { from : accounts[0] })
+    res = await bnb.createAccount('Mary', { from : accounts[1] })
+    const lid = await createListingDefault(bnb, accounts[0])
+    const bid = await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
     // Cancel the booking
-    res = await bnb.listingCancel(lid, bid, d)
+    res = await bnb.listingCancel(lid, bid, { from: accounts[0] })
     truffleAssert.eventEmitted(res, 'BookingCancelled')
   })
 
   it('Cannot cancel inexistent booking', async () => {
     let res
-    let lid
     const bnb = await EthBnB.deployed()
-    // Create account
-    res = await bnb.createAccount('Alex', d)
-    // Create a listing
-    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, d)
-    // Get the listing id from the event
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+    res = await bnb.createAccount('Alex', { from : accounts[0] })
+    const lid = await createListingDefault(bnb, accounts[0])
     // Cancel inexistent booking booking
-    res = await bnb.listingCancel(lid, /* inexistent id */ 128348, d)
+    res = await bnb.listingCancel(lid, /* inexistent id */ 128348, { from: accounts[0] })
     truffleAssert.eventEmitted(res, 'BookingNotFound')
   })
 
   it('Cannot book more than capacity', async () => {
     let res
-    let lid
+    let bid
     const bnb = await EthBnB.deployed()
-    // Create account
-    const cap = bigNumberToInt(await bnb.BOOKING_CAPACITY.call(d))
-    res = await bnb.createAccount('Alex', d)
-    // Create a listing
-    res = await bnb.createListing(COUNTRIES.GB, 'London', 5000, d)
-    // Get the listing id from the event
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+    res = await bnb.createAccount('Alex', { from : accounts[0] })
+    res = await bnb.createAccount('Mary', { from : accounts[1] })
+    const lid = await createListingDefault(bnb, accounts[0])
     for (let i = 0; i < 5; i++) {
-      res = await bnb.listingBook(lid, feb2019(18) + i * 86400, 1, d)
+      res = await bnb.listingBook(lid, feb2019(18) + i * 86400, 1, { from: accounts[1], value: fromFinney(DEFAULT_LISTING_PRICE * 2)})
       truffleAssert.eventNotEmitted(res, 'BookingNoMoreSpace')
     }
-    res = await bnb.listingBook(lid, /* irrelevant arg */ 23423, 1)
+    res = await bnb.listingBook(lid, /* irrelevant arg */ 23423, 1, { from: accounts[1], value: fromFinney(DEFAULT_LISTING_PRICE * 2)})
     truffleAssert.eventEmitted(res, 'BookingNoMoreSpace')
   })
 
@@ -359,4 +358,13 @@ contract('EthBnB', async (accounts) => {
     }
     assert(errorWasThrown, 'Should not be able to rate a booking whose end date is in the future')
   })
+
+  it('Owner cannot book their own listing', async () => {
+    assert(false, 'Not implemented')
+  })
+
+  it('Only booking owner can cancel it', async () => {
+    assert(false, 'Not implemented')
+  })
+
 })
