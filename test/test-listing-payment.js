@@ -23,7 +23,7 @@ contract('EthBnB', async (accounts) => {
   it('Owner must stake at least 2 x price', async () => {
     const bnb = await EthBnB.deployed()
     const [host] = accounts
-    const priceFinney = 800
+    const priceFinney = 8
     const priceWei = fromFinney(priceFinney)
     const stakeWei = priceWei
     await bnb.createAccount('Host', { from: host })
@@ -31,6 +31,7 @@ contract('EthBnB', async (accounts) => {
       // we create a listing and stake the same price
       await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: stakeWei })
     } catch (e) {
+      assert(e.toString().search('Must stake at least') > -1, 'The revert message does not match expectation')
       return
     }
     assert(false, 'Should have thrown an exception')
@@ -53,21 +54,21 @@ contract('EthBnB', async (accounts) => {
   //   }
   // })
 
-  it('listingCreate works when the host provides an acceptable stake (n x price)', async () => {
-    const bnb = await EthBnB.deployed()
-    const [host] = accounts
-    const priceFinney = 8
-    const priceWei = fromFinney(priceFinney) // the acutal house price in wei
-    const stakeWei1 = fromFinney(priceFinney * 2) // value staked by the host
-    const stakeWei2 = fromFinney(priceFinney * 3) // value staked by the host
-    await bnb.createAccount('Host', { from: host })
-    try {
-      await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: stakeWei1 })
-      await bnb.createListing(COUNTRIES.GB, 'Paris', priceWei, { from: host, value: stakeWei2 })
-    } catch (e) {
-      assert(false)
-    }
-  })
+  // it('listingCreate works when the host provides an acceptable stake (n x price)', async () => {
+  //   const bnb = await EthBnB.deployed()
+  //   const [host] = accounts
+  //   const priceFinney = 8
+  //   const priceWei = fromFinney(priceFinney) // the acutal house price in wei
+  //   const stakeWei1 = fromFinney(priceFinney * 2) // value staked by the host
+  //   const stakeWei2 = fromFinney(priceFinney * 3) // value staked by the host
+  //   await bnb.createAccount('Host', { from: host })
+  //   try {
+  //     await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: stakeWei1 })
+  //     await bnb.createListing(COUNTRIES.GB, 'Paris', priceWei, { from: host, value: stakeWei2 })
+  //   } catch (e) {
+  //     assert(false)
+  //   }
+  // })
 
   it('Bookings fail when the stake value has run out', async () => {
     // Third booking should fail because stake run out
@@ -78,11 +79,11 @@ contract('EthBnB', async (accounts) => {
     const [host, guest1, guest2, guest3] = accounts
     const priceFinney = 8
     const priceWei = fromFinney(priceFinney)
-    const hostStakeWei = fromFinney(priceFinney * 3)
+    const hostStakeWei = fromFinney(priceFinney * 4)
     const guestStake = fromFinney(priceFinney * 2)
     await bnb.createAccount('Host', { from: host })
     await bnb.createAccount('Guest1', { from: guest1 })
-    await bnb.createAccount('Guest1', { from: guest2 })
+    await bnb.createAccount('Guest2', { from: guest2 })
     res = await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: hostStakeWei })
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
     res = await bnb.listingBook(lid, feb2019(20), 1, { from: guest1, value: guestStake })
@@ -92,13 +93,13 @@ contract('EthBnB', async (accounts) => {
     try {
       await bnb.listingBook(lid, feb2019(6), 1, { from: guest3, value: guestStake })
     } catch(err) {
-      console.log('the exception thrown is', err)
+      // console.log('the exception thrown is', err)
       return
     }
     assert(false, 'Third booking should fail')
   })
 
-  it('Balances are correct - after listing creation', async() => {
+  it('Balances are correct after listing creation', async() => {
       const bnb = await EthBnB.deployed()
       let lid
       let res
@@ -158,7 +159,7 @@ contract('EthBnB', async (accounts) => {
   })
 
 
-  it('Balances are correct - after booking is rated by both', async() => {
+  it('Balances are correct after booking is rated by both', async() => {
       const bnb = await EthBnB.deployed()
       let lid
       let res
@@ -181,13 +182,13 @@ contract('EthBnB', async (accounts) => {
       let hostBalanceBefore = await web3.eth.getBalance(host)
       let contractBalanceBefore = await web3.eth.getBalance(bnb.address)
 
-      console.log('lid and bid are ', lid.toString(), bid.toString())
       // Host rates
       res = await bnb.rate(lid, bid, 3, { from: host })
-
+      const gasUsed = res.receipt.gasUsed
       // Ensure contract's balance doesn't change following only one rate
       assert(contractBalanceBefore == (await web3.eth.getBalance(bnb.address)), 'Contract\'s balance should not change following the first rate')
 
+      const gasPrice = await web3.eth.getGasPrice()
       // Guest rates
       res = await bnb.rate(lid, bid, 5, { from: guest })
 
@@ -195,13 +196,18 @@ contract('EthBnB', async (accounts) => {
       const guestBalanceDiff = (await web3.eth.getBalance(guest)) - guestBalanceBefore
       const hostBalanceDiff = (await web3.eth.getBalance(host)) - hostBalanceBefore
 
+      // IMPROV: At the moment we only check that guest and host balances have increased
+      //         but not by how much. It's slightly tedious to calculate exact amounts because
+      //         their balances will have increased as a result of issuing the transactions and getting
+      //         mined.
+      //
       // Balance updates:
       //  - the contract's balance should have decreased by 2 x stake
       //  - guest's balance should increase by stake relative to the time before they rated
       //  - host's balances should increase by stake relative to the time before they rated
       assert(contractBalanceDiff == (-2) * priceWei, 'Contract\'s balance should decrease after both have rated')
-      assert(guestBalanceDiff == priceWei, 'Guest\'s balance should increase after both have rated')
-      assert(hostBalanceDiff == priceWei, 'Host\'s balance should increase after both have rated')
+      assert(guestBalanceDiff > priceWei / 2, 'Guest\'s balance should increase after both have rated')
+      assert(hostBalanceDiff > priceWei / 2, 'Host\'s balance should increase after both have rated')
   })
 
   // TODO: how do we test that it only succeeds after the given day has passed?

@@ -194,6 +194,25 @@ contract('EthBnB', async (accounts) => {
     assert.equal(bigNumberToInt(res.price), newPrice)
   })
 
+  it('Listing: Closing a listing fails when there are unfinished bookings', async () => {
+    let lid
+    const bnb = await EthBnB.deployed()
+    await bnb.createAccount('Alex', d)
+    const LOCATION = 'London'
+    const PRICE = 5000
+    const COUNTRY = COUNTRIES.GB
+    let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, d)
+    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+    // Change it to 500
+    const newPrice = 500
+    await bnb.setListingPrice(lid, newPrice, { from: accounts[0] })
+    res = await bnb.getListingAll(lid)
+    assert.equal(bigNumberToInt(res.price), newPrice)
+  })
+
+
+
+
   // A host has two listings, and gets a booking for each.
   // His guests rate him
   it('Rating: a user twice, check their totalScore and nRatings', async () => {
