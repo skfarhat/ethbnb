@@ -37,39 +37,6 @@ contract('EthBnB', async (accounts) => {
     assert(false, 'Should have thrown an exception')
   })
 
-  // it('Owner must stake at least 2 x price and it has to be a multiple of price', async () => {
-  //   const bnb = await EthBnB.deployed()
-  //   const [host] = accounts
-  //   const priceFinney = 800
-  //   const stakeFinney = 900
-  //   const priceWei = fromFinney(priceFinney)
-  //   const stakeWei = fromFinney(stakeFinney)
-  //   assert(!Number.isInteger(stakeFinney / priceFinney)) // let's make sure it's not an integer
-  //   await bnb.createAccount('Host', { from: host })
-  //   try {
-  //     await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: stakeWei })
-  //     assert(false, 'Should have thrown an exception')
-  //   } catch (e) {
-  //     // Pass
-  //   }
-  // })
-
-  // it('listingCreate works when the host provides an acceptable stake (n x price)', async () => {
-  //   const bnb = await EthBnB.deployed()
-  //   const [host] = accounts
-  //   const priceFinney = 8
-  //   const priceWei = fromFinney(priceFinney) // the acutal house price in wei
-  //   const stakeWei1 = fromFinney(priceFinney * 2) // value staked by the host
-  //   const stakeWei2 = fromFinney(priceFinney * 3) // value staked by the host
-  //   await bnb.createAccount('Host', { from: host })
-  //   try {
-  //     await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: stakeWei1 })
-  //     await bnb.createListing(COUNTRIES.GB, 'Paris', priceWei, { from: host, value: stakeWei2 })
-  //   } catch (e) {
-  //     assert(false)
-  //   }
-  // })
-
   it('Bookings fail when the stake value has run out', async () => {
     // Third booking should fail because stake run out
     let lid
@@ -225,31 +192,10 @@ contract('EthBnB', async (accounts) => {
     assert(false, 'Not implemented')
   })
 
+  it('Neither host nor guest can rate before booking end', async () => {
+    // TODO: put the booking for a long time in the future
+    // try to rate it now, it fails. Great
+    // Create bookings way in the past. Rate them now, they succeed. Great.
+  })
 
-  // it('Neither host nor guest can rate before booking end', async () => {
-  //   let lid
-  //   let res
-  //   let bid
-  //   const bnb = await EthBnB.deployed()
-  //   const [host, guest] = accounts
-  //   const priceFinney = 800
-  //   const priceWei = fromFinney(priceFinney)
-  //   const stakeWei = fromFinney(priceFinney * 3)
-  //   const guestStakeWei = fromFinney(priceFinney * 2)
-  //   // We create accounts and a listing providing a valid stake (x3)
-  //   await bnb.createAccount('Host', { from: host })
-  //   await bnb.createAccount('Guest', { from: guest })
-  //   res = await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: stakeWei })
-  //   truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
-  //   // Guest books the listing and provides appropriate payment
-  //   res = await bnb.listingBook(lid, feb2019(7), 1, { from: guest, value: guestStakeWei })
-  //   truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
-  //   // Host rates the guest
-  //   try {
-  //     res = await bnb.rate(lid, bid, 4, { from: host })
-  //   } catch(err) {
-  //     return
-  //   }
-  //   assert(false, 'Rating should fail because the booking has not elapsed')
-  // })
 })
