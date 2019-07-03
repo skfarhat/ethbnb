@@ -4,7 +4,6 @@ const EthBnB = artifacts.require('EthBnB')
 const {
   feb2019,
   fromFinney,
-  // bigNumberToInt,
   createListingDefault,
   bookListingDefault,
   BOOKING_CAPACITY,
@@ -235,16 +234,38 @@ contract('EthBnB', async (accounts) => {
     const lid = await createListingDefault(bnb, host)
 
     // Guest1 books the listing
-    res = await bnb.listingBook(lid, feb2019(20), 4, { from: guest2, value: guest2Stake })
+    res = await bnb.listingBook(lid, feb2019(20), 1, { from: guest2, value: guest2Stake })
 
     // Guest2 tries to book it and fails
     const balance3 = await web3.eth.getBalance(bnb.address)
-    res = await bnb.listingBook(lid, feb2019(20), 2, { from: guest2, value: guest2Stake })
+    res = await bnb.listingBook(lid, feb2019(20), 1, { from: guest2, value: guest2Stake })
     const balance4 = await web3.eth.getBalance(bnb.address)
     truffleAssert.eventEmitted(res, 'BookingConflict')
 
     // Ensure the contract balance does not increase following the failed booking
     assert(balance3 == balance4, 'Contract balance should not increase when a failed booking occurs')
+  })
+
+  it('Booking price scales with number of days', async () => {
+    let res
+    const [host, guest1] = accounts
+    const bnb = await EthBnB.deployed()
+    const guestStake = fromFinney(DEFAULT_LISTING_PRICE * 2)
+    res = await bnb.createAccount('Host', { from: host })
+    res = await bnb.createAccount('Guest1', { from: guest1 })
+    const lid = await createListingDefault(bnb, host)
+
+    // Book listing for one day. Should succeed.
+    res = await bnb.listingBook(lid, feb2019(20), 1, { from: guest1, value: guestStake })
+
+    // Book listing for many days. Should fail, not enough stake.
+    try {
+      res = await bnb.listingBook(lid, feb2019(20), 5, { from: guest1, value: guestStake })
+    } catch (err) {
+      assert(err.toString().search('Guest must stake twice the price') > -1, 'Unexpected exception message')
+      return
+    }
+    assert(false, 'Exception should have been thrown for Not enough stake')
   })
 
   it('Listing: setting a listing price fails when there is not enough staked ', async () => {

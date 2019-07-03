@@ -214,7 +214,7 @@ contract EthBnB {
     public payable listingExists(lid) {
       require(hasAccount(), 'Guest must have an account before booking');
       Listing storage listing = listings[lid];
-      uint256 stake = 2 * listing.price;
+      uint256 stake = 2 * listing.price * nbOfDays;
       address guestAddr = msg.sender;
       uint dbid = listing.dbid;
 

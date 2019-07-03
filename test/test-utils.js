@@ -31,7 +31,7 @@ const bigNumberToInt = bn => parseInt(bn.toString())
 const createListingDefault = async (bnb, account) => {
   let lid
   // We will send 20 times the price amount, to ensure many bookings can be achieved using the default-created listing
-  const d = { from: account, value: fromFinney(DEFAULT_LISTING_PRICE * 20) }
+  const d = { from: account, value: fromFinney(DEFAULT_LISTING_PRICE * 100) }
   const res = await bnb.createListing(COUNTRIES.GB, 'London', DEFAULT_LISTING_PRICE_WEI, d)
   truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
   return lid
@@ -46,7 +46,7 @@ const createListingDefault = async (bnb, account) => {
  */
 const bookListingDefault = async (bnb, account, lid, fromDate, nbOfDays) => {
   let bid
-  res = await bnb.listingBook(lid, fromDate, nbOfDays, { from: account, value: fromFinney(DEFAULT_LISTING_PRICE * 2) })
+  res = await bnb.listingBook(lid, fromDate, nbOfDays, { from: account, value: fromFinney(DEFAULT_LISTING_PRICE * 2 * nbOfDays) })
   truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
   return bid
 }
