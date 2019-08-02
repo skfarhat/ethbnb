@@ -68,9 +68,10 @@ const chainTransactions = [
     inputs: [
       { value: 65/* GB */, name: 'country' },
       { value: 'Cambridge', name: 'location' },
-      { value: 600, name: 'price' },
+      { value: 6, name: 'price' },
     ],
     constant: false,
+    value: 2 * 6,
     metadata: {
       title: '53 Devonshire-on-Rails',
       description: 'Welcome to the super awesome Devonshire place.',
@@ -85,9 +86,10 @@ const chainTransactions = [
     inputs: [
       { value: '65'/* GB */, name: 'country' },
       { value: 'London', name: 'location' },
-      { value: '1799', name: 'price' },
+      { value: '17', name: 'price' },
     ],
     constant: false,
+    value: 2 * 17,
     metadata: {
       title: 'London Victorian House',
       description: `Decent sized, basic double room in a 3 bed Shared flat situated in the heart of Holborn,
@@ -103,9 +105,10 @@ const chainTransactions = [
     inputs: [
       { value: '75'/* FR */, name: 'country' },
       { value: 'Paris', name: 'location' },
-      { value: '2000', name: 'price' },
+      { value: '20', name: 'price' },
     ],
     constant: false,
+    value: 2 * 20,
     metadata: {
       title: 'Lovely house at Croissy-Sur-Seine',
       description: `Ouvry Manor - big place - jakuzzi - sauna - lovely spaceous garden - big DIY garage - 4 bedrooms
@@ -121,9 +124,10 @@ const chainTransactions = [
     inputs: [
       { value: '118'/* LB */, name: 'country' },
       { value: 'Beirut', name: 'location' },
-      { value: '700', name: 'price' },
+      { value: '7', name: 'price' },
     ],
     constant: false,
+    value: 2 * 7,
     metadata: {
       title: 'Beirut Central',
       description: 'Lovely house',
@@ -137,9 +141,10 @@ const chainTransactions = [
     inputs: [
       { value: '118'/* LB */, name: 'country' },
       { value: 'Saida', name: 'location' },
-      { value: '300', name: 'price' },
+      { value: '3', name: 'price' },
     ],
     constant: false,
+    value: 2 * 3,
     metadata: {
       title: 'Sidon Castle',
       description: 'Great flat with a nice view!',
@@ -276,6 +281,7 @@ const DataManager = (database) => {
   // Show web3 where it needs to look for the Ethereum node.
   const abi = jsonInterface.abi
   const web3 = new Web3(new Web3.providers.WebsocketProvider(global.constants.PROVIDER_WS))
+  const fromFinney = value => web3.utils.toWei(`${value}`, 'finney')
   // Load ABI, then contract
   const contract = new web3.eth.Contract(abi, contractAddress)
   const ipfs = ipfsAPI('ipfs.infura.io', '5001', { protocol: 'https' })
@@ -327,10 +333,15 @@ const DataManager = (database) => {
       logger.silly('addTestDataToChain')
       const accounts = await web3.eth.getAccounts()
       await Promise.all(chainTransactions.map(async (chainTX) => {
-        const { name, inputs, clientIndex, metadata } = chainTX
+        const { name, inputs, clientIndex, metadata, value } = chainTX
         const inValues = inputs.map(x => x.value)
         const addr = accounts[clientIndex]
-        const tx = await contract.methods[name](...inValues).send({ from: addr, gas: 1000000 })
+        const txIn = {
+          from: addr,
+          gas: 1000000,
+          value: isSet(value) ? fromFinney(value) : 0,
+        }
+        const tx = await contract.methods[name](...inValues).send(txIn)
         // e.g meta might be 'listing'
         const meta = Object.assign(isSet(metadata) ? metadata : {}, { txHash: tx.transactionHash })
         const metadataMethod = metadataMethods[name]
