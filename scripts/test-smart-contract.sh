@@ -15,11 +15,10 @@ fail_commit() {
   exit 1
 }
 
-# If smart-contract is added to commit
+# If smart-contract is added to commit, test it
 if [ $(egrep -c "$SMART_CONTRACT_FILE" <(git diff --cached --name-status)) -ne 0 ]; then
-  # Test it
   cd $ROOT_DIR && echo "Running tests on smart-contract"
-  truffle test || (echo "Failed smart-contract tests" && fail_commit)
+  truffle test || echo "Failed smart-contract tests" && fail_commit
 fi
 
 pass_commit
