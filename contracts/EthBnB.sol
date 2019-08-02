@@ -326,7 +326,7 @@ contract EthBnB {
   //
   // @param lid           id of the listing to be cancelled
   // @param bid           id of the booking to be cancelled
-  function listingCancel(uint lid, uint bid) public {
+  function cancelBooking(uint lid, uint bid) public {
     checkListingId(lid);
     uint dbid = listings[lid].dbid;
     int res = dateBooker.cancel(dbid, bid);

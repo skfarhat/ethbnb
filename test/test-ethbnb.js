@@ -111,7 +111,7 @@ contract('EthBnB', async (accounts) => {
     res = await bnb.createAccount('Mary', { from : accounts[1] })
     const lid = await createListingDefault(bnb, accounts[0])
     const bid = await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
-    res = await bnb.listingCancel(lid, bid, { from: accounts[0] })
+    res = await bnb.cancelBooking(lid, bid, { from: accounts[0] })
     truffleAssert.eventEmitted(res, 'BookingCancelled')
   })
 
@@ -190,7 +190,7 @@ contract('EthBnB', async (accounts) => {
     const bnb = await EthBnB.deployed()
     res = await bnb.createAccount('Alex', { from : accounts[0] })
     const lid = await createListingDefault(bnb, accounts[0])
-    res = await bnb.listingCancel(lid, /* in-existent id */ 128348, { from: accounts[0] })
+    res = await bnb.cancelBooking(lid, /* in-existent id */ 128348, { from: accounts[0] })
     truffleAssert.eventEmitted(res, 'BookingNotFound')
   })
 
@@ -204,12 +204,12 @@ contract('EthBnB', async (accounts) => {
   //   const lid = await createListingDefault(bnb, accounts[0])
   //   const bid = await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
   //   try {
-  //     res = await bnb.listingCancel(lid, bid, { from: accounts[2] })
+  //     res = await bnb.cancelBooking(lid, bid, { from: accounts[2] })
   //   } catch (err) {
   //     console.log('the message we got is', err)
   //     return
   //   }
-  //   assert(false, 'Expected listingCancel to fail')
+  //   assert(false, 'Expected cancelBooking to fail')
   // })
 
   it('Cannot book more than capacity', async () => {
