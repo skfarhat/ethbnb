@@ -189,7 +189,6 @@ contract EthBnB {
   // added to its balance.
   function createListing(Country country, string memory location, uint price) public payable {
     require(hasAccount(), 'Must have an account before creating a listing');
-    require(msg.value >= 2*price, 'Must stake at least x2 the price');
     // Note: enforce a maximum number of listings per user?
     uint dbid = dateBooker.register(BOOKING_CAPACITY);
     listings[nextListingId] = Listing({

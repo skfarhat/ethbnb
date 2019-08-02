@@ -42,23 +42,6 @@ contract('EthBnB', async (accounts) => {
 
   const fromFinney = price => web3.utils.toWei(`${price}`, 'finney')
 
-  it('Owner must stake at least 2 x price', async () => {
-    const bnb = await EthBnB.deployed()
-    const [host] = accounts
-    const priceFinney = 8
-    const priceWei = fromFinney(priceFinney)
-    const stakeWei = priceWei
-    await bnb.createAccount('Host', { from: host })
-    try {
-      // we create a listing and stake the same price
-      await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: stakeWei })
-    } catch (e) {
-      assert(e.toString().search('Must stake at least') > -1, 'The revert message does not match expectation')
-      return
-    }
-    assert(false, 'Should have thrown an exception')
-  })
-
   it('Bookings fail when the stake value has run out', async () => {
     // Third booking should fail because stake run out
     let lid
