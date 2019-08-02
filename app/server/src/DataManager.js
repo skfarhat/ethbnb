@@ -61,6 +61,7 @@ const chainTransactions = [
   // LISTINGS
   // ============================================
   {
+    // Cambridge
     // owner: Host1
     // lid: 1
     clientIndex: 0,
@@ -79,6 +80,7 @@ const chainTransactions = [
     },
   },
   {
+    // London
     // owner: Host1
     // lid: 2
     clientIndex: 0,
@@ -98,6 +100,7 @@ const chainTransactions = [
     },
   },
   {
+    // Paris
     // owner: Host2
     // lid: 3
     clientIndex: 1,
@@ -117,6 +120,7 @@ const chainTransactions = [
     },
   },
   {
+    // Beirut
     // owner: Host2
     // lid: 4
     clientIndex: 1,
@@ -134,6 +138,7 @@ const chainTransactions = [
     },
   },
   {
+    // Saida
     // owner: Host2
     // lid: 5
     clientIndex: 1,
@@ -165,6 +170,7 @@ const chainTransactions = [
       { value: feb2019(10), name: 'fromDate' },
       { value: 3, name: 'nb_days' },
     ],
+    value: 2 * 6,
     constant: false,
   },
   {
@@ -179,6 +185,7 @@ const chainTransactions = [
       { value: feb2019(16), name: 'fromDate' },
       { value: 4, name: 'nb_days' },
     ],
+    value: 2 * 20,
     constant: false,
   },
   {
@@ -193,6 +200,7 @@ const chainTransactions = [
       { value: feb2019(16), name: 'fromDate' },
       { value: 4, name: 'nb_days' },
     ],
+    value: 2 * 6,
     constant: false,
   },
   {
@@ -206,6 +214,7 @@ const chainTransactions = [
       { value: feb2019(6), name: 'fromDate' },
       { value: 4, name: 'nb_days' },
     ],
+    value: 2 * 20,
     constant: false,
   },
   {
@@ -220,6 +229,7 @@ const chainTransactions = [
       { value: feb2019(12), name: 'fromDate' },
       { value: 2, name: 'nb_days' },
     ],
+    value: 2 * 7,
     constant: false,
   },
   // ============================================
