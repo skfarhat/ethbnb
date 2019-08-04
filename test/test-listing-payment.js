@@ -251,6 +251,23 @@ contract('EthBnB', async (accounts) => {
     assert(false, 'Exception should have been thrown for Not enough stake')
   })
 
+  it('Booking: excess payment value in listingBook is returned to guest', async () => {
+    let res
+    const [host, guest] = accounts
+    const bnb = await EthBnB.deployed()
+    const guestStake = fromFinney(DEFAULT_LISTING_PRICE * 4)
+    res = await bnb.createAccount('Host', { from: host })
+    res = await bnb.createAccount('Guest1', { from: guest })
+    const lid = await createListingDefault(bnb, host)
+    const guestBalanceBefore = await web3.eth.getBalance(guest)
+    res = await bnb.listingBook(lid, feb2019(20), 1, { from: guest, value: guestStake })
+    const guestBalanceAfter = await web3.eth.getBalance(guest)
+    // Guest's balance should not have decreased x4
+    // expect the smart-contract to have refunded excess.
+    const guestBalanceDiff = guestBalanceBefore - guestBalanceAfter
+    assert(guestBalanceDiff < guestStake, 'Contract should refund excess stake provided in listingBook')
+  })
+
   it('Listing: setting a listing price fails when there is not enough staked ', async () => {
     assert(false, 'Not implemented')
   })

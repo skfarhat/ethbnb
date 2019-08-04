@@ -213,18 +213,14 @@ contract EthBnB {
     public payable listingExists(lid) {
       require(hasAccount(), 'Guest must have an account before booking');
       Listing storage listing = listings[lid];
+      address payable guest = msg.sender;
       uint256 stake = 2 * listing.price * nbOfDays;
-      address guestAddr = msg.sender;
       uint dbid = listing.dbid;
-
-      require(listing.owner != msg.sender, 'Owner cannot book their own listing');
+      require(listing.owner != guest, 'Owner cannot book their own listing');
 
       // Ensure both guest and host have staked the same
       require(msg.value >= stake, 'Guest must stake twice the price');
       require(listing.balance >= stake, 'Listing must have stake amount in its balance');
-
-      // Refund with any amount exceeding the stake
-      msg.sender.transfer(msg.value - stake);
 
       // Try to book.
       // If successful, create a booking event with the balance amount
@@ -238,18 +234,20 @@ contract EthBnB {
           bid: bid,
           lid: lid,
           ownerAddr: listings[lid].owner,
-          guestAddr: guestAddr,
+          guestAddr: guest,
           ownerRating: 0,
           guestRating: 0,
           // Add the amounts staked by the guest
           // and by the host to the booking balance
           balance: 2 * stake
         });
-
         // Decrement the listing balance
         listing.balance -= stake;
+        // Refund any excess to the guest
+        guest.transfer(msg.value - stake);
       } else {
-        msg.sender.transfer(stake);
+        // Refund all Ether provided if the booking failed
+        guest.transfer(msg.value);
       }
     }
 
