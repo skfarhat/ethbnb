@@ -312,10 +312,10 @@ contract EthBnB {
     //
     if (booking.ownerRating != 0 && booking.guestRating != 0) {
         // TODO: BUG: if not divisible by 4, we could lose some money (?!)
-      uint256 stake = booking.balance / 4;
-      listings[lid].balance += stake * 2;
-      accounts[booking.ownerAddr].owner.transfer(stake);
-      accounts[booking.guestAddr].owner.transfer(stake);
+      uint256 amount = booking.balance / 4;
+      listings[lid].balance += amount * 2;
+      accounts[booking.ownerAddr].owner.transfer(amount);
+      accounts[booking.guestAddr].owner.transfer(amount);
     }
     emit RatingComplete(msg.sender, lid, bid, stars);
   }
