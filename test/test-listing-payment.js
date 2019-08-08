@@ -10,7 +10,7 @@ const {
   DEFAULT_LISTING_PRICE,
   DEFAULT_LISTING_PRICE_WEI,
   COUNTRIES
-} = require('./test-utils')
+} = require('./utils')
 
 contract('EthBnB', async (accounts) => {
 
