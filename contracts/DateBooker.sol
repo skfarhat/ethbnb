@@ -5,7 +5,7 @@ pragma solidity ^0.5.0;
 
 // FIXME: consider introducing a cleanup function that cancels inactive bookings.
 
-contract DateBooker {
+library DateBooker {
 
   // =============================================================
   // CONSTANTS
@@ -61,17 +61,19 @@ contract DateBooker {
     mapping(uint => Entry) d;
   }
 
-  uint nextId = 1;
+  struct BookerStorage {
+      uint nextId;
+      mapping(uint => Data) data;
+  }
 
-  mapping(uint => Data) private data;
 
   // =============================================================
   // STATE CHANGING FUNCTIONS
   // =============================================================
 
-  function register(uint capacity) public returns (uint) {
+  function register(BookerStorage storage self, uint capacity) public returns (uint) {
     require(capacity > 0, "Capacity must be greater than zero");
-    data[nextId] = Data({
+    self.data[self.nextId] = Data({
       start: INVALID,
       end: 0,
       size: 0,
@@ -79,7 +81,7 @@ contract DateBooker {
     });
     // Initialise entries in the d mapping
     for (uint i = 0; i < capacity; i++) {
-      data[nextId].d[i] = Entry({
+      self.data[self.nextId].d[i] = Entry({
         prev: (i == 0) ? capacity - 1 : (i - 1) % capacity,
         next: (i + 1) % capacity,
         bid: INVALID,
@@ -89,9 +91,45 @@ contract DateBooker {
         owner: address(0)
       });
     }
-    emit Register(nextId);
-    return nextId++;
+    emit Register(self.nextId);
+    return self.nextId++;
   }
+
+  function book(BookerStorage storage self, uint id, uint fromDate, uint nbOfDays)
+                public returns (int) {
+    require(nbOfDays > 0, 'Cannot have non-positive days');
+
+    if ( !hasSpace(self, id) ) {
+      emit NoMoreSpace(id);
+      return NO_MORE_SPACE;
+    }
+    // Check that there are no date intersections
+    uint toDate = dayToTimestamp(timestampToDay(fromDate) + nbOfDays);
+    emit Log(toDate);
+    int ret = findBookWithIntersectingDates(self, id, fromDate, toDate);
+    if (ret >= 0) {
+      emit BookConflict(id, uint(ret));
+      return BOOK_CONFLICT;
+    }
+    // Set properties of new entry
+    Data storage _data = self.data[id];
+    _data.d[_data.end].toDate = toDate;
+    _data.d[_data.end].fromDate = fromDate;
+    _data.d[_data.end].bid = _data.size;
+    _data.d[_data.end].used = true;
+    _data.d[_data.end].owner = msg.sender;
+
+    if ( isEmpty(self, id) ) {
+      _data.start = _data.end;
+    }
+    _data.end = _data.d[_data.end].next;
+    if (_data.end == _data.start) {
+      _data.end = INVALID;
+    }
+    emit BookSuccess(id, _data.size);
+    return int(_data.size++);
+  }
+
 
   /**
    * Cancels the booking and returns its id.
@@ -100,20 +138,20 @@ contract DateBooker {
    * @param id          id used in register()
    * @param bid         booking id to be cancelled
    */
-  function cancel(uint id, uint bid) public returns (int) {
-    int idx = findBook(id, bid);
+  function cancel(BookerStorage storage self, uint id, uint bid) public returns (int) {
+    int idx = findBook(self, id, bid);
     if (idx < 0) {
       emit CancellationError(id, NOT_FOUND);
       return NOT_FOUND;
     }
-    Data storage _data = data[id];
+    Data storage _data = self.data[id];
     uint udx = uint(idx);
     Entry storage curr = _data.d[udx];
     // Check permission
-    if (curr.owner != tx.origin) {
+    if (curr.owner != msg.sender) {
       emit PermissionDenied(id, bid);
     }
-    if ( hasSpace(id) ) {
+    if ( hasSpace(self, id) ) {
       _data.d[curr.prev].next = curr.next;
       _data.d[curr.next].prev = curr.prev;
       curr.next = _data.end;
@@ -132,39 +170,6 @@ contract DateBooker {
     return int(bid);
   }
 
-  function book(uint id, uint fromDate, uint nbOfDays) public returns (int) {
-    require(nbOfDays > 0, 'Cannot have non-positive days');
-    if ( !hasSpace(id) ) {
-      emit NoMoreSpace(id);
-      return NO_MORE_SPACE;
-    }
-    // Check that there are no date intersections
-    uint toDate = dayToTimestamp(timestampToDay(fromDate) + nbOfDays);
-    emit Log(toDate);
-    int ret = findBookWithIntersectingDates(id, fromDate, toDate);
-    if (ret >= 0) {
-      emit BookConflict(id, uint(ret));
-      return BOOK_CONFLICT;
-    }
-    // Set properties of new entry
-    Data storage _data = data[id];
-    _data.d[_data.end].toDate = toDate;
-    _data.d[_data.end].fromDate = fromDate;
-    _data.d[_data.end].bid = _data.size;
-    _data.d[_data.end].used = true;
-    _data.d[_data.end].owner = tx.origin;
-
-    if ( isEmpty(id) ) {
-      _data.start = _data.end;
-    }
-    _data.end = _data.d[_data.end].next;
-    if (_data.end == _data.start) {
-      _data.end = INVALID;
-    }
-    emit BookSuccess(id, _data.size);
-    return int(_data.size++);
-  }
-
   // =============================================================
   // CONSTANT FUNCTIONS
   // =============================================================
@@ -173,11 +178,12 @@ contract DateBooker {
       return now;
   }
 
-  function findBookWithIntersectingDates(uint id, uint fromDate, uint toDate) private view returns (int) {
-    if (isEmpty(id)) {
+  function findBookWithIntersectingDates(BookerStorage storage self, uint id, uint fromDate, uint toDate)
+                                            private view returns (int) {
+    if (isEmpty(self, id)) {
       return NOT_FOUND;
     }
-    Data storage _data = data[id];
+    Data storage _data = self.data[id];
     uint i = _data.start;
     uint last = _data.d[_data.start].prev;
     while (i != last && (_data.d[i].used == false ||
@@ -188,11 +194,11 @@ contract DateBooker {
     return (b) ? int(i): NOT_FOUND;
   }
 
-  function findBook(uint id, uint bid) public view returns (int) {
-    if ( isEmpty(id) ) {
+  function findBook(BookerStorage storage self, uint id, uint bid) public view returns (int) {
+    if ( isEmpty(self, id) ) {
       return NOT_FOUND;
     }
-    Data storage _data = data[id];
+    Data storage _data = self.data[id];
     uint i = _data.start;
     uint last = _data.d[i].prev;
     while (_data.d[i].bid != bid && i != last) {
@@ -204,12 +210,12 @@ contract DateBooker {
   /**
    * Returns the number of bookings for which the end date is after "now"
    */
-  function getActiveBookingsCount(uint id) public view returns (uint count) {
-    Data storage _data = data[id];
+  function getActiveBookingsCount(BookerStorage storage self, uint id) public view returns (uint count) {
+    Data storage _data = self.data[id];
     uint i = _data.start;
     uint j = 0;
     uint last = _data.d[i].prev;
-    uint size = getSize(id);
+    uint size = getSize(self, id);
     while (j < size) {
       if (_data.d[i].toDate > now)
         count++;
@@ -219,26 +225,26 @@ contract DateBooker {
     return count;
   }
 
-  function getSize(uint id) view public returns (uint) {
-    return data[id].size;
+  function getSize(BookerStorage storage self, uint id) view public returns (uint) {
+    return self.data[id].size;
   }
 
-  function getCapacity(uint id) view public returns (uint) {
-    return data[id].capacity;
+  function getCapacity(BookerStorage storage self, uint id) view public returns (uint) {
+    return self.data[id].capacity;
   }
 
-  function isEmpty(uint id) view public returns (bool) {
-    return data[id].start == INVALID;
+  function isEmpty(BookerStorage storage self, uint id) view public returns (bool) {
+    return self.data[id].start == INVALID;
   }
 
-  function hasSpace(uint id) view public returns (bool) {
-    return data[id].end != INVALID;
+  function hasSpace(BookerStorage storage self, uint id) view public returns (bool) {
+    return self.data[id].end != INVALID;
   }
 
-  function getDates(uint id, uint bid) public view returns (uint fromDate, uint toDate) {
-    int idx = findBook(id, bid);
+  function getDates(BookerStorage storage self, uint id, uint bid) public view returns (uint fromDate, uint toDate) {
+    int idx = findBook(self, id, bid);
     require(idx >= 0, 'Cannot get dates for non-present bid.');
-    Entry storage entry = data[id].d[uint(idx)];
+    Entry storage entry = self.data[id].d[uint(idx)];
     return (entry.fromDate, entry.toDate);
   }
 
@@ -254,5 +260,10 @@ contract DateBooker {
   function dayToTimestamp(uint day) private pure returns (uint) {
     return uint(day * 86400);
   }
+
+  function getNotFoundCode ()       public pure returns (int)   { return NOT_FOUND; }
+  function getBookConflictCode ()   public pure returns (int)   { return BOOK_CONFLICT; }
+  function getNoMoreSpaceCode ()    public pure returns (int)   { return NO_MORE_SPACE; }
+  function getInvalidCode ()        public pure returns (uint)  { return INVALID; }
 
 }

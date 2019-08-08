@@ -1,5 +1,5 @@
 const truffleAssert = require('truffle-assertions')
-var DateBooker = artifacts.require("DateBooker")
+var DateBooker = artifacts.require("TestDateBooker")
 
 const bignumToNum = (bn) => {
   return parseInt(bn.toString())
@@ -12,7 +12,7 @@ const registerAndGetId = async (booker, capacity, d) =>  {
   return id
 }
 
-contract('DateBooker', async (accounts) => {
+contract('TestDateBooker', async (accounts) => {
   const account0 = accounts[0]
   const d = { from: account0 }
   const CAPACITY = 10

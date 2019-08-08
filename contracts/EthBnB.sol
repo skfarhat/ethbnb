@@ -108,13 +108,14 @@ contract EthBnB {
 
   event RatingComplete(address from, uint lid, uint bid, uint stars);
 
+  // Setup DateBooker library
+  using DateBooker for DateBooker.BookerStorage;
+  DateBooker.BookerStorage dateBooker;
+
   uint public BOOKING_CAPACITY = 5;
 
   // Listings will have incrementing Ids starting from 1
   uint nextListingId = 1;
-
-  // Reference to deployed smart-contract DateBooker initialised in constructor
-  DateBooker dateBooker;
 
   // Store all created listings
   // note that these are also stored in each Account.
@@ -126,10 +127,6 @@ contract EthBnB {
   // =======================================================================
   // FUNCTIONS
   // =======================================================================
-
-  constructor(address dateBookerAddr) public {
-    dateBooker = DateBooker(dateBookerAddr);
-  }
 
   // ACCOUNT
   // -----------------------------------------------------------------------
@@ -360,9 +357,9 @@ contract EthBnB {
 
   // Emits an a booking event depending on the result given
   function emitBookEvent(int result, uint lid) private {
-    if (result == dateBooker.BOOK_CONFLICT()) {
+    if (result == DateBooker.getBookConflictCode()) {
       emit BookingConflict(msg.sender, lid);
-    } else if (result == dateBooker.NO_MORE_SPACE()) {
+    } else if (result == DateBooker.getNoMoreSpaceCode()) {
       emit BookingNoMoreSpace(msg.sender, lid);
     } else if (result >= 0) {
       emit BookingComplete(msg.sender, lid, uint(result) /* = bid */ );
@@ -371,7 +368,7 @@ contract EthBnB {
 
   // Emits an a booking cancel event depending on the result given
   function emitBookCancelEvent(int result, uint lid, uint bid) private {
-    if (result == dateBooker.NOT_FOUND()) {
+    if (result == DateBooker.getNotFoundCode()) {
       emit BookingNotFound(msg.sender, lid, bid);
     } else if (result >= 0) {
       emit BookingCancelled(msg.sender, lid, bid);
