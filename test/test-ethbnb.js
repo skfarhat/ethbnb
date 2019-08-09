@@ -22,8 +22,9 @@ contract('EthBnB', async (accounts) => {
   // Checks that hasAccount() returns false when no account has been created
   it('Account: hasAcccount() returns false when no account has been created', async () => {
     const bnb = await EthBnB.deployed()
-    const account0Exists = await bnb.hasAccount.call({ from: accounts[0] })
-    const account1Exists = await bnb.hasAccount.call({ from: accounts[1] })
+    const [a0, a1] = accounts
+    const account0Exists = await bnb.hasAccount.call({ from: a0 })
+    const account1Exists = await bnb.hasAccount.call({ from: a1 })
     assert.isFalse(account0Exists, 'Account 0 exists for some reason, shouldn\'t be the case')
     assert.isFalse(account1Exists, 'Account 1 exists for some reason, shouldn\'t be the case')
   })
@@ -31,15 +32,15 @@ contract('EthBnB', async (accounts) => {
   // Check that we can create an account
   it('Account: hasAccount() createAccount() are correct', async () => {
     const bnb = await EthBnB.deployed()
-    // Create the account
     const NAME = 'Alex'
-    const FROM = accounts[0]
-    await bnb.createAccount(NAME, { from: FROM })
+    const [a0] = accounts
+    await bnb.createAccount(NAME, { from: a0 })
+
     // Check the account exists
-    const accountExists = await bnb.hasAccount({ from: FROM })
+    const accountExists = await bnb.hasAccount({ from: a0 })
     assert.isTrue(accountExists, 'createAccount doesn\'t seem to have created an account')
 
-    const res = await bnb.getAccountAll(FROM, {from: FROM})
+    const res = await bnb.getAccountAll(a0, {from: a0})
     const { name: actualName, dateCreated: actualDatedCreated,
             totalScore: actualTotalScore, nRatings: actualNRatings } = res
     assert.equal(actualName, NAME, 'The account shortName does not match what we expect')
@@ -53,33 +54,37 @@ contract('EthBnB', async (accounts) => {
       await bnb.createListing(COUNTRIES.GB, 'London', 5000, { from: UNUSED_ACCOUNT })
       assert(false, 'Should have thrown an exception')
     } catch (error) {
-    // Test pass
+      // Test pass
+      // TODO: check the exception message here
     }
   })
 
   // Check that we can create a listing returning a positive listing Id
   it('Listing: createListing() correct', async () => {
     let res
+    const [a0] = accounts
     const bnb = await EthBnB.deployed()
-    res = await bnb.createAccount('Alex', d)
-    const lid = await createListingDefault(bnb, accounts[0])
+    res = await bnb.createAccount('Alex', { from: a0 })
+    const lid = await createListingDefault(bnb, a0)
     assert (lid > 0, 'The listing id should be greater than zero')
   })
 
   it('Listing can be booked', async () => {
     let res
+    const [host, guest] = accounts
     const bnb = await EthBnB.deployed()
-    res = await bnb.createAccount('Alex', { from: accounts[0] })
-    res = await bnb.createAccount('Alex', { from: accounts[1] })
-    const lid = await createListingDefault(bnb, accounts[0])
-    await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
+    res = await bnb.createAccount('Alex', { from: host })
+    res = await bnb.createAccount('Mark', { from: guest })
+    const lid = await createListingDefault(bnb, host)
+    await bookListingDefault(bnb, guest, lid, feb2019(10), 3)
   })
 
   it('Listing can be deleted and cannot be accessed afterwards', async () => {
     let res
+    const [host] = accounts
     const bnb = await EthBnB.deployed()
-    res = await bnb.createAccount('Alex', d)
-    let lid = await createListingDefault(bnb, accounts[0])
+    res = await bnb.createAccount('Alex', { from: host })
+    let lid = await createListingDefault(bnb, host)
     res = await bnb.listingDelete(lid)
     truffleAssert.eventEmitted(res, 'DeleteListingEvent', ev => lid = ev.lid)
     // We expect the below to fail since there is no such listing
@@ -133,8 +138,8 @@ contract('EthBnB', async (accounts) => {
     let res
     const bnb = await EthBnB.deployed()
     const futureDate = new Date('3119-02-11').getTime() / 1000
-
-    res = await bnb.createAccount('Alex', d)
+    const [host] = accounts
+    res = await bnb.createAccount('Alex', { from: host })
     let lid = await createListingDefault(bnb, accounts[0])
     // Make a booking way in the future ensuring it's end-date will be
     // less than the block.timestamp
@@ -152,14 +157,15 @@ contract('EthBnB', async (accounts) => {
   it('Listing: getListingAll() returns correct details', async () => {
     let lid
     const bnb = await EthBnB.deployed()
-    await bnb.createAccount('Alex', d)
+    const [host] = accounts
+    await bnb.createAccount('Alex', { from: host })
     const LOCATION = 'London'
     const PRICE = 5000
     const COUNTRY = COUNTRIES.GB
     const { from: OWNER } = d
     let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, { from: accounts[0], value: fromFinney(DEFAULT_LISTING_PRICE * 2) })
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
-    res = await bnb.getListingAll(lid, d)
+    res = await bnb.getListingAll(lid, { from: host })
     const { location: actualLocation, owner: actualOwner, price: actualPrice, country: actualCountry } = res
     assert.equal(actualLocation, LOCATION)
     assert.equal(bigNumberToInt(actualPrice), PRICE)
@@ -167,23 +173,48 @@ contract('EthBnB', async (accounts) => {
     assert.equal(bigNumberToInt(actualCountry), COUNTRY)
   })
 
-  // TODO: rework this test case
-  // Test get/set listing price
-  it('Listing: get/set listing price()', async () => {
+  it('Listing: setListing works and emits UpdateListingEvent', async () => {
     let lid
+    const [host] = accounts
     const bnb = await EthBnB.deployed()
-    await bnb.createAccount('Alex', d)
+    await bnb.createAccount('Alex', { from : host})
     const LOCATION = 'London'
     const PRICE = 5000
     const COUNTRY = COUNTRIES.GB
-    let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, { from: accounts[0], value: fromFinney(DEFAULT_LISTING_PRICE * 2) })
+    const d = { from: host, value: fromFinney(DEFAULT_LISTING_PRICE * 2) }
+    let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, { from: host })
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
-    // Change it to 500
+
     const newPrice = 500
-    await bnb.setListingPrice(lid, newPrice, { from: accounts[0] })
-    res = await bnb.getListingAll(lid)
-    assert.equal(bigNumberToInt(res.price), newPrice)
+    const newLocation = 'Paris'
+    const newCountry = COUNTRIES.FR
+    res = await bnb.setListing(lid, newPrice, newLocation, newCountry, { from : host })
+    truffleAssert.eventEmitted(res, 'UpdateListingEvent')
+
+    res = await bnb.getListingAll(lid, { from: host })
+    const { location: actualLocation, price: actualPrice, country: actualCountry } = res
+    assert.equal(actualLocation, newLocation)
+    assert.equal(bigNumberToInt(actualPrice), newPrice)
+    assert.equal(bigNumberToInt(actualCountry), newCountry)
   })
+
+  // // TODO: rework this test case
+  // // Test get/set listing price
+  // it('Listing: get/set listing price()', async () => {
+  //   let lid
+  //   const bnb = await EthBnB.deployed()
+  //   await bnb.createAccount('Alex', d)
+  //   const LOCATION = 'London'
+  //   const PRICE = 5000
+  //   const COUNTRY = COUNTRIES.GB
+  //   let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, { from: accounts[0], value: fromFinney(DEFAULT_LISTING_PRICE * 2) })
+  //   truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+  //   // Change it to 500
+  //   const newPrice = 500
+  //   await bnb.setListingPrice(lid, newPrice, { from: accounts[0] })
+  //   res = await bnb.getListingAll(lid)
+  //   assert.equal(bigNumberToInt(res.price), newPrice)
+  // })
 
   it('Cannot cancel in-existent booking', async () => {
     let res

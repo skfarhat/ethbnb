@@ -152,6 +152,7 @@ contract EthBnB {
     return accounts[msg.sender].owner == msg.sender;
   }
 
+  // TODO: remove the owner parameter and just use msg.sender
   function getAccountAll(address owner) public accountExists(owner) view
     returns (string memory name, uint dateCreated, uint totalScore, uint nRatings) {
       Account memory account = accounts[owner];
@@ -173,10 +174,15 @@ contract EthBnB {
     _;
   }
 
+  modifier onlyListingHost(uint lid) {
+    require(listings[lid].owner == msg.sender, 'Only listing host can change it');
+    _;
+  }
+
   function getListingAll(uint lid) public listingExists(lid) view
-    returns (address owner, uint price, string memory location, Country country) {
+    returns (address owner, uint price, string memory location, Country country, uint256 balance) {
       Listing memory l = listings[lid];
-      return (l.owner, l.price, l.location, l.country);
+      return (l.owner, l.price, l.location, l.country, l.balance);
     }
 
   // Creates a new listing for the message sender
@@ -186,6 +192,7 @@ contract EthBnB {
   // added to its balance.
   function createListing(Country country, string memory location, uint price) public payable {
     require(hasAccount(), 'Must have an account before creating a listing');
+    require(price > 0, 'Price must be > 0');
     // Note: enforce a maximum number of listings per user?
     uint dbid = dateBooker.register(BOOKING_CAPACITY);
     listings[nextListingId] = Listing({
@@ -248,10 +255,20 @@ contract EthBnB {
       }
     }
 
+  function setListing(uint lid, uint price, string memory location, Country country)
+    public payable listingExists(lid) onlyListingHost(lid) {
+    Listing storage listing = listings[lid];
+    require(price > 0, 'Price must be > 0');
+    listing.location = location;
+    listing.price = price;
+    listing.country = country;
+    emit UpdateListingEvent(msg.sender, lid);
+  }
+
   // Returns the listing balance to its owner and deletes the listing
   //
   // Only if there are no active bookings.
-  function listingDelete(uint lid) public listingExists(lid) {
+  function listingDelete(uint lid) public listingExists(lid) onlyListingHost(lid) {
     Listing storage listing = listings[lid];
 
     // Check that there are no active bookings before we proceed
@@ -291,9 +308,10 @@ contract EthBnB {
     //    Owner:             booking.balance
     //
     uint256 amount = booking.balance / 4;
+    booking.balance = 0;
     listings[lid].balance += amount * 2;
-    accounts[booking.ownerAddr].owner.transfer(amount);
-    accounts[booking.guestAddr].owner.transfer(amount);
+    accounts[host].owner.transfer(amount);
+    accounts[guest].owner.transfer(amount);
   }
 
   // Rate the booking 1-5 stars
@@ -342,19 +360,6 @@ contract EthBnB {
     uint dbid = listings[lid].dbid;
     int res = dateBooker.cancel(dbid, bid);
     emitBookCancelEvent(res, lid, bid);
-  }
-
-  function setListingPrice(uint lid, uint price) public {
-    checkListingId(lid);
-    require(price > 0, 'Price must be > 0');
-    listings[lid].price = price;
-    emit UpdateListingEvent(msg.sender, lid);
-  }
-
-  function setListingLocation(uint lid, string memory location) public {
-    checkListingId(lid);
-    listings[lid].location = location;
-    emit UpdateListingEvent(msg.sender, lid);
   }
 
   function getBookingDates(uint lid, uint bid) public view returns (uint fromDate, uint toDate) {

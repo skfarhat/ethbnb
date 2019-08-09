@@ -270,6 +270,13 @@ contract('EthBnB', async (accounts) => {
   })
 
   it('Fulfill: Releases funds after guest confirms', async () => {
+
+    const getListingBalance = async (lid, host) => {
+      const res = await bnb.getListingAll(lid, { from: host })
+      const { balance: balance } = res
+      return balance
+    }
+
     const [host, guest] = accounts
     const bnb = await EthBnB.deployed()
     res = await bnb.createAccount('Host', { from: host })
@@ -288,9 +295,10 @@ contract('EthBnB', async (accounts) => {
     truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
 
     // BEFORE: Snapshot guest and host balances
-    let guestBalanceBefore = await web3.eth.getBalance(guest)
-    let hostBalanceBefore = await web3.eth.getBalance(host)
-    let contractBalanceBefore = await web3.eth.getBalance(bnb.address)
+    const guestBalanceBefore = await web3.eth.getBalance(guest)
+    const hostBalanceBefore = await web3.eth.getBalance(host)
+    const contractBalanceBefore = await web3.eth.getBalance(bnb.address)
+    const listingBalanceBefore = await getListingBalance(lid, host)
 
     // Guest fulfills
     res = await bnb.bookingFulfilled(lid, bid, { from: guest })
@@ -299,22 +307,21 @@ contract('EthBnB', async (accounts) => {
     const contractBalanceDiff = (await web3.eth.getBalance(bnb.address)) - contractBalanceBefore
     const guestBalanceDiff = (await web3.eth.getBalance(guest)) - guestBalanceBefore
     const hostBalanceDiff = (await web3.eth.getBalance(host)) - hostBalanceBefore
+    const listingBalanceDiff = (await getListingBalance(lid, host)) - listingBalanceBefore
 
     // IMPROV: At the moment we only check that guest and host balances have increased
     //         but not by how much. It's slightly tedious to calculate exact amounts
     //         because their balances will have decreased by the gas cost of the transactions.
     //
     // Balance updates:
-    //  - the contract's balance should have decreased by 2 x stake
-    //  - guest's balance should increase by stake relative to the time before they rated
-    //  - host's balances should increase by stake relative to the time before they rated
-    assert(contractBalanceDiff == (-2) * priceWei, 'Contract\'s balance should decrease after both have rated')
-    assert(guestBalanceDiff > priceWei / 2, 'Guest\'s balance should increase after both have rated')
-    assert(hostBalanceDiff > priceWei / 2, 'Host\'s balance should increase after both have rated')
+    //  - the contract's balance should have decreased by 2 x amount
+    //  - guest's balance should increase by amount relative to before fulfilment (approx)
+    //  - host's balances should increase by amount relative to before fulfilment (approx)
+    //  - listing's balance should increase by 2 x amount
+    assert(contractBalanceDiff == (-2) * priceWei, 'Contract\'s balance should decrease')
+    assert(guestBalanceDiff > priceWei / 2, 'Guest\'s balance should increase')
+    assert(hostBalanceDiff > priceWei / 2, 'Host\'s balance should increase')
+    assert(listingBalanceDiff == 2 * priceWei, 'Listing\s balance should increase by twice amount')
   })
-
-  // it('User must increase stake in order to set the price', async () => {
-  //   assert(false, 'Not implemented')
-  // })
 
 })
