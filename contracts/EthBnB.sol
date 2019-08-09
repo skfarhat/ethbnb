@@ -268,6 +268,34 @@ contract EthBnB {
     emit DeleteListingEvent(msg.sender, lid);
   }
 
+  /**
+   * Invoked by the guest of a booking after the booking end,
+   * confirming the host fulfilled their obligations, and
+   * releasing funds held in escrow.
+   *
+   * @param lid       id of the booked listing
+   * @param bid       id of the booking
+   *
+   */
+  function bookingFulfilled(uint lid, uint bid) public listingExists(lid) {
+    Booking storage booking = listings[lid].bookings[bid];
+    address guest = booking.guestAddr;
+    address host = booking.ownerAddr;
+    (, uint toDate) = getBookingDates(lid, bid);
+    require(msg.sender == guest , 'Only guest can call bookingFulfilled');
+    require(toDate <= now, 'Cannot fullfill booking before end date');
+
+    // Fund Release:
+    //    Guest receives:    booking.balance
+    //    Listing receives:  2 x booking.balance
+    //    Owner:             booking.balance
+    //
+    uint256 amount = booking.balance / 4;
+    listings[lid].balance += amount * 2;
+    accounts[booking.ownerAddr].owner.transfer(amount);
+    accounts[booking.guestAddr].owner.transfer(amount);
+  }
+
   // Rate the booking 1-5 stars
   //
   // The function checks the msg.sender and validates
@@ -301,18 +329,6 @@ contract EthBnB {
       booking.guestRating = stars;
       accounts[booking.guestAddr].totalScore += stars;
       accounts[booking.guestAddr].nRatings++;
-    }
-    // If both have rated one another, we release the funds as below:
-    // Guest receives:    booking.balance
-    // Listing receives:  2 x booking.balance
-    // Owner:             booking.balance
-    //
-    if (booking.ownerRating != 0 && booking.guestRating != 0) {
-        // TODO: BUG: if not divisible by 4, we could lose some money (?!)
-      uint256 amount = booking.balance / 4;
-      listings[lid].balance += amount * 2;
-      accounts[booking.ownerAddr].owner.transfer(amount);
-      accounts[booking.guestAddr].owner.transfer(amount);
     }
     emit RatingComplete(msg.sender, lid, bid, stars);
   }

@@ -12,6 +12,21 @@ const {
   COUNTRIES
 } = require('./utils')
 
+
+const assertExceptionOnAsyncFn = async (fn, msg) => {
+  try {
+    await fn()
+  } catch (err) {
+    assert(
+        err.toString().search(msg) > -1,
+        'Incorrect exception message'
+    )
+    return
+  }
+  assert(false, 'Function should have failed with \'' + msg + '\'')
+}
+
+
 contract('EthBnB', async (accounts) => {
 
   /**
@@ -130,58 +145,6 @@ contract('EthBnB', async (accounts) => {
     assert(guestBalanceDiff >= guestStakeWei, 'Host balance must have decremented by at least stake amount')
   })
 
-
-  it('Balances are correct after booking is rated by both', async() => {
-    const bnb = await EthBnB.deployed()
-    let lid
-    let res
-    let bid
-    const [host, guest] = accounts
-    const priceFinney = 8
-    const priceWei = fromFinney(priceFinney)
-    const hostStakeWei = fromFinney(priceFinney * 2)
-    const guestStakeWei = fromFinney(priceFinney * 2)
-    await bnb.createAccount('Host', { from: host })
-    await bnb.createAccount('Guest', { from: guest })
-
-    res = await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: hostStakeWei })
-    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
-    res = await bnb.listingBook(lid, feb2019(10), 1, { from: guest, value: guestStakeWei })
-    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
-
-    // Snapshot guest and host balances
-    let guestBalanceBefore = await web3.eth.getBalance(guest)
-    let hostBalanceBefore = await web3.eth.getBalance(host)
-    let contractBalanceBefore = await web3.eth.getBalance(bnb.address)
-
-    // Host rates
-    res = await bnb.rate(lid, bid, 3, { from: host })
-    const gasUsed = res.receipt.gasUsed
-    // Ensure contract's balance doesn't change following only one rate
-    assert(contractBalanceBefore == (await web3.eth.getBalance(bnb.address)), 'Contract\'s balance should not change following the first rate')
-
-    const gasPrice = await web3.eth.getGasPrice()
-    // Guest rates
-    res = await bnb.rate(lid, bid, 5, { from: guest })
-
-    const contractBalanceDiff = (await web3.eth.getBalance(bnb.address)) - contractBalanceBefore
-    const guestBalanceDiff = (await web3.eth.getBalance(guest)) - guestBalanceBefore
-    const hostBalanceDiff = (await web3.eth.getBalance(host)) - hostBalanceBefore
-
-    // IMPROV: At the moment we only check that guest and host balances have increased
-    //         but not by how much. It's slightly tedious to calculate exact amounts because
-    //         their balances will have increased as a result of issuing the transactions and getting
-    //         mined.
-    //
-    // Balance updates:
-    //  - the contract's balance should have decreased by 2 x stake
-    //  - guest's balance should increase by stake relative to the time before they rated
-    //  - host's balances should increase by stake relative to the time before they rated
-    assert(contractBalanceDiff == (-2) * priceWei, 'Contract\'s balance should decrease after both have rated')
-    assert(guestBalanceDiff > priceWei / 2, 'Guest\'s balance should increase after both have rated')
-    assert(hostBalanceDiff > priceWei / 2, 'Host\'s balance should increase after both have rated')
-  })
-
   // TODO: how do we test that it only succeeds after the given day has passed?
   // can we mock the system date somehow?
 
@@ -231,19 +194,19 @@ contract('EthBnB', async (accounts) => {
 
   it('Booking price scales with number of days', async () => {
     let res
-    const [host, guest1] = accounts
+    const [host, guest] = accounts
     const bnb = await EthBnB.deployed()
     const guestStake = fromFinney(DEFAULT_LISTING_PRICE * 2)
     res = await bnb.createAccount('Host', { from: host })
-    res = await bnb.createAccount('Guest1', { from: guest1 })
+    res = await bnb.createAccount('Guest', { from: guest })
     const lid = await createListingDefault(bnb, host)
 
     // Book listing for one day. Should succeed.
-    res = await bnb.listingBook(lid, feb2019(20), 1, { from: guest1, value: guestStake })
+    res = await bnb.listingBook(lid, feb2019(20), 1, { from: guest, value: guestStake })
 
     // Book listing for many days. Should fail, not enough stake.
     try {
-      res = await bnb.listingBook(lid, feb2019(20), 5, { from: guest1, value: guestStake })
+      res = await bnb.listingBook(lid, feb2019(20), 5, { from: guest, value: guestStake })
     } catch (err) {
       assert(err.toString().search('Guest must stake twice the price') > -1, 'Unexpected exception message')
       return
@@ -257,7 +220,7 @@ contract('EthBnB', async (accounts) => {
     const bnb = await EthBnB.deployed()
     const guestStake = fromFinney(DEFAULT_LISTING_PRICE * 4)
     res = await bnb.createAccount('Host', { from: host })
-    res = await bnb.createAccount('Guest1', { from: guest })
+    res = await bnb.createAccount('Guest', { from: guest })
     const lid = await createListingDefault(bnb, host)
     const guestBalanceBefore = await web3.eth.getBalance(guest)
     res = await bnb.listingBook(lid, feb2019(20), 1, { from: guest, value: guestStake })
@@ -268,12 +231,90 @@ contract('EthBnB', async (accounts) => {
     assert(guestBalanceDiff < guestStake, 'Contract should refund excess stake provided in listingBook')
   })
 
-  it('Listing: setting a listing price fails when there is not enough staked ', async () => {
-    assert(false, 'Not implemented')
+  it('Fulfill: bookingFulfilled fails when host tries', async () => {
+    const [host, guest] = accounts
+    const bnb = await EthBnB.deployed()
+    res = await bnb.createAccount('Host', { from: host })
+    res = await bnb.createAccount('Guest', { from: guest })
+    const lid = await createListingDefault(bnb, host)
+    const bid = await bookListingDefault(bnb, guest, lid, feb2019(20), 3)
+
+    await assertExceptionOnAsyncFn(
+      async () => await bnb.bookingFulfilled(lid, bid, { from: host }),
+      'Only guest can call bookingFulfilled'
+    )
   })
 
-  it('User must increase stake in order to set the price', async() => {
-    assert(false, 'Not implemented')
+  it('Fulfill: bookingFulfilled succeeds when guest tries', async () => {
+    const [host, guest] = accounts
+    const bnb = await EthBnB.deployed()
+    res = await bnb.createAccount('Host', { from: host })
+    res = await bnb.createAccount('Guest', { from: guest })
+    const lid = await createListingDefault(bnb, host)
+    const bid = await bookListingDefault(bnb, guest, lid, feb2019(20), 3)
+    async () => await bnb.bookingFulfilled(lid, bid, { from: guest })
   })
+
+  it('Fulfill: bookingFulfilled can only be called after the booking end date', async () => {
+    const [host, guest] = accounts
+    const futureDate = new Date('3119-02-11').getTime() / 1000
+    const bnb = await EthBnB.deployed()
+    res = await bnb.createAccount('Host', { from: host })
+    res = await bnb.createAccount('Guest', { from: guest })
+    const lid = await createListingDefault(bnb, host)
+    const bid = await bookListingDefault(bnb, guest, lid, futureDate, 3)
+    await assertExceptionOnAsyncFn(
+      async () => await bnb.bookingFulfilled(lid, bid, { from: guest }),
+      'Cannot fullfill booking before end date'
+    )
+  })
+
+  it('Fulfill: Releases funds after guest confirms', async () => {
+    const [host, guest] = accounts
+    const bnb = await EthBnB.deployed()
+    res = await bnb.createAccount('Host', { from: host })
+    res = await bnb.createAccount('Guest', { from: guest })
+
+    const priceFinney = 8
+    const priceWei = fromFinney(priceFinney)
+    const hostStakeWei = fromFinney(priceFinney * 2)
+    const guestStakeWei = fromFinney(priceFinney * 2)
+    await bnb.createAccount('Host', { from: host })
+    await bnb.createAccount('Guest', { from: guest })
+
+    res = await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: hostStakeWei })
+    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+    res = await bnb.listingBook(lid, feb2019(10), 1, { from: guest, value: guestStakeWei })
+    truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
+
+    // BEFORE: Snapshot guest and host balances
+    let guestBalanceBefore = await web3.eth.getBalance(guest)
+    let hostBalanceBefore = await web3.eth.getBalance(host)
+    let contractBalanceBefore = await web3.eth.getBalance(bnb.address)
+
+    // Guest fulfills
+    res = await bnb.bookingFulfilled(lid, bid, { from: guest })
+
+    // AFTER: Calculate balance differentials
+    const contractBalanceDiff = (await web3.eth.getBalance(bnb.address)) - contractBalanceBefore
+    const guestBalanceDiff = (await web3.eth.getBalance(guest)) - guestBalanceBefore
+    const hostBalanceDiff = (await web3.eth.getBalance(host)) - hostBalanceBefore
+
+    // IMPROV: At the moment we only check that guest and host balances have increased
+    //         but not by how much. It's slightly tedious to calculate exact amounts
+    //         because their balances will have decreased by the gas cost of the transactions.
+    //
+    // Balance updates:
+    //  - the contract's balance should have decreased by 2 x stake
+    //  - guest's balance should increase by stake relative to the time before they rated
+    //  - host's balances should increase by stake relative to the time before they rated
+    assert(contractBalanceDiff == (-2) * priceWei, 'Contract\'s balance should decrease after both have rated')
+    assert(guestBalanceDiff > priceWei / 2, 'Guest\'s balance should increase after both have rated')
+    assert(hostBalanceDiff > priceWei / 2, 'Host\'s balance should increase after both have rated')
+  })
+
+  // it('User must increase stake in order to set the price', async () => {
+  //   assert(false, 'Not implemented')
+  // })
 
 })
