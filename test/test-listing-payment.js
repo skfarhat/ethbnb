@@ -13,6 +13,13 @@ const {
 } = require('./utils')
 
 
+/**
+ * Ensure the provided asynchrnouse function throws an exception
+ * with a message containing {msg} in it.
+ *
+ * @param   fn  the asynchronous function to await on
+ * @param   msg the message which must be contained in the exception error
+ */
 const assertExceptionOnAsyncFn = async (fn, msg) => {
   try {
     await fn()
@@ -24,6 +31,21 @@ const assertExceptionOnAsyncFn = async (fn, msg) => {
     return
   }
   assert(false, 'Function should have failed with \'' + msg + '\'')
+}
+
+/**
+ * Returns the balance of listing with id {lid}
+ *
+ * @param   bnb  the deployed contract
+ * @param   lid  the listing id
+ * @param   host the address of the listing's owner
+ *
+ * @return the listing balance
+ */
+const getListingBalance = async (bnb, lid, host) => {
+  const res = await bnb.getListingAll(lid, { from: host })
+  const { balance: balance } = res
+  return balance
 }
 
 
@@ -169,6 +191,82 @@ contract('EthBnB', async (accounts) => {
     assert(balanceDiff2 > (-0.5) * balanceDiff1, 'Account\'s balance should have increased after listing deletion')
   })
 
+  it('Listing: Only owner can deposit and withdraw', async () => {
+    let res
+    const [host, other] = accounts
+    const bnb = await EthBnB.deployed()
+    res = await bnb.createAccount('Alex', { from: host })
+    const lid = await createListingDefault(bnb, host)
+    await assertExceptionOnAsyncFn(
+      async () => bnb.depositIntoListing(lid, { from: other, value: DEFAULT_LISTING_PRICE_WEI }),
+      'Only listing host can change it')
+
+    await assertExceptionOnAsyncFn(
+      async () => bnb.withdrawFromListing(lid, 1000, { from: other }),
+      'Only listing host can change it')
+  })
+
+  it('Listing: Deposit increases the listing\'s balance', async () => {
+    let res
+    let lid
+    const [host] = accounts
+    const amountAdded = fromFinney(3000)
+    const bnb = await EthBnB.deployed()
+
+    // Initially the listing has zero in the balance
+    // then owner will
+    res = await bnb.createAccount('Alex', { from: host })
+    res = await bnb.createListing(COUNTRIES.GB, 'London', 8, { from: host, value: 0 })
+    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+
+    await bnb.depositIntoListing(lid, { from: host, value: amountAdded})
+    const balance = await getListingBalance(bnb, lid, host)
+    assert(amountAdded == balance, 'Listing\'s balance should match the amount added')
+  })
+
+  it('Listing: Withdraw decreases the listing\'s balance', async () => {
+    let res
+    let lid
+    const [host] = accounts
+    const initialAmount = fromFinney(3000)
+    const amountRemoved = fromFinney(1000)
+    const bnb = await EthBnB.deployed()
+
+    // Initially the listing has zero
+    // in the balance then owner will
+    res = await bnb.createAccount('Alex', { from: host })
+    res = await bnb.createListing(COUNTRIES.GB, 'London', 8, { from: host, value: initialAmount })
+    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+
+    const hostBalanceBefore = await web3.eth.getBalance(host)
+    await bnb.withdrawFromListing(lid, amountRemoved, { from: host })
+    const hostBalanceDiff = await web3.eth.getBalance(host) - hostBalanceBefore // note: (after - before)
+    const balanceDiff = initialAmount - await getListingBalance(bnb, lid, host) // note: (before - after)
+    assert(amountRemoved == balanceDiff, 'Balance differential should match amount removed')
+    assert(hostBalanceDiff > 0, 'Host\'s balance differential should be positive') // not an exact check, but it'll do
+  })
+
+  it('Listing: Cannot withdraw more than listing\'s balance', async () => {
+    let res
+    let lid
+    const [host] = accounts
+    const initialAmount = fromFinney(1000)
+    const amountRemoved = fromFinney(3000)
+    const bnb = await EthBnB.deployed()
+    // Initially the listing has zero
+    // in the balance then owner will
+    res = await bnb.createAccount('Alex', { from: host })
+    res = await bnb.createListing(COUNTRIES.GB, 'London', 8, { from: host, value: initialAmount })
+    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+
+    assertExceptionOnAsyncFn(
+      async () => await bnb.withdrawFromListing(lid, amountRemoved, { from: host }),
+      'Cannot withdraw more than listing balance'
+    )
+
+  })
+
+
   it('Contract refunds the guest if the booking fails', async () => {
     let res
     const [host, guest1, guest2] = accounts
@@ -271,12 +369,6 @@ contract('EthBnB', async (accounts) => {
 
   it('Fulfill: Releases funds after guest confirms', async () => {
 
-    const getListingBalance = async (lid, host) => {
-      const res = await bnb.getListingAll(lid, { from: host })
-      const { balance: balance } = res
-      return balance
-    }
-
     const [host, guest] = accounts
     const bnb = await EthBnB.deployed()
     res = await bnb.createAccount('Host', { from: host })
@@ -298,7 +390,7 @@ contract('EthBnB', async (accounts) => {
     const guestBalanceBefore = await web3.eth.getBalance(guest)
     const hostBalanceBefore = await web3.eth.getBalance(host)
     const contractBalanceBefore = await web3.eth.getBalance(bnb.address)
-    const listingBalanceBefore = await getListingBalance(lid, host)
+    const listingBalanceBefore = await getListingBalance(bnb, lid, host)
 
     // Guest fulfills
     res = await bnb.bookingFulfilled(lid, bid, { from: guest })
@@ -307,7 +399,7 @@ contract('EthBnB', async (accounts) => {
     const contractBalanceDiff = (await web3.eth.getBalance(bnb.address)) - contractBalanceBefore
     const guestBalanceDiff = (await web3.eth.getBalance(guest)) - guestBalanceBefore
     const hostBalanceDiff = (await web3.eth.getBalance(host)) - hostBalanceBefore
-    const listingBalanceDiff = (await getListingBalance(lid, host)) - listingBalanceBefore
+    const listingBalanceDiff = (await getListingBalance(bnb, lid, host)) - listingBalanceBefore
 
     // IMPROV: At the moment we only check that guest and host balances have increased
     //         but not by how much. It's slightly tedious to calculate exact amounts

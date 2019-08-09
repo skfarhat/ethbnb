@@ -192,7 +192,6 @@ contract EthBnB {
   // added to its balance.
   function createListing(Country country, string memory location, uint price) public payable {
     require(hasAccount(), 'Must have an account before creating a listing');
-    require(price > 0, 'Price must be > 0');
     // Note: enforce a maximum number of listings per user?
     uint dbid = dateBooker.register(BOOKING_CAPACITY);
     listings[nextListingId] = Listing({
@@ -233,8 +232,8 @@ contract EthBnB {
       emitBookEvent(res, lid);
       if (res >= 0) {
         uint bid = uint(res);
-         // Save the booking
-         listing.bookings[bid] = Booking({
+        // Save the booking
+        listing.bookings[bid] = Booking({
           bid: bid,
           lid: lid,
           ownerAddr: listings[lid].owner,
@@ -258,7 +257,6 @@ contract EthBnB {
   function setListing(uint lid, uint price, string memory location, Country country)
     public payable listingExists(lid) onlyListingHost(lid) {
     Listing storage listing = listings[lid];
-    require(price > 0, 'Price must be > 0');
     listing.location = location;
     listing.price = price;
     listing.country = country;
@@ -283,6 +281,26 @@ contract EthBnB {
     // Delete listing's storage
     delete listings[lid];
     emit DeleteListingEvent(msg.sender, lid);
+  }
+
+  function depositIntoListing(uint lid)
+    public payable
+    listingExists(lid)
+    onlyListingHost(lid)
+    {
+      Listing storage listing = listings[lid];
+      listing.balance += msg.value;
+  }
+
+  function withdrawFromListing(uint lid, uint amount)
+    public
+    listingExists(lid)
+    onlyListingHost(lid)
+    {
+      Listing storage listing = listings[lid];
+      require(amount <= listing.balance, 'Cannot withdraw more than listing balance');
+      listing.balance -= amount;
+      accounts[listings[lid].owner].owner.transfer(amount);
   }
 
   /**
