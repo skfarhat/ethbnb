@@ -26,9 +26,7 @@ pipeline {
 
       stage('Coverage Smart-Contract') {
         steps {
-          /* Run coverage */
-          /* NOTE: this step may be redundant to previous `truffle test` call */
-          sh('rm -rf build/; ./node_modules/.bin/solidity-coverage')
+          sh('npx solidity-coverage')
         }
       }
 
