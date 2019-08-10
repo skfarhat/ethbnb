@@ -286,7 +286,7 @@ const chainTransactions = [
 ]
 
 
-const DataManager = (database) => {
+const TestDataAdder = (database) => {
   const { contractAddress, jsonInterface } = require('./loadAbi')
   // Show web3 where it needs to look for the Ethereum node.
   const abi = jsonInterface.abi
@@ -319,7 +319,6 @@ const DataManager = (database) => {
             throw new Error('ipfs.util.addFromFs returned zero-length result')
           }
           logger.info(`Added image ${filepath} to IPFS and local database.`)
-          // We don't need to insert them anymore
           await database.insertIpfsImage(result[0])
         } catch (err) {
           logger.error(err)
@@ -363,4 +362,4 @@ const DataManager = (database) => {
   }
 }
 
-module.exports = DataManager
+module.exports = TestDataAdder

@@ -8,7 +8,7 @@ const constants = global.constants
 const WebServer = require('./WebServer')
 const Chain2DB = require('./Chain2DB')
 const Database = require('./Database')
-const DataManager = require('./DataManager')
+const TestDataAdder = require('./TestDataAdder')
 
 async function asyncExec(command) {
   let stdout = ''
@@ -46,7 +46,7 @@ database.connectSync().then(async () => {
   // The below two need to be constructed after loadAbi.js
   // is generated from the above setup script
   const chain2DB = Chain2DB(database)
-  const dataManager = DataManager(database)
+  const testDataAdder = TestDataAdder(database)
 
   // Chain2DB will setup event listeners which
   // will insert documents in the model for each chain event
@@ -55,7 +55,7 @@ database.connectSync().then(async () => {
   if (args.initTestData) {
     // Add test data to chain
     // createAccount, createListing, listingBook...
-    await dataManager.addTestDataToChain()
+    await testDataAdder.addTestDataToChain()
   }
 
   webServer.listen()
