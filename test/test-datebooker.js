@@ -21,14 +21,15 @@ contract('TestDateBooker', async (accounts) => {
   const FEB_17 = 1550361600 // February 17 2019 - 00:00
   const FEB_18 = 1550448000 // February 18 2019 - 00:00
   const futureFeb = dayNb => new Date(`3019-02-${dayNb}`).getTime() / 1000
+  const march2019 = dayNb => new Date(`2019-03-${dayNb}`).getTime() / 1000
 
-  it('Register event fired upon registration', async() => {
+  it('Register event fired upon registration', async () => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
   })
 
-  it('Returns the correct capacity after registering', async() => {
+  it('Returns the correct capacity after registering', async () => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
@@ -36,7 +37,7 @@ contract('TestDateBooker', async (accounts) => {
     assert.equal(CAPACITY, bignumToNum(actualCapacity), 'Registered and actual capacities don\'t match.')
   })
 
-  it('Cannot find any books when none have been added', async() => {
+  it('Cannot find any books when none have been added', async () => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
@@ -46,7 +47,71 @@ contract('TestDateBooker', async (accounts) => {
     }
   })
 
-  it('Different bookings on the same \'id\' have different bids', async() => {
+  it('isEmpty returns true on an empty DateBooker', async () => {
+    let r
+    const booker = await DateBooker.deployed()
+    const id = await registerAndGetId(booker, CAPACITY, d)
+    const b = await booker.isEmpty(id)
+    assert(b, 'DateBooker should be empty at start')
+  })
+
+  it('isEmpty returns false on non-empty DateBooker', async () => {
+    let r
+    let bid1
+    const booker = await DateBooker.deployed()
+    const id = await registerAndGetId(booker, CAPACITY, d)
+    r = await booker.book(id, FEB_15, 1, d)
+    truffleAssert.eventEmitted(r, 'BookSuccess', (ev) => bid1 = ev.bid)
+    const b = await booker.isEmpty(id)
+    assert(!b, 'isEmpty() should equal false')
+  })
+
+  it('hasSpace returns true when DateBooker is empty', async () => {
+    let r
+    let bid1
+    const booker = await DateBooker.deployed()
+    const id = await registerAndGetId(booker, CAPACITY, d)
+    const b = await booker.hasSpace(id)
+    assert(b, 'hasSpace() should return true')
+  })
+
+  it('hasSpace returns true when Datebooker with capacity 1 is empty', async () => {
+    let r
+    let bid1
+    const booker = await DateBooker.deployed()
+    const id = await registerAndGetId(booker, 1, d)
+    const b = await booker.hasSpace(id)
+    assert(b, 'hasSpace() should return true')
+  })
+
+  it('hasSpace returns false when Datebooker is full', async () => {
+    let r
+    let bid1
+    const booker = await DateBooker.deployed()
+    const id = await registerAndGetId(booker, 3, d)
+    r = await booker.book(id, march2019(1), 1, d)
+    truffleAssert.eventEmitted(r, 'BookSuccess', (ev) => bid1 = ev.bid)
+    r = await booker.book(id, march2019(3), 1, d)
+    truffleAssert.eventEmitted(r, 'BookSuccess', (ev) => bid1 = ev.bid)
+      r = await booker.book(id, march2019(10), 1, d)
+    truffleAssert.eventEmitted(r, 'BookSuccess', (ev) => bid1 = ev.bid)
+    const b = await booker.hasSpace(id)
+    assert(!b, 'hasSpace() should return true')
+  })
+
+  it('getDates works', async () => {
+    let r
+    let bid1
+    const booker = await DateBooker.deployed()
+    const id = await registerAndGetId(booker, 3, d)
+    r = await booker.book(id, march2019(1), 1, d)
+    truffleAssert.eventEmitted(r, 'BookSuccess', (ev) => bid1 = ev.bid)
+    const {fromDate, toDate} = await booker.getDates(id, bid1)
+    assert(fromDate == march2019(1), 'fromdate does not match')
+    assert(toDate == march2019(2), 'toDate does not match')
+  })
+
+  it('Different bookings on the same \'id\' have different bids', async () => {
     let r
     let bid1
     let bid2
@@ -59,7 +124,7 @@ contract('TestDateBooker', async (accounts) => {
     assert.notEqual(bid1, bid2, 'Bookings should have different bids.')
   })
 
-  it('findBook works for booking just made', async() => {
+  it('findBook works for booking just made', async () => {
     let r
     let bid
     var booker = await DateBooker.deployed()
@@ -70,14 +135,14 @@ contract('TestDateBooker', async (accounts) => {
     assert.isAtLeast(bignumToNum(res), 0, 'Must have found created booking')
   })
 
-  it('Size is 0 when no bookings have been made', async() => {
+  it('Size is 0 when no bookings have been made', async () => {
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
     let actualSize = await booker.getSize.call(id, d)
     assert.equal(bignumToNum(actualSize), 0, 'Size should be zero when no bookings have been made')
   })
 
-  it('Size is 2 when 2 bookings have been made', async() => {
+  it('Size is 2 when 2 bookings have been made', async () => {
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
     await booker.book(id, FEB_15, 2, d)
@@ -86,7 +151,7 @@ contract('TestDateBooker', async (accounts) => {
     assert(bignumToNum(actualSize), 2, 'Actual size should be 2')
   })
 
-  it('Book 2, Cancel 1. Check the size.', async() => {
+  it('Book 2, Cancel 1. Check the size.', async () => {
     let r
     let bid
     var booker = await DateBooker.deployed()
@@ -101,7 +166,7 @@ contract('TestDateBooker', async (accounts) => {
     assert.equal(bignumToNum(actualSize), 1, 'Actual size should be 1')
   })
 
-  it('getActiveBookingsCount() returns 2, when 2 in the past and one in the future', async() => {
+  it('getActiveBookingsCount() returns 2, when 2 in the past and one in the future', async () => {
     let r
     let bid
     var booker = await DateBooker.deployed()
@@ -114,7 +179,7 @@ contract('TestDateBooker', async (accounts) => {
     assert(activeCount == 1, 'There should only be one active')
   })
 
-  it('getActiveBookingsCount() returns 0 when nothing was booked', async() => {
+  it('getActiveBookingsCount() returns 0 when nothing was booked', async () => {
     let r
     let bid
     var booker = await DateBooker.deployed()
@@ -124,7 +189,7 @@ contract('TestDateBooker', async (accounts) => {
   })
 
 
-  it('getActiveBookingsCount() returns 2 when 2 bookings in the future', async() => {
+  it('getActiveBookingsCount() returns 2 when 2 bookings in the future', async () => {
     let r
     let bid
     var booker = await DateBooker.deployed()
@@ -136,14 +201,14 @@ contract('TestDateBooker', async (accounts) => {
   })
 
   // TODO: uncomment and implement
-  // it('getActiveBookingsCount() returns 0 when all have been cancelled', async() => {
+  // it('getActiveBookingsCount() returns 0 when all have been cancelled', async () => {
   //    assert(false, 'Not implemented')
   // })
 
   // No conflict
   // [15/02      17/02]
   //                       [18/02         21/02]
-  it('Make two non-conflicting bookings', async() => {
+  it('Make two non-conflicting bookings', async () => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
@@ -157,7 +222,7 @@ contract('TestDateBooker', async (accounts) => {
   //
   // [15/02           18/02]
   //          [17/02          20/02]
-  it('(1) Conflict on intersecting dates', async() => {
+  it('(1) Conflict on intersecting dates', async () => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
@@ -171,7 +236,7 @@ contract('TestDateBooker', async (accounts) => {
   //
   //         [15/02           18/02]
   // [10/02          16/02]
-  it('(2) Conflict on intersecting dates', async() => {
+  it('(2) Conflict on intersecting dates', async () => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
@@ -185,7 +250,7 @@ contract('TestDateBooker', async (accounts) => {
   //
   // [15/02   <- 3 ->   18/02]
   //                    [18/02   <- 2 ->   20/02]
-  it('(3) No conflict', async() => {
+  it('(3) No conflict', async () => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
@@ -197,7 +262,7 @@ contract('TestDateBooker', async (accounts) => {
     truffleAssert.eventNotEmitted(r, 'BookConflict')
   })
 
-  it('NoMoreSpace event when capacity is exceeded.', async() => {
+  it('NoMoreSpace event when capacity is exceeded.', async () => {
     let r
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)
@@ -210,7 +275,7 @@ contract('TestDateBooker', async (accounts) => {
     truffleAssert.eventEmitted(r, 'NoMoreSpace')
   })
 
-  it('PermissionDenied event when unauthorised cancellation', async() => {
+  it('PermissionDenied event when unauthorised cancellation', async () => {
     let bid
     var booker = await DateBooker.deployed()
     let id = await registerAndGetId(booker, CAPACITY, d)

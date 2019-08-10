@@ -104,8 +104,7 @@ library DateBooker {
       return NO_MORE_SPACE;
     }
     // Check that there are no date intersections
-    uint toDate = dayToTimestamp(timestampToDay(fromDate) + nbOfDays);
-    emit Log(toDate);
+    uint toDate = fromDate + nbOfDays * 86400;
     int ret = findBookWithIntersectingDates(self, id, fromDate, toDate);
     if (ret >= 0) {
       emit BookConflict(id, uint(ret));
@@ -173,10 +172,6 @@ library DateBooker {
   // =============================================================
   // CONSTANT FUNCTIONS
   // =============================================================
-
-  function getNow() public view returns (uint) {
-      return now;
-  }
 
   function findBookWithIntersectingDates(BookerStorage storage self, uint id, uint fromDate, uint toDate)
                                             private view returns (int) {
@@ -251,14 +246,6 @@ library DateBooker {
   function datesIntersect(uint from1, uint to1, uint from2, uint to2) private pure returns (bool) {
     require(from1 < to1 && from2 < to2, 'from date must be smaller than to date');
     return (from2 < to1 && from2 >= from1) || (to2 <= to1 && to2 > from1);
-  }
-
-  function timestampToDay(uint timestamp) private pure returns (uint) {
-    return uint(timestamp / 86400);
-  }
-
-  function dayToTimestamp(uint day) private pure returns (uint) {
-    return uint(day * 86400);
   }
 
   function getNotFoundCode ()       public pure returns (int)   { return NOT_FOUND; }
