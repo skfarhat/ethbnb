@@ -24,29 +24,13 @@ module.exports = (database) => {
         next()
       })
 
-      // GET /api/public/account/:user
-      //
-      // Public call to account returns name, addr and dateCreated
-      //
-      app.get('/api/public/accounts/:user', async (req, res) => {
-        const { user } = req.params
-        const fields = {
-          _id: 0,
-          name: 1,
-          dateCreated: 1,
-          addr: 1,
-        }
-        const result = await Accounts.findOne({ addr: user }, fields).lean()
-        return res.json(result)
-      })
-
       // GET /api/account/:user
       //
       // Returns all information on the given user, this call
       // will likely need to add authentication later (TODO)
       // :user account address for which bookings will be returned
       //
-      app.get('/api/account/:user', async (req, res) => {
+      app.get('/api/accounts/:user', async (req, res) => {
         const { user } = req.params
         const bookingsPipeline = [
           {
@@ -96,6 +80,22 @@ module.exports = (database) => {
           account = {}
         }
         return res.json(account)
+      })
+
+      // GET /api/public/account/:user
+      //
+      // Public call to account returns name, addr and dateCreated
+      //
+      app.get('/api/accounts/:user/public', async (req, res) => {
+        const { user } = req.params
+        const fields = {
+          _id: 0,
+          name: 1,
+          dateCreated: 1,
+          addr: 1,
+        }
+        const result = await Accounts.findOne({ addr: user }, fields).lean()
+        return res.json(result)
       })
 
       app.get('/api/listings', async (req, res) => {
@@ -181,7 +181,7 @@ module.exports = (database) => {
       })
 
       // Create a new listing using HTTP POST
-      app.post('/api/new-listing', (req, res) => {
+      app.post('/api/listings/new', (req, res) => {
         // Insert the a Listing mongoose document in the model
         // with a transactionHash.
         // We will receive an object:

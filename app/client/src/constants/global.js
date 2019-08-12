@@ -1,6 +1,5 @@
-const SERVER_NODE_URL = 'http://localhost:3001/'
-const SERVER_PUBLIC_URL = `${SERVER_NODE_URL}api/public/`
-const SERVER_POST_NEW_LISTING = `${SERVER_NODE_URL}api/new-listing`
+const API_URL = 'http://localhost:3001/api'
+const SERVER_POST_NEW_LISTING = `${API_URL}/listings/new`
 
 const isSet = val => val !== null && typeof (val) !== 'undefined'
 const hasKey = (obj, key) => Object.prototype.hasOwnProperty.call(obj, key)
@@ -32,8 +31,7 @@ const capitaliseWord = (word) => {
 }
 
 export {
-  SERVER_NODE_URL,
-  SERVER_PUBLIC_URL,
+  API_URL,
   SERVER_POST_NEW_LISTING,
   isSet,
   hasKey,

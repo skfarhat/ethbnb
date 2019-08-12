@@ -1,6 +1,4 @@
 import {
-  SERVER_NODE_URL,
-  SERVER_PUBLIC_URL,
   isSet,
   hasKey,
 } from '../constants/global'

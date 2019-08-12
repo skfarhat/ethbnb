@@ -1,5 +1,5 @@
 import {
-  SERVER_NODE_URL,
+  API_URL,
   SERVER_POST_NEW_LISTING,
   isSet,
 } from '../constants/global'
@@ -26,7 +26,8 @@ const getListingsURL = (opts) => {
     }
   }
   const queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join('&')
-  return `${SERVER_NODE_URL}api/listings?${queryString}`
+  console.log(`${API_URL}/listings?${queryString}`)
+  return `${API_URL}/listings?${queryString}`
 }
 
 const createListing = (chaindata, metadata, userAddr, other) => {

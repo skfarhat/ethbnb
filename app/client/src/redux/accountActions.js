@@ -1,6 +1,5 @@
 import {
-  SERVER_NODE_URL,
-  SERVER_PUBLIC_URL,
+  API_URL,
   isSet,
   hasKey,
 } from '../constants/global'
@@ -25,7 +24,7 @@ const getAddr = (state) => {
 const fetchPublicAccount = (addr) => {
   return (dispatch, getState) => {
     if (isSet(addr)) {
-      const url = `${SERVER_PUBLIC_URL}accounts/${addr}`
+      const url = `${API_URL}/accounts/${addr}/public`
       const { accountsInTransit, accounts } = getState().public
       if (!hasKey(accountsInTransit, addr) && !hasKey(accounts, addr)) {
         dispatch({ type: REQUEST_PUBLIC_ACCOUNT, data: addr })
@@ -42,7 +41,7 @@ const fetchPublicAccount = (addr) => {
 }
 
 const fetchAccountInfo = (addr) => {
-  const url = `${SERVER_NODE_URL}api/account/${addr}`
+  const url = `${API_URL}/accounts/${addr}`
   return (dispatch) => {
     fetch(url)
       .then(response => response.json())
