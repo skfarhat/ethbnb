@@ -32,7 +32,7 @@ truffle compile
 out=$(truffle migrate --reset)
 echo "$out"
 if [ `truffle --version 2>&1 | grep -p 'v\d' -o` '==' "v5" ]; then
-  contractAddress=$(echo "$out" | grep 'contract address' | tail -n 1 | egrep -p '0x\w+' -o) # for truffle v5
+  contractAddress=$(echo "$out" | grep 'EthBnB' -A10 | grep 'contract address' | egrep -p '0x\w+' -o) # for truffle v5
 else
   # Assume it is version 4
   contractAddress=$(echo "$out" | grep 'EthBnB:' | cut -d ':' -f2) # for truffle v4
