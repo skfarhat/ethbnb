@@ -66,7 +66,7 @@ contract EthBnB {
     uint bid;
     uint lid;
     address guestAddr;
-    address ownerAddr;
+    address hostAddr;
 
     /**
      * Rating assigned to the owner by the guest
@@ -242,7 +242,7 @@ contract EthBnB {
         listing.bookings[bid] = Booking({
           bid: bid,
           lid: lid,
-          ownerAddr: listings[lid].owner,
+          hostAddr: listings[lid].owner,
           guestAddr: guest,
           ownerRating: 0,
           guestRating: 0,
@@ -324,7 +324,7 @@ contract EthBnB {
   function fulfilBooking(uint lid, uint bid) public listingExists(lid) {
     Booking storage booking = listings[lid].bookings[bid];
     address guest = booking.guestAddr;
-    address host = booking.ownerAddr;
+    address host = booking.hostAddr;
     (, uint toDate) = getBookingDates(lid, bid);
     require(msg.sender == guest , 'Only guest can call fulfilBooking');
     require(toDate <= now, 'Cannot fulfil booking before end date');
@@ -359,7 +359,7 @@ contract EthBnB {
     require(listings[lid].lid == lid && listings[lid].bookings[bid].bid == bid, 'No such listing or booking');
     require(stars >= 1 && stars <= 5, 'Stars arg must be in [1,5]');
     Booking storage booking = listings[lid].bookings[bid];
-    require(booking.guestAddr == msg.sender || booking.ownerAddr == msg.sender, 'Sender not participated in booking');
+    require(booking.guestAddr == msg.sender || booking.hostAddr == msg.sender, 'Sender not participated in booking');
     (, uint toDate) = getBookingDates(lid, bid);
     require(toDate <= now, 'Cannot rate a booking before it ends');
     if (booking.guestAddr == msg.sender) {
@@ -367,10 +367,10 @@ contract EthBnB {
       require(booking.ownerRating == 0, 'Owner already rated, cannot re-rate');
       // Assign the rating and adjust their account
       booking.ownerRating = stars;
-      accounts[booking.ownerAddr].totalScore += stars;
-      accounts[booking.ownerAddr].nRatings++;
+      accounts[booking.hostAddr].totalScore += stars;
+      accounts[booking.hostAddr].nRatings++;
     }
-    else if (booking.ownerAddr == msg.sender) {
+    else if (booking.hostAddr == msg.sender) {
       // The owner is rating the guest
       require(booking.guestRating == 0, 'Guest already rated, cannot re-rate');
       // Adding the rating and adjust their account
