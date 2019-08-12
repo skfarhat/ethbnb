@@ -42,11 +42,11 @@ const createListingDefault = async (bnb, account) => {
  *
  * @bnb                         the deployed contract
  * @account                     the account that should book the listing
- * @lid, fromDate, nbOfDays     same parameters that would have otherwise been passed to listingBook
+ * @lid, fromDate, nbOfDays     same parameters that would have otherwise been passed to bookListing
  */
 const bookListingDefault = async (bnb, account, lid, fromDate, nbOfDays) => {
   let bid
-  res = await bnb.listingBook(lid, fromDate, nbOfDays, { from: account, value: fromFinney(DEFAULT_LISTING_PRICE * 2 * nbOfDays) })
+  res = await bnb.bookListing(lid, fromDate, nbOfDays, { from: account, value: fromFinney(DEFAULT_LISTING_PRICE * 2 * nbOfDays) })
   truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
   return bid
 }

@@ -68,7 +68,7 @@ class ListingView extends Component {
       storageKey: this.getStorageKey(lid, fromDate, nbOfDays, addr),
       returnVal: true,
     }
-    dispatch(contractCall('listingBook', [lid, fromDate, nbOfDays], addr, other))
+    dispatch(contractCall('bookListing', [lid, fromDate, nbOfDays], addr, other))
   }
 
   // Returns [fromDate, nbOfDays] if 'fromDate' and 'toDate' props

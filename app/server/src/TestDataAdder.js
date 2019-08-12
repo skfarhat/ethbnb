@@ -164,7 +164,7 @@ const chainTransactions = [
     // bid: 0
     // booked for 3 days: 10/02/2019 to 13/02/2019
     clientIndex: 2,
-    name: 'listingBook',
+    name: 'bookListing',
     inputs: [
       { value: 1, name: 'listingId' },
       { value: feb2019(10), name: 'fromDate' },
@@ -179,7 +179,7 @@ const chainTransactions = [
     // bid: 1
     // booked for 4 days: 16/02/2019 to 20/02/2019
     clientIndex: 2,
-    name: 'listingBook',
+    name: 'bookListing',
     inputs: [
       { value: 3, name: 'listingId' },
       { value: feb2019(16), name: 'fromDate' },
@@ -194,7 +194,7 @@ const chainTransactions = [
     // bid: 1
     // booked for 4 days: 16/02/2019 to 20/02/2019
     clientIndex: 3,
-    name: 'listingBook',
+    name: 'bookListing',
     inputs: [
       { value: 1, name: 'listingId' },
       { value: feb2019(16), name: 'fromDate' },
@@ -208,7 +208,7 @@ const chainTransactions = [
     // lid: 3 (Paris)
     // booked for 4 days: 06/02/2019 to 10/02/2019
     clientIndex: 2,
-    name: 'listingBook',
+    name: 'bookListing',
     inputs: [
       { value: 3, name: 'listingId' },
       { value: feb2019(6), name: 'fromDate' },
@@ -223,7 +223,7 @@ const chainTransactions = [
     // bid: 0
     // booked for 2 days: 12/02/2019 to 14/02/2019
     clientIndex: 3,
-    name: 'listingBook',
+    name: 'bookListing',
     inputs: [
       { value: 4, name: 'listingId' },
       { value: feb2019(12), name: 'fromDate' },

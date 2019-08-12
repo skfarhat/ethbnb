@@ -95,12 +95,12 @@ contract('EthBnB', async (accounts) => {
     await bnb.createAccount('Guest2', { from: guest2 })
     res = await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: hostStakeWei })
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
-    res = await bnb.listingBook(lid, feb2019(20), 1, { from: guest1, value: guestStake })
+    res = await bnb.bookListing(lid, feb2019(20), 1, { from: guest1, value: guestStake })
     truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
-    res = await bnb.listingBook(lid, feb2019(23), 1, { from: guest2, value: guestStake })
+    res = await bnb.bookListing(lid, feb2019(23), 1, { from: guest2, value: guestStake })
     truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
     try {
-      await bnb.listingBook(lid, feb2019(6), 1, { from: guest3, value: guestStake })
+      await bnb.bookListing(lid, feb2019(6), 1, { from: guest3, value: guestStake })
     } catch(err) {
       // console.log('the exception thrown is', err)
       return
@@ -154,7 +154,7 @@ contract('EthBnB', async (accounts) => {
     // Snapshot balances before and after listing booking
     const guestBalanceBefore = await web3.eth.getBalance(guest)
     const contractBalanceBefore = await web3.eth.getBalance(bnb.address)
-    res = await bnb.listingBook(lid, feb2019(10), 1, { from: guest, value: guestStakeWei })
+    res = await bnb.bookListing(lid, feb2019(10), 1, { from: guest, value: guestStakeWei })
     truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
     const guestBalanceAfter = await web3.eth.getBalance(guest)
     const contractBalanceAfter = await web3.eth.getBalance(bnb.address)
@@ -178,7 +178,7 @@ contract('EthBnB', async (accounts) => {
     const balance1 = await web3.eth.getBalance(host)
     let lid = await createListingDefault(bnb, host)
     const balance2 = await web3.eth.getBalance(host)
-    res = await bnb.listingDelete(lid)
+    res = await bnb.deleteListing(lid)
     const balance3 = await web3.eth.getBalance(host)
 
     truffleAssert.eventEmitted(res, 'DeleteListingEvent', ev => lid = ev.lid)
@@ -278,11 +278,11 @@ contract('EthBnB', async (accounts) => {
     const lid = await createListingDefault(bnb, host)
 
     // Guest1 books the listing
-    res = await bnb.listingBook(lid, feb2019(20), 1, { from: guest2, value: guest2Stake })
+    res = await bnb.bookListing(lid, feb2019(20), 1, { from: guest2, value: guest2Stake })
 
     // Guest2 tries to book it and fails
     const balance3 = await web3.eth.getBalance(bnb.address)
-    res = await bnb.listingBook(lid, feb2019(20), 1, { from: guest2, value: guest2Stake })
+    res = await bnb.bookListing(lid, feb2019(20), 1, { from: guest2, value: guest2Stake })
     const balance4 = await web3.eth.getBalance(bnb.address)
     truffleAssert.eventEmitted(res, 'BookingConflict')
 
@@ -300,11 +300,11 @@ contract('EthBnB', async (accounts) => {
     const lid = await createListingDefault(bnb, host)
 
     // Book listing for one day. Should succeed.
-    res = await bnb.listingBook(lid, feb2019(20), 1, { from: guest, value: guestStake })
+    res = await bnb.bookListing(lid, feb2019(20), 1, { from: guest, value: guestStake })
 
     // Book listing for many days. Should fail, not enough stake.
     try {
-      res = await bnb.listingBook(lid, feb2019(20), 5, { from: guest, value: guestStake })
+      res = await bnb.bookListing(lid, feb2019(20), 5, { from: guest, value: guestStake })
     } catch (err) {
       assert(err.toString().search('Guest must stake twice the price') > -1, 'Unexpected exception message')
       return
@@ -312,7 +312,7 @@ contract('EthBnB', async (accounts) => {
     assert(false, 'Exception should have been thrown for Not enough stake')
   })
 
-  it('Booking: excess payment value in listingBook is returned to guest', async () => {
+  it('Booking: excess payment value in bookListing is returned to guest', async () => {
     let res
     const [host, guest] = accounts
     const bnb = await EthBnB.deployed()
@@ -321,15 +321,15 @@ contract('EthBnB', async (accounts) => {
     res = await bnb.createAccount('Guest', { from: guest })
     const lid = await createListingDefault(bnb, host)
     const guestBalanceBefore = await web3.eth.getBalance(guest)
-    res = await bnb.listingBook(lid, feb2019(20), 1, { from: guest, value: guestStake })
+    res = await bnb.bookListing(lid, feb2019(20), 1, { from: guest, value: guestStake })
     const guestBalanceAfter = await web3.eth.getBalance(guest)
     // Guest's balance should not have decreased x4
     // expect the smart-contract to have refunded excess.
     const guestBalanceDiff = guestBalanceBefore - guestBalanceAfter
-    assert(guestBalanceDiff < guestStake, 'Contract should refund excess stake provided in listingBook')
+    assert(guestBalanceDiff < guestStake, 'Contract should refund excess stake provided in bookListing')
   })
 
-  it('Fulfill: bookingFulfilled fails when host tries', async () => {
+  it('Fulfill: fulfilBooking fails when host tries', async () => {
     const [host, guest] = accounts
     const bnb = await EthBnB.deployed()
     res = await bnb.createAccount('Host', { from: host })
@@ -338,22 +338,22 @@ contract('EthBnB', async (accounts) => {
     const bid = await bookListingDefault(bnb, guest, lid, feb2019(20), 3)
 
     await assertExceptionOnAsyncFn(
-      async () => await bnb.bookingFulfilled(lid, bid, { from: host }),
-      'Only guest can call bookingFulfilled'
+      async () => await bnb.fulfilBooking(lid, bid, { from: host }),
+      'Only guest can call fulfilBooking'
     )
   })
 
-  it('Fulfill: bookingFulfilled succeeds when guest tries', async () => {
+  it('Fulfill: fulfilBooking succeeds when guest tries', async () => {
     const [host, guest] = accounts
     const bnb = await EthBnB.deployed()
     res = await bnb.createAccount('Host', { from: host })
     res = await bnb.createAccount('Guest', { from: guest })
     const lid = await createListingDefault(bnb, host)
     const bid = await bookListingDefault(bnb, guest, lid, feb2019(20), 3)
-    async () => await bnb.bookingFulfilled(lid, bid, { from: guest })
+    async () => await bnb.fulfilBooking(lid, bid, { from: guest })
   })
 
-  it('Fulfill: bookingFulfilled can only be called after the booking end date', async () => {
+  it('Fulfill: fulfilBooking can only be called after the booking end date', async () => {
     const [host, guest] = accounts
     const futureDate = new Date('3119-02-11').getTime() / 1000
     const bnb = await EthBnB.deployed()
@@ -362,8 +362,8 @@ contract('EthBnB', async (accounts) => {
     const lid = await createListingDefault(bnb, host)
     const bid = await bookListingDefault(bnb, guest, lid, futureDate, 3)
     await assertExceptionOnAsyncFn(
-      async () => await bnb.bookingFulfilled(lid, bid, { from: guest }),
-      'Cannot fullfill booking before end date'
+      async () => await bnb.fulfilBooking(lid, bid, { from: guest }),
+      'Cannot fulfil booking before end date'
     )
   })
 
@@ -383,7 +383,7 @@ contract('EthBnB', async (accounts) => {
 
     res = await bnb.createListing(COUNTRIES.GB, 'London', priceWei, { from: host, value: hostStakeWei })
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
-    res = await bnb.listingBook(lid, feb2019(10), 1, { from: guest, value: guestStakeWei })
+    res = await bnb.bookListing(lid, feb2019(10), 1, { from: guest, value: guestStakeWei })
     truffleAssert.eventEmitted(res, 'BookingComplete', ev => bid = ev.bid)
 
     // BEFORE: Snapshot guest and host balances
@@ -393,7 +393,7 @@ contract('EthBnB', async (accounts) => {
     const listingBalanceBefore = await getListingBalance(bnb, lid, host)
 
     // Guest fulfills
-    res = await bnb.bookingFulfilled(lid, bid, { from: guest })
+    res = await bnb.fulfilBooking(lid, bid, { from: guest })
 
     // AFTER: Calculate balance differentials
     const contractBalanceDiff = (await web3.eth.getBalance(bnb.address)) - contractBalanceBefore

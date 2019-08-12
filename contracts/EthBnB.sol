@@ -218,7 +218,7 @@ contract EthBnB {
    * @param fromDate     start date of the booking
    * @param nbOfDays     number of days for which the booking will be made
    */
-  function listingBook(uint lid, uint fromDate, uint nbOfDays)
+  function bookListing(uint lid, uint fromDate, uint nbOfDays)
     public payable listingExists(lid) {
       require(hasAccount(), 'Guest must have an account before booking');
       Listing storage listing = listings[lid];
@@ -276,7 +276,7 @@ contract EthBnB {
    *
    * @param lid   id of the listing to be deleted
    */
-  function listingDelete(uint lid) public listingExists(lid) onlyListingHost(lid) {
+  function deleteListing(uint lid) public listingExists(lid) onlyListingHost(lid) {
     Listing storage listing = listings[lid];
 
     // Check that there are no active bookings before we proceed
@@ -320,15 +320,14 @@ contract EthBnB {
    *
    * @param lid       id of the booked listing
    * @param bid       id of the booking
-   *
    */
-  function bookingFulfilled(uint lid, uint bid) public listingExists(lid) {
+  function fulfilBooking(uint lid, uint bid) public listingExists(lid) {
     Booking storage booking = listings[lid].bookings[bid];
     address guest = booking.guestAddr;
     address host = booking.ownerAddr;
     (, uint toDate) = getBookingDates(lid, bid);
-    require(msg.sender == guest , 'Only guest can call bookingFulfilled');
-    require(toDate <= now, 'Cannot fullfill booking before end date');
+    require(msg.sender == guest , 'Only guest can call fulfilBooking');
+    require(toDate <= now, 'Cannot fulfil booking before end date');
 
     // Fund Release:
     //    Guest receives:    booking.balance
