@@ -37,18 +37,22 @@ library DateBooker {
   struct Entry {
     uint prev;
     uint next;
-    // Begins at zero
+    /** Begins at zero */
     uint bid;
-    // Field used to mark that the Entry is active.
-    // False implies we have an Entry that is not in use
-    // Technically we can check that bid is not zero, and set bid to zero when
-    // the entry becomes inactive, but this is more readable.
+    /**
+     * Field used to mark that the Entry is active.
+     * False implies we have an Entry that is not in use
+     * Technically we can check that bid is not zero, and set bid to zero when
+     * the entry becomes inactive, but this is more readable.
+     */
     bool used;
-    // The dates below are seconds since epoch but will be interpreted as days.
-    // Any second of a given day is enough to represent that day.
+    /**
+     * The dates below are seconds since epoch but will be interpreted as days.
+     * Any second of a given day is enough to represent that day.
+     */
     uint fromDate;
     uint toDate;
-    // Address of the account that created this entry
+    /** Address of the account that created this entry */
     address owner;
   }
 
@@ -56,7 +60,7 @@ library DateBooker {
     uint start;
     uint end;
     uint capacity;
-    // Counts the number of bookings that have been made but not cancelled
+    /** Counts the number of bookings that have been made but not cancelled */
     uint size;
     mapping(uint => Entry) d;
   }

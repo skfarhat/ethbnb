@@ -2,16 +2,9 @@ pragma solidity ^0.5.0;
 
 import './DateBooker.sol';
 
-//
-//
-// Listings:
-// ---------
-// Created listings are stored in the their account's struct as well as in the
-// contract's listings mapping.
-//
-//
-// A calendar day is the minimum duration for a Booking
-//
+/**
+ *
+ */
 contract EthBnB {
 
   enum Country {
@@ -44,13 +37,14 @@ contract EthBnB {
 
     Country country;
 
-    // Every listing has its own DateBooker 'id' which allows
-    // the DateBooker contract to setup the appropriate data structure
-    // for storing booking information for that Listing.
-    //
-    // Field is set in createListing
+    /**
+     * Every listing has its own DateBooker 'id' which allows
+     * the DateBooker contract to set up the appropriate data structure
+     * for storing booking information for that Listing.
+     * Field is set in createListing
+     */
     uint dbid;
-    // Bookings for the given listing
+    /** Bookings for the given listing */
     mapping(uint => Booking) bookings;
 
     uint256 balance;
@@ -60,8 +54,10 @@ contract EthBnB {
     address payable owner;
     string name;
     uint dateCreated;
-    // Account's average rating (out of 5) can be computed as
-    // totalScore / totalRatings
+    /**
+     * Account's average rating (out of 5) can be computed as
+     * totalScore / totalRatings
+     */
     uint totalScore;
     uint nRatings;
   }
@@ -71,16 +67,23 @@ contract EthBnB {
     uint lid;
     address guestAddr;
     address ownerAddr;
-    // Rating assigned to the owner by the guest
-    // defaults to 0 which means nothing was set
+
+    /**
+     * Rating assigned to the owner by the guest
+     * defaults to 0 which means nothing was set
+     */
     uint ownerRating;
-    // Rating assigned to the guest by the owner
-    // defaults to 0 which means nothing was set
+    /**
+     * Rating assigned to the guest by the owner
+     * defaults to 0 which means nothing was set
+     */
     uint guestRating;
 
-    // When a booking is made, the listing balance (staked by the host)
-    // along with the value staked by the guest are added to the balance here.
-    // The listing balance is obviously decreased.
+    /**
+     * When a booking is made, the listing balance (staked by the host)
+     * along with the value staked by the guest are added to the balance here.
+     * The listing balance is obviously decreased.
+     */
     uint256 balance;
   }
 
@@ -114,22 +117,25 @@ contract EthBnB {
 
   uint public BOOKING_CAPACITY = 5;
 
-  // Listings will have incrementing Ids starting from 1
+  /**
+   * Listings will have incrementing Ids starting from 1
+   */
   uint nextListingId = 1;
 
-  // Store all created listings
-  // note that these are also stored in each Account.
+  /**
+   * Store all created listings
+   * note that these are also stored in each Account.
+   */
   mapping(uint => Listing) listings;
 
-  // Stores created accounts
+  /**
+   * Stores created accounts
+   */
   mapping(address => Account) accounts;
 
   // =======================================================================
   // FUNCTIONS
   // =======================================================================
-
-  // ACCOUNT
-  // -----------------------------------------------------------------------
 
   modifier accountExists(address owner) {
     require(accounts[owner].owner == owner);
@@ -166,9 +172,6 @@ contract EthBnB {
   //
   // }
 
-  // LISTING
-  // -----------------------------------------------------------------------
-
   modifier listingExists(uint lid) {
     require(listings[lid].lid == lid, 'No such listing found');
     _;
@@ -185,11 +188,13 @@ contract EthBnB {
       return (l.owner, l.price, l.location, l.country, l.balance);
     }
 
-  // Creates a new listing for the message sender
-  // and returns the Id of the created listing
-  //
-  // When the listing create the smart-contract will have had the 2xprice amount
-  // added to its balance.
+  /**
+   * Creates a new listing for the message sender
+   * and returns the Id of the created listing
+   *
+   * When the listing create the smart-contract will have had the 2xprice amount
+   * added to its balance.
+   */
   function createListing(Country country, string memory location, uint price) public payable {
     require(hasAccount(), 'Must have an account before creating a listing');
     // Note: enforce a maximum number of listings per user?
@@ -206,12 +211,13 @@ contract EthBnB {
     emit CreateListingEvent(msg.sender, nextListingId++);
   }
 
-  // Book a listing
-  //
-  // @param lid          id of the listing to be booked
-  // @param fromDate     start date of the booking
-  // @param nbOfDays     number of days for which the booking will be made
-  //
+  /**
+   * Book a listing
+   *
+   * @param lid          id of the listing to be booked
+   * @param fromDate     start date of the booking
+   * @param nbOfDays     number of days for which the booking will be made
+   */
   function listingBook(uint lid, uint fromDate, uint nbOfDays)
     public payable listingExists(lid) {
       require(hasAccount(), 'Guest must have an account before booking');
@@ -263,9 +269,13 @@ contract EthBnB {
     emit UpdateListingEvent(msg.sender, lid);
   }
 
-  // Returns the listing balance to its owner and deletes the listing
-  //
-  // Only if there are no active bookings.
+  /**
+   * Returns the listing balance to its owner and deletes the listing
+   *
+   * Only if there are no active bookings.
+   *
+   * @param lid   id of the listing to be deleted
+   */
   function listingDelete(uint lid) public listingExists(lid) onlyListingHost(lid) {
     Listing storage listing = listings[lid];
 
@@ -332,17 +342,20 @@ contract EthBnB {
     accounts[guest].owner.transfer(amount);
   }
 
-  // Rate the booking 1-5 stars
-  //
-  // The function checks the msg.sender and validates
-  // they were either owner or guest in the booking.
-  // If they were not, a PermissionDenied event is emitted.
-  //
-  // @param bid     the identifier for their booking, this
-  //                coupled with msg.sender is enough to determine
-  //                the person being rated
-  // @param stars   unsigned integer between 1 and 5, anything else
-  //                will emit an error
+  /**
+   * Rate the booking 1-5 stars
+   *
+   * The function checks the msg.sender and validates
+   * they were either owner or guest in the booking.
+   *
+   * If they were not, a PermissionDenied event is emitted.
+   *
+   * @param bid         the identifier for their booking, this
+   *                    coupled with msg.sender is enough to determine
+   *                    the person being rated
+   * @param stars       unsigned integer between 1 and 5, anything else
+   *                    will emit an error
+   */
   function rate(uint lid, uint bid, uint stars) public {
     require(listings[lid].lid == lid && listings[lid].bookings[bid].bid == bid, 'No such listing or booking');
     require(stars >= 1 && stars <= 5, 'Stars arg must be in [1,5]');
@@ -369,10 +382,12 @@ contract EthBnB {
     emit RatingComplete(msg.sender, lid, bid, stars);
   }
 
-  // Cancel a booking
-  //
-  // @param lid           id of the listing to be cancelled
-  // @param bid           id of the booking to be cancelled
+  /**
+   * Cancel a booking
+   *
+   * @param lid           id of the listing to be cancelled
+   * @param bid           id of the booking to be cancelled
+   */
   function cancelBooking(uint lid, uint bid) public {
     checkListingId(lid);
     uint dbid = listings[lid].dbid;
@@ -394,7 +409,9 @@ contract EthBnB {
     require(listings[lid].owner == msg.sender, 'Only the owner of a listing make changes to it');
   }
 
-  // Emits an a booking event depending on the result given
+  /**
+   * Emits an a booking event depending on the result given
+   */
   function emitBookEvent(int result, uint lid) private {
     if (result == DateBooker.getBookConflictCode()) {
       emit BookingConflict(msg.sender, lid);
@@ -405,7 +422,9 @@ contract EthBnB {
     }
   }
 
-  // Emits an a booking cancel event depending on the result given
+  /**
+   * Emits an a booking cancel event depending on the result given
+   */
   function emitBookCancelEvent(int result, uint lid, uint bid) private {
     if (result == DateBooker.getNotFoundCode()) {
       emit BookingNotFound(msg.sender, lid, bid);
