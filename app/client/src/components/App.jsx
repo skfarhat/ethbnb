@@ -8,7 +8,7 @@ import ListingView from './ListingView'
 import ListingSearch from './ListingSearch'
 import Navigation from './Navigation'
 import AccountPage from './AccountPage'
-import NewListing from './NewListing'
+import ListingCreate from './ListingCreate'
 import { setWeb3Js, REMOVE_MESSAGE } from '../redux/actions'
 
 
@@ -72,7 +72,7 @@ class App extends Component {
           <Route exact path="/listing" component={ListingSearch} />
           <Route exact path="/account" component={AccountPage} />
           <Route path="/listing/:lid" component={ListingView} />
-          <Route path="/new-listing" component={NewListing} />
+          <Route path="/new-listing" component={ListingCreate} />
         </div>
       </Router>
     )

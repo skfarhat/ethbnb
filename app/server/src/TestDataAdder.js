@@ -168,7 +168,7 @@ const chainTransactions = [
     inputs: [
       { value: 1, name: 'listingId' },
       { value: feb2019(10), name: 'fromDate' },
-      { value: 3, name: 'nb_days' },
+      { value: 3, name: 'nbOfDays' },
     ],
     value: 2 * 6,
     constant: false,
@@ -183,7 +183,7 @@ const chainTransactions = [
     inputs: [
       { value: 3, name: 'listingId' },
       { value: feb2019(16), name: 'fromDate' },
-      { value: 4, name: 'nb_days' },
+      { value: 4, name: 'nbOfDays' },
     ],
     value: 2 * 20,
     constant: false,
@@ -198,7 +198,7 @@ const chainTransactions = [
     inputs: [
       { value: 1, name: 'listingId' },
       { value: feb2019(16), name: 'fromDate' },
-      { value: 4, name: 'nb_days' },
+      { value: 4, name: 'nbOfDays' },
     ],
     value: 2 * 6,
     constant: false,
@@ -212,7 +212,7 @@ const chainTransactions = [
     inputs: [
       { value: 3, name: 'listingId' },
       { value: feb2019(6), name: 'fromDate' },
-      { value: 4, name: 'nb_days' },
+      { value: 4, name: 'nbOfDays' },
     ],
     value: 2 * 20,
     constant: false,
@@ -227,7 +227,7 @@ const chainTransactions = [
     inputs: [
       { value: 4, name: 'listingId' },
       { value: feb2019(12), name: 'fromDate' },
-      { value: 2, name: 'nb_days' },
+      { value: 2, name: 'nbOfDays' },
     ],
     value: 2 * 7,
     constant: false,
