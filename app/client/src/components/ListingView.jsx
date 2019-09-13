@@ -22,6 +22,7 @@ class ListingView extends Component {
     this.state = {
       fromDate,
       toDate,
+      hasVerified: false,
       verified: {
         // Below are the fields which we verify
         // against the actual chain data.
@@ -102,7 +103,7 @@ class ListingView extends Component {
     const { verified } = this.state
     const getVerified = () => {
       if (isSet(verified[field])) {
-        return verified[field] ? '✅' : '❌'
+        return verified[field] ? ' ✅' : ' ❌'
       }
       return ''
     }
@@ -177,9 +178,9 @@ class ListingView extends Component {
 
   async verifyAgainstChain() {
     const { addr, contract } = this.props
+    const { verified, hasVerified } = this.state
     const listing = this.getListing()
     const { lid } = listing
-    const { verified } = this.state
     const obj = {
       gas: 1000000,
       from: addr,
@@ -189,7 +190,7 @@ class ListingView extends Component {
       Object.keys(verified).forEach((field) => {
         // We don't care to check for types here
         // so we just '==' instead of '==='
-        // eslint-disable-next-line eqeqeq
+        // eslint-disable-next-line
         verified[field] = res[field] == listing[field]
       })
       this.setState({ verified })
@@ -197,6 +198,7 @@ class ListingView extends Component {
       console.log('Failed to call getListingAll()')
       // TODO: Display UI alert error
     }
+    this.setState({ hasVerified: true })
   }
 
   // Returns true if the 'Book listing' button should be active
@@ -206,6 +208,10 @@ class ListingView extends Component {
   }
 
   render() {
+    const { hasVerified } = this.state
+    if (!hasVerified) {
+      this.verifyAgainstChain()
+    }
     return (
       <div className="listing-view">
         <Link
@@ -219,7 +225,6 @@ class ListingView extends Component {
           </div>
         </Link>
         { this.getListingDetails() }
-        <Button attached="top" onClick={this.verifyAgainstChain}> Verify </Button>
       </div>
     )
   }
