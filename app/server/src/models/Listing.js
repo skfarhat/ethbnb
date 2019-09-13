@@ -4,14 +4,15 @@ const mongooseHidden = require('mongoose-hidden')()
 
 const ListingSchema = new mongoose.Schema({
   owner: String,
-  lid: { type: Number, index: true },
+  lid: { type: Number, index: true, unique: true },
   title: String,
   description: String,
   price: Number,
   country: Number,
   location: String,
+  imageCID: String,
+  imageCIDSource: String,
   bookings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'bookings' }],
-  images: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ipfs_images' }],
   // Counts the total score received for this account
   // Note: this is not the average
   totalScore: Number,

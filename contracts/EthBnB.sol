@@ -48,6 +48,9 @@ contract EthBnB {
     mapping(uint => Booking) bookings;
 
     uint256 balance;
+
+    string imageCID;
+    string imageCIDSource;
   }
 
   struct Account {
@@ -146,8 +149,7 @@ contract EthBnB {
     accounts[msg.sender] = Account({
       owner : msg.sender,
       name : name,
-      // TODO: recheck block.timestamp used for date here
-      dateCreated : block.timestamp,
+      dateCreated : now,
       totalScore: 0,
       nRatings: 0
     });
@@ -158,19 +160,11 @@ contract EthBnB {
     return accounts[msg.sender].owner == msg.sender;
   }
 
-  // TODO: remove the owner parameter and just use msg.sender
   function getAccountAll(address owner) public accountExists(owner) view
     returns (string memory name, uint dateCreated, uint totalScore, uint nRatings) {
       Account memory account = accounts[owner];
       return (account.name, account.dateCreated, account.totalScore, account.nRatings);
     }
-
-  // TODO: when implementing:
-  // prevent account deletion when there are listings associated or something
-  //
-  // function deleteAccount() public {
-  //
-  // }
 
   modifier listingExists(uint lid) {
     require(listings[lid].lid == lid, 'No such listing found');
@@ -183,9 +177,10 @@ contract EthBnB {
   }
 
   function getListingAll(uint lid) public listingExists(lid) view
-    returns (address owner, uint price, string memory location, Country country, uint256 balance) {
+    returns (address owner, uint price, string memory location, Country country, uint256 balance,
+      string memory imageCID, string memory imageCIDSource) {
       Listing memory l = listings[lid];
-      return (l.owner, l.price, l.location, l.country, l.balance);
+      return (l.owner, l.price, l.location, l.country, l.balance, l.imageCID, l.imageCIDSource);
     }
 
   /**
@@ -195,20 +190,23 @@ contract EthBnB {
    * When the listing create the smart-contract will have had the 2xprice amount
    * added to its balance.
    */
-  function createListing(Country country, string memory location, uint price) public payable {
-    require(hasAccount(), 'Must have an account before creating a listing');
-    // Note: enforce a maximum number of listings per user?
-    uint dbid = dateBooker.register(BOOKING_CAPACITY);
-    listings[nextListingId] = Listing({
-      lid : nextListingId,
-      owner: msg.sender,
-      country: country,
-      location: location,
-      price: price,
-      dbid: dbid,
-      balance: msg.value
-    });
-    emit CreateListingEvent(msg.sender, nextListingId++);
+  function createListing(Country country, string memory location, uint price)
+    public payable {
+        require(hasAccount(), 'Must have an account before creating a listing');
+        // Note: enforce a maximum number of listings per user?
+        uint dbid = dateBooker.register(BOOKING_CAPACITY);
+        listings[nextListingId] = Listing({
+          lid : nextListingId,
+          owner: msg.sender,
+          country: country,
+          location: location,
+          price: price,
+          dbid: dbid,
+          balance: msg.value,
+          imageCID: '',
+          imageCIDSource: ''
+        });
+        emit CreateListingEvent(msg.sender, nextListingId++);
   }
 
   /**
@@ -261,12 +259,20 @@ contract EthBnB {
     }
 
   function setListing(uint lid, uint price, string memory location, Country country)
-    public payable listingExists(lid) onlyListingHost(lid) {
-    Listing storage listing = listings[lid];
-    listing.location = location;
-    listing.price = price;
-    listing.country = country;
-    emit UpdateListingEvent(msg.sender, lid);
+    public listingExists(lid) onlyListingHost(lid) {
+      Listing storage listing = listings[lid];
+      listing.location = location;
+      listing.price = price;
+      listing.country = country;
+      emit UpdateListingEvent(msg.sender, lid);
+  }
+
+  function setListingImage(uint lid, string memory cid, string memory cidSource)
+    public listingExists(lid) onlyListingHost(lid) {
+      Listing storage listing = listings[lid];
+      listing.imageCID = cid;
+      listing.imageCIDSource = cidSource;
+      emit UpdateListingEvent(msg.sender, lid);
   }
 
   /**

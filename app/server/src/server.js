@@ -60,6 +60,6 @@ database.connectSync().then(async () => {
 
   webServer.listen()
 }).catch((err) => {
-  logger.error('Error: ', err)
+  logger.error(err)
   process.exit(1)
 })

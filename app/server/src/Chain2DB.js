@@ -63,7 +63,7 @@ module.exports = (database) => {
       lid,
       owner: from,
     }
-    const fields = ['price', 'owner', 'location', 'country']
+    const fields = ['price', 'owner', 'location', 'country', 'imageCID', 'imageCIDSource']
     const res = await contract.methods.getListingAll(lid).call({ from })
     Object.values(fields).forEach((field) => {
       listing[field] = res[field]
@@ -98,14 +98,18 @@ module.exports = (database) => {
     await addAccountToDatabase(account)
   }
 
-  // Create Listing object and add it to database
-  const createListingEventHandler = async (event) => {
-    logger.silly('createListingEventHandler')
+  /**
+   * Reads the listing with given listing id from the blockchain
+   * and updates the Mongo Document
+   *
+   * @param   event         The event object emitted
+   */
+  const syncListing = async (event) => {
+    logger.silly('syncListing')
     const { lid, from } = event.returnValues
     const { transactionHash } = event
-    // Fetch listing details from the blockchain
     const listing = Object.assign({ txHash: transactionHash }, await fetchAndReturnListing(lid, from))
-    await database.insertListing(listing)
+    await database.upsertListing(listing)
   }
 
   // Find the cancelled booking and delete it if present
@@ -133,7 +137,7 @@ module.exports = (database) => {
     const { from, bid, lid, stars } = event.returnValues
 
     // Get booking and listing
-    // We might have to wait for them as the event firing is asynchronouse
+    // We might have to wait for them as the event firing is asynchronous
     // and RatingComplete relies on the Listing and Booking being present.
     //
     // FIXME: The below is not ideal but does the job for now.
@@ -166,7 +170,8 @@ module.exports = (database) => {
     CreateAccountEvent: createAccountEventHandler,
     BookingComplete: bookingCompleteEventHanlder,
     BookingCancelled: bookingCancelledEventHandler,
-    CreateListingEvent: createListingEventHandler,
+    CreateListingEvent: syncListing,
+    UpdateListingEvent: syncListing,
     RatingComplete: ratingCompleteEventHandler,
   }
 

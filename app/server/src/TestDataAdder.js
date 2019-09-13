@@ -72,6 +72,7 @@ const chainTransactions = [
       { value: 6, name: 'price' },
     ],
     constant: false,
+    event: 'CreateListingEvent',
     value: 2 * 6,
     metadata: {
       title: '53 Devonshire-on-Rails',
@@ -305,7 +306,7 @@ const TestDataAdder = (database) => {
   // Maps all images in listing.images to its ObjectId in the
   // model. If the image is not in the database, it is uploaded
   // to ipfs.infura then added to the model.
-  const uploadImgFromFSAndInsertInDB = async (listing) => {
+  const uploadImgsFromFSAndInsertInDB = async (listing) => {
     const images = isSet(listing.images) ? listing.images : []
     return Promise.all(images.map(async (image) => {
       // Upload and insert IPFS Image for all images
@@ -319,22 +320,27 @@ const TestDataAdder = (database) => {
             throw new Error('ipfs.util.addFromFs returned zero-length result')
           }
           logger.info(`Added image ${filepath} to IPFS and local database.`)
-          await database.insertIpfsImage(result[0])
+          return await database.insertIpfsImage(result[0])
         } catch (err) {
           logger.error(err)
           return null
         }
       }
-      return IPFSImage.findOne({ path: image })
     }))
   }
 
-  const metadataMethods = {
-    // listing contains the txHash
-    createListing: async (listing) => {
-      const images = await uploadImgFromFSAndInsertInDB(listing)
-      database.insertListing(Object.assign(listing, { images }))
-    },
+  const txCallbacks = {
+    CreateListingEvent: async (event, metadata) => {
+      const { lid } = event.returnValues
+      const accounts = await web3.eth.getAccounts()
+      const addr = accounts[metadata.clientIndex]
+      const images = await uploadImgsFromFSAndInsertInDB(metadata)
+      if (isSet(images) && images.length > 0) {
+        const { hash: imageCID } = images[0]
+        const imageCIDSource = 'ipfs'
+        await contract.methods.setListingImage(lid, imageCID, imageCIDSource).send({ from: addr, gas: 1000000 })
+      }
+    }
   }
 
   return {
@@ -342,7 +348,7 @@ const TestDataAdder = (database) => {
       logger.silly('addTestDataToChain')
       const accounts = await web3.eth.getAccounts()
       await Promise.all(chainTransactions.map(async (chainTX) => {
-        const { name, inputs, clientIndex, metadata, value } = chainTX
+        const { name, inputs, clientIndex, metadata, value, event } = chainTX
         const inValues = inputs.map(x => x.value)
         const addr = accounts[clientIndex]
         const txIn = {
@@ -350,13 +356,21 @@ const TestDataAdder = (database) => {
           gas: 1000000,
           value: isSet(value) ? fromFinney(value) : 0,
         }
-        const tx = await contract.methods[name](...inValues).send(txIn)
-        // e.g meta might be 'listing'
-        const meta = Object.assign(isSet(metadata) ? metadata : {}, { txHash: tx.transactionHash })
-        const metadataMethod = metadataMethods[name]
-        if (isSet(metadataMethod)) {
-          await metadataMethod(meta)
-        }
+        const receipt = await contract.methods[name](...inValues).send(txIn)
+        await Promise.all(Object.keys(receipt.events).map(async (evName) => {
+          const event = receipt.events[evName]
+          const callback = txCallbacks[evName]
+          const meta = Object.assign(isSet(metadata) ? metadata : {}, {
+            clientIndex,
+            txHash: receipt.transactionHash,
+          })
+          try {
+            if (isSet(callback))
+              await callback(event, meta)
+          } catch (err) {
+            console.log(err)
+          }
+        }))
       }))
     },
   }

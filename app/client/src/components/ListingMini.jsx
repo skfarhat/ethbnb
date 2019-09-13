@@ -33,21 +33,6 @@ const getRatingElem = (totalScore, nRatings) => {
   )
 }
 
-const getMainImageInfo = (images) => {
-  // Prep stuff for the image
-  let hash = ''
-  let ext = ''
-  if (Array.isArray(images) && images.length > 0) {
-    const img = images[0]
-    if (img && Object.prototype.hasOwnProperty.call(img, 'hash')
-      && Object.prototype.hasOwnProperty.call(img, 'path')) {
-      hash = img.hash
-      ext = img.path.split('.').pop()
-    }
-  }
-  return [hash, ext]
-}
-
 const getCountryElem = (code) => {
   const { flag, text } = getObjFromCountryCode(code)
   return (
@@ -60,9 +45,18 @@ const getCountryElem = (code) => {
 
 class ListingMini extends Component {
   render() {
-    const { lid, title, location, country,
-      price, nRatings, totalScore, images, owner, ownerInfo } = this.props
-    const [hash, ext] = getMainImageInfo(images)
+    const {
+      lid, title, location,
+      country, price, nRatings,
+      totalScore, owner, ownerInfo,
+      imageCID, imageCIDSource
+    } = this.props
+
+    // Init fields needed for Listing's image
+    // NOTE:  only ipfs as a data source is supported and jpg as images are supported
+    const hash = imageCIDSource === 'ipfs' ? imageCID : ''
+    const ext = 'jpg'
+
     const ownerStr = isSet(ownerInfo) ? ownerInfo.name : owner
     return (
       <div className="listing-mini">

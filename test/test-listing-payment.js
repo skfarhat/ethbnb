@@ -48,6 +48,8 @@ const getListingBalance = async (bnb, lid, host) => {
   return balance
 }
 
+const imageCID = ''
+const imageCIDSource = ''
 
 contract('EthBnB', async (accounts) => {
 

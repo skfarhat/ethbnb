@@ -56,49 +56,11 @@ const Database = (options) => {
     return obj
   }
 
-  // Create or update a listing document.
-  //
-  // If we find an listing with a matching
-  // transactionHash OR an lid we update it
-  //
-  // To be clear, there are two possible scenarios:
-  //
-  // 1. The backend receives the chain event before it gets the metadata
-  //    update (POST) from the client (unlikely in real case scenarios)
-  // 2. The backend gets the metadata update (POST) before it gets the chain
-  //    event. It must save the metadata details with the transactionHash,
-  //    so that the future call to createListingEventHandler is able to update the
-  //    entry. A list of images {hash: 'blabla', path: 'blabla'} is accepted, these
-  //    images are inserted to ipfs_images then linked to the inserted listing using
-  //    their ObjectIds (see also insertIpfsImage).
-  const insertListing = async (listing) => {
-    logger.silly(`database::insertListing ${listing.txHash}`)
+  const upsertListing = async (listing) => {
+    logger.silly(`upsertListing`)
     const upsertObj = { new: true, upsert: true }
-    const { txHash, images } = listing
-
-    // If no transaction hash is provided we will not insert anything
-    if (!isSet(txHash)) {
-      logger.warn('Won\'t insert listing without a txHash.')
-      console.log(listing)
-      return null
-    }
-
-    // Listing object that will be inserted
-    let toInsertListing = listing
-    // Insert all 'images' provided in listing (if any)
-    // and get their ObjectIds in 'imageIds'
-    if (isSet(images)) {
-      try {
-        toInsertListing = {
-          ...listing,
-          // Insert all IPFS images
-          images: await Promise.all(images.map(img => insertIpfsImage(img))),
-        }
-      } catch (err) {
-        logger.error('Failed to insert IPFS images. Will do without')
-      }
-    }
-    await Listing.findOneAndUpdate({ txHash }, toInsertListing, upsertObj)
+    const { lid } = listing
+    await Listing.findOneAndUpdate({ lid }, listing, upsertObj)
   }
 
   // Delete all documents
@@ -115,7 +77,7 @@ const Database = (options) => {
   return {
     connectSync,
     connect,
-    insertListing,
+    upsertListing,
     insertIpfsImage,
     clear,
   }

@@ -51,6 +51,8 @@ contract('EthBnB', async (accounts) => {
     const bnb = await EthBnB.deployed()
     // Create a listing
     try {
+      const imageCID = ''
+      const imageCIDSource = ''
       await bnb.createListing(COUNTRIES.GB, 'London', 5000, { from: UNUSED_ACCOUNT })
       assert(false, 'Should have thrown an exception')
     } catch (error) {
@@ -162,6 +164,8 @@ contract('EthBnB', async (accounts) => {
     const LOCATION = 'London'
     const PRICE = 5000
     const COUNTRY = COUNTRIES.GB
+    const imageCID = ''
+    const imageCIDSource = ''
     const { from: OWNER } = d
     let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, { from: accounts[0], value: fromFinney(DEFAULT_LISTING_PRICE * 2) })
     truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
@@ -192,10 +196,39 @@ contract('EthBnB', async (accounts) => {
     truffleAssert.eventEmitted(res, 'UpdateListingEvent')
 
     res = await bnb.getListingAll(lid, { from: host })
-    const { location: actualLocation, price: actualPrice, country: actualCountry } = res
+    const {
+      location: actualLocation,
+      price: actualPrice,
+      country: actualCountry
+    } = res
     assert.equal(actualLocation, newLocation)
     assert.equal(bigNumberToInt(actualPrice), newPrice)
     assert.equal(bigNumberToInt(actualCountry), newCountry)
+  })
+
+  it('Listing: setListingImage works and emits UpdateListingEvent', async () => {
+    let lid
+    const [host] = accounts
+    const bnb = await EthBnB.deployed()
+    await bnb.createAccount('Alex', { from : host})
+    const LOCATION = 'London'
+    const PRICE = 5000
+    const COUNTRY = COUNTRIES.GB
+    const imageCID = ''
+    const imageCIDSource = ''
+    const d = { from: host, value: fromFinney(DEFAULT_LISTING_PRICE * 2) }
+    let res = await bnb.createListing(COUNTRY, LOCATION, PRICE, { from: host })
+    truffleAssert.eventEmitted(res, 'CreateListingEvent', ev => lid = ev.lid)
+
+    const newImageCID = 'abcdefgh1'
+    const newImageCIDSource = 'ipfs'
+    res = await bnb.setListingImage(lid, newImageCID, newImageCIDSource, { from : host })
+    truffleAssert.eventEmitted(res, 'UpdateListingEvent')
+
+    res = await bnb.getListingAll(lid, { from: host })
+    const { imageCID: actualImageCID, imageCIDSource: actualImageCIDSource } = res
+    assert.equal(actualImageCID, newImageCID)
+    assert.equal(actualImageCIDSource, newImageCIDSource)
   })
 
   // // TODO: rework this test case

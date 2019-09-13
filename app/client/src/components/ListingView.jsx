@@ -122,8 +122,6 @@ class ListingView extends Component {
   getListingDetails(lid) {
     const { listings, isFetching } = this.props
     const { fromDate, toDate } = this.state
-    let hash
-    let ext
     // If listings is undefined
     if (!isSet(listings)) {
       return (<Loader active={isFetching} />)
@@ -137,13 +135,12 @@ class ListingView extends Component {
         </h4>
       )
     }
-    if (Array.isArray(listing.images) && listing.images.length > 0) {
-      const img = listing.images[0]
-      if (img && hasKey(img, 'hash') && hasKey(img, 'path')) {
-        hash = img.hash
-        ext = img.path.split('.').pop()
-      }
-    }
+    const { imageCID, imageCIDSource } = listing
+    // Init fields needed for Listing's image
+    // NOTE:  only ipfs as a data source is supported and jpg as images are supported
+    const hash = imageCIDSource === 'ipfs' ? imageCID : ''
+    const ext = 'jpg'
+
     const fields = ['description', 'location', 'country', 'price']
     return (
       <div>
