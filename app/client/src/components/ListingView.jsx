@@ -34,6 +34,8 @@ class ListingView extends Component {
         owner: undefined,
         location: undefined,
         country: undefined,
+        imageCID: undefined,
+        imageCIDSource: undefined,
       },
     }
     // Storage key used for 'book' contractCall
@@ -99,22 +101,55 @@ class ListingView extends Component {
     return filtered[0]
   }
 
-  getListingField(listing, field) {
+  /**
+   * Returns
+   *   - positive tickmark if all fields have been verified
+   *   - negative tickmark if some have verified negatively
+   *   - empty string if some have not been verified
+   *
+   * @param   fields    Listing fields to be verified
+   */
+  getVerified(fields) {
     const { verified } = this.state
-    const getVerified = () => {
-      if (isSet(verified[field])) {
-        return verified[field] ? ' ✅' : ' ❌'
-      }
+    const allVerified = fields.map(x => verified[x]).reduce((x,y) => x && y)
+    if (isSet(allVerified))
+      return allVerified ? ' ✅' : ' ❌'
+    else
       return ''
-    }
+  }
+
+  getListingField(listing, field) {
     const label = capitaliseWord(field)
     return (
       <div key={field}>
         <em> {label}: </em>
         <span className={field}>
           { listing[field] }
-          { getVerified() }
+          { this.getVerified([field]) }
         </span>
+      </div>
+    )
+  }
+
+  /**
+   * Returns IPFSImage JSX for the provided listing.
+   * A verified/not-verified sign accompanies the image.
+   *
+   * NOTE:  only ipfs as a data source is supported and jpg as images are supported
+   *
+   * @param  listing          Listing object containing imageCID and imageCIDSource
+   */
+  getListingImage(listing) {
+    const { imageCID, imageCIDSource } = listing
+    const hash = imageCIDSource === 'ipfs' ? imageCID : ''
+    const ext = 'jpg'
+    return (
+      <div>
+        <IPFSImage
+          hash={hash}
+          ext={ext}
+        />
+        { this.getVerified(['imageCID', 'imageCIDSource']) }
       </div>
     )
   }
@@ -135,11 +170,6 @@ class ListingView extends Component {
         </h4>
       )
     }
-    const { imageCID, imageCIDSource } = listing
-    // Init fields needed for Listing's image
-    // NOTE:  only ipfs as a data source is supported and jpg as images are supported
-    const hash = imageCIDSource === 'ipfs' ? imageCID : ''
-    const ext = 'jpg'
 
     const fields = ['description', 'location', 'country', 'price']
     return (
@@ -147,10 +177,7 @@ class ListingView extends Component {
         <div>
           {`${formatDate(fromDate)}\t\t${formatDate(toDate)}`}
         </div>
-        <IPFSImage
-          hash={hash}
-          ext={ext}
-        />
+        { this.getListingImage(listing) }
         <h5>
           {listing.title}
         </h5>
