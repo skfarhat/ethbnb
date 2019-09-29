@@ -16,7 +16,7 @@ struct Storage {
     uint nextPos;
     uint nextBid;
     // uint head;
-    uint junk;
+    // uint junk;
     mapping (uint => Node) nodes;
 }
 
@@ -26,25 +26,18 @@ event BookingError(string msg);
 
 
 /// The list is empty if the HEAD node points to itself
-function isEmpty(Storage storage self) public view returns (bool) {
+function isEmpty(Storage storage self) public view returns (bool)
+{
     return self.nodes[HEAD].next == HEAD;
 }
 
-/// Returns the next available position and updates it
-function useNextPos(Storage storage self) public returns (uint pos) {
-    if (self.nextPos == HEAD) {
-        self.nextPos = HEAD + 2;
-        return HEAD + 1;
-    } else {
-        return self.nextPos++;
-    }
-}
-
-function _createLink(Storage storage self, uint fromNode, uint toNode) private {
+function _createLink(Storage storage self, uint fromNode, uint toNode) private
+{
     self.nodes[fromNode].next = toNode;
 }
 
-function _printAll(Storage storage self) public {
+function _printAll(Storage storage self) public
+{
     uint curr = self.nodes[HEAD].next;
     while (curr != HEAD) {
         emit Log(self.nodes[curr].fromDate, self.nodes[curr].toDate);
@@ -52,36 +45,80 @@ function _printAll(Storage storage self) public {
     }
 }
 
-function _printJunk(Storage storage self) public {
-    uint curr = self.nodes[JUNK].next;
-    while (curr != HEAD) {
-        emit Log(self.nodes[curr].fromDate, self.nodes[curr].toDate);
-        curr = self.nodes[curr].next;
+function _printJunk(Storage storage self) public
+{
+    if (!junkIsEmpty(self)) {
+        uint curr = self.nodes[JUNK].next;
+        while (curr != JUNK) {
+            emit Log(self.nodes[curr].fromDate, self.nodes[curr].toDate);
+            curr = self.nodes[curr].next;
+        }
     }
+}
+
+/// Returns true if junk is initialised: if it points to itself
+function junkNotInitialised(Storage storage self) private view returns (bool)
+{
+    return self.nodes[JUNK].next == 0;
+}
+
+function junkIsEmpty(Storage storage self) private view returns (bool)
+{
+    return junkNotInitialised(self) || self.nodes[JUNK].next == JUNK;
 }
 
 // Adds the provided node to junk
-function addJunk(Storage storage self, uint node) private {
+function addJunk(Storage storage self, uint node) private
+{
     require(node != JUNK, 'Cannot add provided node to Junk');
-    if (self.junk == 0 /* un-initialised */) {
-        self.junk = JUNK;
+    if (junkNotInitialised(self)) {
+        self.nodes[JUNK].next = JUNK;
     }
-    _createLink(self, node, self.junk);
-    self.junk = node;
+    _createLink(self, node, self.nodes[JUNK].next);
+    _createLink(self, JUNK, node);
 }
 
-function popJunk(Storage storage self) private {
-    require(self.junk == 0 || self.junk != JUNK, 'Nothing to pop from Junk');
-    self.junk = self.nodes[self.junk].next;
+modifier junkNotEmpty(Storage storage self)
+{
+    require(!junkIsEmpty(self));
+    _;
+}
+
+/// Pops the junk node at head of list and returns its index
+function popJunk(Storage storage self) private
+  junkNotEmpty(self)
+  returns (uint)
+{
+    uint ret = self.nodes[JUNK].next;
+    _createLink(self, JUNK, self.nodes[ret].next);
+    return ret;
 }
 
 /// Removes node from the list. Requires the prevNode be provided.
-function removeNode(Storage storage self, uint node, uint prevNode) private {
+function removeNode(Storage storage self, uint node, uint prevNode) private
+{
     _createLink(self, prevNode, self.nodes[node].next);
     addJunk(self, node);
 }
 
-function _newNode(Storage storage self, uint prevNode, uint nextNode, uint bid, uint fromDate, uint toDate) private {
+/// Returns the next available position and updates it
+function useNextPos(Storage storage self) public returns (uint pos)
+{
+    if (junkIsEmpty(self)) {
+        if (self.nextPos == HEAD) {
+            self.nextPos = HEAD + 2;
+            return HEAD + 1;
+        } else {
+            return self.nextPos++;
+        }
+    } else {
+        // Recycle node
+        return popJunk(self);
+    }
+}
+
+function _newNode(Storage storage self, uint prevNode, uint nextNode, uint bid, uint fromDate, uint toDate) private
+{
     uint nextPos = useNextPos(self);
     Node memory n = Node({
         fromDate: fromDate,
@@ -96,13 +133,16 @@ function _newNode(Storage storage self, uint prevNode, uint nextNode, uint bid, 
 
 /// Invokes _newNode and returns the bid of the created node
 /// Increments self.nextBid
-function newBook(Storage storage self, uint prevNode, uint nextNode, uint fromDate, uint toDate) private returns (uint) {
-    _newNode(self, prevNode, nextNode,self.nextBid++, fromDate, toDate);
+function newBook(Storage storage self, uint prevNode, uint nextNode, uint fromDate, uint toDate) private returns (uint)
+{
+    require(toDate > fromDate, 'fromDate must be less than todate');
+    _newNode(self, prevNode, nextNode, self.nextBid++, fromDate, toDate);
     return self.nextBid - 1;
 }
 
 // FIXME: bids are not updated yet
-function book(Storage storage self, uint fromDate, uint toDate) public returns (uint) {
+function book(Storage storage self, uint fromDate, uint toDate) public returns (uint)
+{
     // FIXME: uncomment the below
     // if (fromDate <= now) {
     //     emit BookingError("Cannot book in the past");
@@ -137,7 +177,8 @@ function book(Storage storage self, uint fromDate, uint toDate) public returns (
     }
 }
 
-function cancel(Storage storage self, uint bid) public returns (int) {
+function cancel(Storage storage self, uint bid) public returns (int)
+{
     uint prev = HEAD;
     uint curr = self.nodes[prev].next;
     // Find node with matching bid, then remove it
