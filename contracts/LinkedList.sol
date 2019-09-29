@@ -8,21 +8,20 @@ struct Node {
     uint next;
 }
 
-uint constant HEAD = 0;
-uint constant JUNK = 999999; // We assume there won't be that many bookings
-
-
 struct Storage {
     uint nextPos;
     uint nextBid;
     mapping (uint => Node) nodes;
 }
 
-event Booking(uint bid);
-event Log(uint from, uint to);
-event BookingConflict();
-event BookingError(string msg);
+uint constant HEAD = 0;
+uint constant JUNK = 999999; // We assume there won't be that many bookings
 
+event Cancelled(uint bid);
+event Booking(uint bid);
+event Conflict();
+event Error(string msg);
+event Log(uint from, uint to);
 
 /// The list is empty if the HEAD node points to itself
 function isEmpty(Storage storage self) public view returns (bool)
@@ -144,14 +143,12 @@ function newBook(Storage storage self, uint prevNode, uint nextNode, uint fromDa
     return bid;
 }
 
-
 function book(Storage storage self, uint fromDate, uint toDate) public returns (int)
 {
-    // FIXME: uncomment the below
-    // if (fromDate <= now) {
-    //     emit BookingError("Cannot book in the past");
-    // }
-    if (isEmpty(self)) {
+    if (fromDate <= now || fromDate >= toDate) {
+        emit Error("Invalid date arguments");
+        return -1;
+    } else if (isEmpty(self)) {
         return int(newBook(self, HEAD, HEAD, fromDate, toDate));
     } else {
         uint prev = HEAD;
@@ -174,7 +171,7 @@ function book(Storage storage self, uint fromDate, uint toDate) public returns (
                 // TODO: self.freeJunk()
                 return int(newBook(self, prev, curr, fromDate, toDate));
             } else {
-                emit BookingConflict();
+                emit Conflict();
                 return -1;
             }
         }
@@ -190,7 +187,8 @@ function cancel(Storage storage self, uint bid) public returns (int)
     while (curr != HEAD) {
         if (self.nodes[curr].bid == bid) {
             removeNode(self, curr, prev);
-            return int(curr);
+            emit Cancelled(bid);
+            return int(bid);
         }
         prev = curr;
         curr = self.nodes[curr].next;
