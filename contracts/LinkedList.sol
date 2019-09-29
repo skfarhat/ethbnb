@@ -15,11 +15,10 @@ uint constant JUNK = 999999; // We assume there won't be that many bookings
 struct Storage {
     uint nextPos;
     uint nextBid;
-    // uint head;
-    // uint junk;
     mapping (uint => Node) nodes;
 }
 
+event Booking(uint bid);
 event Log(uint from, uint to);
 event BookingConflict();
 event BookingError(string msg);
@@ -131,24 +130,29 @@ function _newNode(Storage storage self, uint prevNode, uint nextNode, uint bid, 
     self.nodes[nextPos] = n;
 }
 
-/// Invokes _newNode and returns the bid of the created node
-/// Increments self.nextBid
+/// Called by book function
+///
+///     - Creates a new LinkedList node
+///     - Emits Booking event
+///     - Updates nextBid
 function newBook(Storage storage self, uint prevNode, uint nextNode, uint fromDate, uint toDate) private returns (uint)
 {
-    require(toDate > fromDate, 'fromDate must be less than todate');
-    _newNode(self, prevNode, nextNode, self.nextBid++, fromDate, toDate);
-    return self.nextBid - 1;
+    require(toDate > fromDate, 'fromDate must be less than toDate');
+    uint bid = self.nextBid++;
+    _newNode(self, prevNode, nextNode, bid, fromDate, toDate);
+    emit Booking(bid);
+    return bid;
 }
 
-// FIXME: bids are not updated yet
-function book(Storage storage self, uint fromDate, uint toDate) public returns (uint)
+
+function book(Storage storage self, uint fromDate, uint toDate) public returns (int)
 {
     // FIXME: uncomment the below
     // if (fromDate <= now) {
     //     emit BookingError("Cannot book in the past");
     // }
     if (isEmpty(self)) {
-        return newBook(self, HEAD, HEAD, fromDate, toDate);
+        return int(newBook(self, HEAD, HEAD, fromDate, toDate));
     } else {
         uint prev = HEAD;
         uint curr = self.nodes[HEAD].next;
@@ -168,12 +172,13 @@ function book(Storage storage self, uint fromDate, uint toDate) public returns (
                 curr = self.nodes[curr].next;
             } else if (toDate <= x) {
                 // TODO: self.freeJunk()
-                return newBook(self, prev, curr, fromDate, toDate);
+                return int(newBook(self, prev, curr, fromDate, toDate));
             } else {
                 emit BookingConflict();
+                return -1;
             }
         }
-        return newBook(self, prev, HEAD, fromDate, toDate);
+        return int(newBook(self, prev, HEAD, fromDate, toDate));
     }
 }
 
