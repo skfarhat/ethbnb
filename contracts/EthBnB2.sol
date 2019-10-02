@@ -41,13 +41,6 @@ contract EthBnB2 {
 
     Country country;
 
-    // /**
-    //  * Every listing has its own DateBooker 'id' which allows
-    //  * the DateBooker contract to set up the appropriate data structure
-    //  * for storing booking information for that Listing.
-    //  * Field is set in createListing
-    //  */
-    // uint dbid;
     /** Bookings for the given listing */
     mapping(uint => Booking) bookings;
 
@@ -180,9 +173,10 @@ contract EthBnB2 {
   }
 
   function getListingAll(uint lid) public listingExists(lid) view
-    returns (address owner, uint price, string memory location, Country country, uint256 balance) {
+    returns (address owner, uint price, string memory location, Country country, uint256 balance,
+      string memory imageCID, string memory imageCIDSource) {
       Listing memory l = listings[lid];
-      return (l.owner, l.price, l.location, l.country, l.balance);
+      return (l.owner, l.price, l.location, l.country, l.balance, l.imageCID, l.imageCIDSource);
     }
 
   /**
@@ -192,11 +186,10 @@ contract EthBnB2 {
    * When the listing create the smart-contract will have had the 2xprice amount
    * added to its balance.
    */
-  function createListing(Country country, string memory location, uint price, string memory imageCID, string memory imageCIDSource)
+  function createListing(Country country, string memory location, uint price)
     public payable {
         require(hasAccount(), 'Must have an account before creating a listing');
         // Note: enforce a maximum number of listings per user?
-        // uint dbid = booker.register(BOOKING_CAPACITY);
         listings[nextListingId] = Listing({
           lid : nextListingId,
           owner: msg.sender,
@@ -204,8 +197,8 @@ contract EthBnB2 {
           location: location,
           price: price,
           balance: msg.value,
-          imageCID: imageCID,
-          imageCIDSource: imageCIDSource,
+          imageCID: '',
+          imageCIDSource: '',
           booker: LinkedList.Storage({
             nextBid: 0,
             nextPos: 0
@@ -264,16 +257,21 @@ contract EthBnB2 {
       }
     }
 
-  function setListing(uint lid, uint price, string memory location, Country country,
-    string memory imageCID, string memory imageCIDSource)
-    public payable listingExists(lid) onlyListingHost(lid) {
-        Listing storage listing = listings[lid];
-        listing.location = location;
-        listing.price = price;
-        listing.country = country;
-        listing.imageCID = imageCID;
-        listing.imageCIDSource = imageCIDSource;
-        emit UpdateListingEvent(msg.sender, lid);
+  function setListing(uint lid, uint price, string memory location, Country country)
+    public listingExists(lid) onlyListingHost(lid) {
+      Listing storage listing = listings[lid];
+      listing.location = location;
+      listing.price = price;
+      listing.country = country;
+      emit UpdateListingEvent(msg.sender, lid);
+  }
+
+  function setListingImage(uint lid, string memory cid, string memory cidSource)
+    public listingExists(lid) onlyListingHost(lid) {
+      Listing storage listing = listings[lid];
+      listing.imageCID = cid;
+      listing.imageCIDSource = cidSource;
+      emit UpdateListingEvent(msg.sender, lid);
   }
 
   /**
@@ -283,7 +281,6 @@ contract EthBnB2 {
    *
    * @param lid   id of the listing to be deleted
    */
-
   function deleteListing(uint lid) public listingExists(lid) onlyListingHost(lid) {
     require(false, 'Not fixed yet');
     // FIXME: Implement
@@ -400,7 +397,6 @@ contract EthBnB2 {
    */
   function cancelBooking(uint lid, uint bid) public {
     checkListingId(lid);
-    // uint dbid = listings[lid].dbid;
     Listing storage listing = listings[lid];
     int res = listing.booker.cancel(bid);
     emitBookCancelEvent(res, lid, bid);
