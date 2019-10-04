@@ -160,6 +160,7 @@ library OptimBookerLib {
 
     function book(Storage storage self, uint fromDate, uint toDate) public returns (int)
     {
+        require(fromDate < toDate, 'Invalid dates provided');
         // FIXME: uncomment below
         // if (fromDate <= now || fromDate >= toDate) {
         //     emit Error("Invalid date arguments");
@@ -167,33 +168,32 @@ library OptimBookerLib {
         // }
         if (isEmpty(self)) {
             return int(newBook(self, HEAD, HEAD, fromDate, toDate));
-        } else {
-            uint prev = HEAD;
-            uint curr = self.nodes[HEAD].next;
-            while (curr != HEAD) {
-                uint x = self.nodes[curr].fromDate;
-                uint y = self.nodes[curr].toDate;
-                // if (y <= now) {
-                    // FIXME:
-                    // Remove curr node
-                    // self.head = self.nodes[curr].next;
-                    // TODO: addJunk(curr);
-                    // prev = 0;
-                    // curr = self.head;
-                // } else
-                if (fromDate >= y) {
-                    prev = curr;
-                    curr = self.nodes[curr].next;
-                } else if (toDate <= x) {
-                    // TODO: self.freeJunk()
-                    return int(newBook(self, prev, curr, fromDate, toDate));
-                } else {
-                    emit Conflict();
-                    return -1;
-                }
-            }
-            return int(newBook(self, prev, HEAD, fromDate, toDate));
         }
+        uint prev = HEAD;
+        uint curr = self.nodes[HEAD].next;
+        while (curr != HEAD) {
+            uint x = self.nodes[curr].fromDate;
+            uint y = self.nodes[curr].toDate;
+            // if (y <= now) {
+                // FIXME:
+                // Remove curr node
+                // self.head = self.nodes[curr].next;
+                // TODO: addJunk(curr);
+                // prev = 0;
+                // curr = self.head;
+            // } else
+            if (fromDate >= y) {
+                // TODO: self.freeJunk()
+                return int(newBook(self, prev, curr, fromDate, toDate));
+            } else if (toDate <= x) {
+                prev = curr;
+                curr = self.nodes[curr].next;
+            } else {
+                emit Conflict();
+                return -1;
+            }
+        }
+        return int(newBook(self, prev, HEAD, fromDate, toDate));
     }
 
     function cancel(Storage storage self, uint bid) public returns (int)
