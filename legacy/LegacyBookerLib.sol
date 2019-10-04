@@ -5,7 +5,7 @@ pragma solidity ^0.5.0;
 
 // FIXME: consider introducing a cleanup function that cancels inactive bookings.
 
-library DateBooker {
+library LegacyBookerLib {
 
   // =============================================================
   // CONSTANTS
@@ -21,7 +21,7 @@ library DateBooker {
   // =============================================================
 
   event Register(uint id);
-  event Cancellation(uint id, uint bid);
+  event Cancelled(uint id, uint bid);
   event NoMoreSpace(uint id);
   event BookSuccess(uint id, uint bid);
   event BookConflict(uint id, uint bid);
@@ -29,7 +29,6 @@ library DateBooker {
   event CancellationError(uint id, int errno);
   event Error(int errno);
   event Log(uint x); // Used for debugging
-
   // =============================================================
   // DEFINE
   // =============================================================
@@ -99,16 +98,15 @@ library DateBooker {
     return self.nextId++;
   }
 
-  function book(BookerStorage storage self, uint id, uint fromDate, uint nbOfDays)
+  function book(BookerStorage storage self, uint id, uint fromDate, uint toDate)
                 public returns (int) {
-    require(nbOfDays > 0, 'Cannot have non-positive days');
+    require(fromDate < toDate, 'Invalid dates');
 
     if ( !hasSpace(self, id) ) {
       emit NoMoreSpace(id);
       return NO_MORE_SPACE;
     }
     // Check that there are no date intersections
-    uint toDate = fromDate + nbOfDays * 86400;
     int ret = findBookWithIntersectingDates(self, id, fromDate, toDate);
     if (ret >= 0) {
       emit BookConflict(id, uint(ret));
@@ -169,7 +167,7 @@ library DateBooker {
       _data.start = INVALID;
     }
     _data.size--;
-    emit Cancellation(id, bid);
+    emit Cancelled(id, bid);
     return int(bid);
   }
 
@@ -224,26 +222,26 @@ library DateBooker {
     return count;
   }
 
-  function getSize(BookerStorage storage self, uint id) view public returns (uint) {
+  function getSize(BookerStorage storage self, uint id) public view returns (uint) {
     return self.data[id].size;
   }
 
-  function getCapacity(BookerStorage storage self, uint id) view public returns (uint) {
+  function getCapacity(BookerStorage storage self, uint id) public view returns (uint) {
     return self.data[id].capacity;
   }
 
-  function isEmpty(BookerStorage storage self, uint id) view public returns (bool) {
+  function isEmpty(BookerStorage storage self, uint id) public view returns (bool) {
     return self.data[id].start == INVALID;
   }
 
-  function hasSpace(BookerStorage storage self, uint id) view public returns (bool) {
+  function hasSpace(BookerStorage storage self, uint id) public view  returns (bool) {
     return self.data[id].end != INVALID;
   }
 
   function getDates(BookerStorage storage self, uint id, uint bid) public view returns (uint fromDate, uint toDate) {
     int idx = findBook(self, id, bid);
     require(idx >= 0, 'Cannot get dates for non-present bid.');
-    Entry storage entry = self.data[id].d[uint(idx)];
+    Entry memory entry = self.data[id].d[uint(idx)];
     return (entry.fromDate, entry.toDate);
   }
 

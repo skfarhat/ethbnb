@@ -1,15 +1,11 @@
 pragma solidity ^0.5.0;
 
-import './LinkedList.sol';
+import './LegacyBookerLib.sol';
 
 /**
  *
  */
-contract EthBnB2 {
-
-  uint constant SECONDS_PER_DAY = 3600 * 24;
-
-  using LinkedList for LinkedList.Storage;
+contract EthBnB {
 
   enum Country {
     AF, AX, AL, DZ, AS, AD, AO, AI, AG, AR, AM, AW, AU, AT, AZ, BS, BH,
@@ -41,13 +37,17 @@ contract EthBnB2 {
 
     Country country;
 
+    /**
+     * Every listing has its own DateBooker 'id' which allows
+     * the DateBooker contract to set up the appropriate data structure
+     * for storing booking information for that Listing.
+     * Field is set in createListing
+     */
+    uint dbid;
     /** Bookings for the given listing */
     mapping(uint => Booking) bookings;
 
     uint256 balance;
-
-    /**  */
-    LinkedList.Storage booker;
 
     string imageCID;
     string imageCIDSource;
@@ -114,6 +114,11 @@ contract EthBnB2 {
 
   event RatingComplete(address from, uint lid, uint bid, uint stars);
 
+  // Setup DateBooker library
+  using LegacyBookerLib for LegacyBookerLib.BookerStorage;
+  LegacyBookerLib.BookerStorage dateBooker;
+
+  uint SECONDS_PER_DAY = 86400;
   uint public BOOKING_CAPACITY = 5;
 
   /**
@@ -190,19 +195,17 @@ contract EthBnB2 {
     public payable {
         require(hasAccount(), 'Must have an account before creating a listing');
         // Note: enforce a maximum number of listings per user?
+        uint dbid = dateBooker.register(BOOKING_CAPACITY);
         listings[nextListingId] = Listing({
           lid : nextListingId,
           owner: msg.sender,
           country: country,
           location: location,
           price: price,
+          dbid: dbid,
           balance: msg.value,
           imageCID: '',
-          imageCIDSource: '',
-          booker: LinkedList.Storage({
-            nextBid: 0,
-            nextPos: 0
-          })
+          imageCIDSource: ''
         });
         emit CreateListingEvent(msg.sender, nextListingId++);
   }
@@ -216,12 +219,12 @@ contract EthBnB2 {
    */
   function bookListing(uint lid, uint fromDate, uint nbOfDays)
     public payable listingExists(lid) {
-      // TODO: cap the number of booked days to 30 or so
       require(hasAccount(), 'Guest must have an account before booking');
       Listing storage listing = listings[lid];
       address payable guest = msg.sender;
       uint256 stake = 2 * listing.price * nbOfDays;
       uint toDate = fromDate + nbOfDays * SECONDS_PER_DAY;
+      uint dbid = listing.dbid;
       require(listing.owner != guest, 'Owner cannot book their own listing');
 
       // Ensure both guest and host have staked the same
@@ -231,7 +234,7 @@ contract EthBnB2 {
       // Try to book.
       // If successful, create a booking event with the balance amount
       // If unsuccessful, refund the stake to guest
-      int res = listing.booker.book(fromDate, toDate);
+      int res = dateBooker.book(dbid, fromDate, toDate);
       emitBookEvent(res, lid);
       if (res >= 0) {
         uint bid = uint(res);
@@ -282,23 +285,20 @@ contract EthBnB2 {
    * @param lid   id of the listing to be deleted
    */
   function deleteListing(uint lid) public listingExists(lid) onlyListingHost(lid) {
-    require(false, 'Not fixed yet');
-    // FIXME: Implement
-    // ...
+    Listing storage listing = listings[lid];
 
-    // Listing storage listing = listings[lid];
     // Check that there are no active bookings before we proceed
-    // uint activeBookings = listing.booker.getActiveBookingsCount(listing.dbid);
-    // require(activeBookings == 0, 'Cannot delete listing when there are active bookings');
+    uint activeBookings = dateBooker.getActiveBookingsCount(listing.dbid);
+    require(activeBookings == 0, 'Cannot delete listing when there are active bookings');
 
-    // // Return listing balance to its owner
-    // uint toReturn = listing.balance;
-    // listing.balance = 0;
-    // accounts[listing.owner].owner.transfer(toReturn);
+    // Return listing balance to its owner
+    uint toReturn = listing.balance;
+    listing.balance = 0;
+    accounts[listing.owner].owner.transfer(toReturn);
 
-    // // Delete listing's storage
-    // delete listings[lid];
-    // emit DeleteListingEvent(msg.sender, lid);
+    // Delete listing's storage
+    delete listings[lid];
+    emit DeleteListingEvent(msg.sender, lid);
   }
 
   function depositIntoListing(uint lid)
@@ -396,15 +396,21 @@ contract EthBnB2 {
    * @param bid           id of the booking to be cancelled
    */
   function cancelBooking(uint lid, uint bid) public {
-    checkListingId(lid);
     Listing storage listing = listings[lid];
-    int res = listing.booker.cancel(bid);
+    require(
+      msg.sender == listing.bookings[bid].hostAddr ||
+      msg.sender == listing.bookings[bid].guestAddr,
+      'Only Guest or Host can cancel a booking'
+      );
+    uint dbid = listings[lid].dbid;
+    int res = dateBooker.cancel(dbid, bid);
     emitBookCancelEvent(res, lid, bid);
   }
 
-  function getBookingDates(uint lid, uint bid) public view returns (uint fromDate, uint toDate) {
+  function getBookingDates(uint lid, uint bid) public returns (uint fromDate, uint toDate) {
     require(listings[lid].lid == lid, 'Listing does not exist');
-    return listings[lid].booker.getDates(bid);
+    uint dbid = listings[lid].dbid;
+    return dateBooker.getDates(dbid, bid);
   }
 
   function checkListingId(uint lid) view private {
@@ -419,12 +425,12 @@ contract EthBnB2 {
    * Emits an a booking event depending on the result given
    */
   function emitBookEvent(int result, uint lid) private {
-    if (result == LinkedList.getBookConflictCode()) {
+    if (result == LegacyBookerLib.getBookConflictCode()) {
       emit BookingConflict(msg.sender, lid);
-    } else if (result == LinkedList.getNoMoreSpaceCode()) {
+    } else if (result == LegacyBookerLib.getNoMoreSpaceCode()) {
       emit BookingNoMoreSpace(msg.sender, lid);
     } else if (result >= 0) {
-      emit BookingComplete(msg.sender, lid, uint(result) /* = bid */ );
+      emit BookingComplete(msg.sender, lid,  /* = bid */ uint(result));
     }
   }
 
@@ -432,7 +438,7 @@ contract EthBnB2 {
    * Emits an a booking cancel event depending on the result given
    */
   function emitBookCancelEvent(int result, uint lid, uint bid) private {
-    if (result == LinkedList.getNotFoundCode()) {
+    if (result == LegacyBookerLib.getNotFoundCode()) {
       emit BookingNotFound(msg.sender, lid, bid);
     } else if (result >= 0) {
       emit BookingCancelled(msg.sender, lid, bid);

@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-library LinkedList {
+library OptimBookerLib {
 
     struct Node {
         uint fromDate;
@@ -20,11 +20,10 @@ library LinkedList {
 
     int public constant NOT_FOUND = -1;
     int public constant BOOK_CONFLICT = -2;
-    int public constant NO_MORE_SPACE = -3;
     uint public constant INVALID = 9999999; // FIXME: want to change this?
 
     event Cancelled(uint bid);
-    event Booking(uint bid);
+    event Booked(uint bid);
     event Conflict();
     event Error(string msg);
     event Log(uint from, uint to);
@@ -155,16 +154,18 @@ library LinkedList {
         require(toDate > fromDate, 'fromDate must be less than toDate');
         uint bid = self.nextBid++;
         newNode(self, prevNode, nextNode, bid, fromDate, toDate);
-        emit Booking(bid);
+        emit Booked(bid);
         return bid;
     }
 
     function book(Storage storage self, uint fromDate, uint toDate) public returns (int)
     {
-        if (fromDate <= now || fromDate >= toDate) {
-            emit Error("Invalid date arguments");
-            return -1;
-        } else if (isEmpty(self)) {
+        // FIXME: uncomment below
+        // if (fromDate <= now || fromDate >= toDate) {
+        //     emit Error("Invalid date arguments");
+        //     return -1;
+        // }
+        if (isEmpty(self)) {
             return int(newBook(self, HEAD, HEAD, fromDate, toDate));
         } else {
             uint prev = HEAD;
@@ -243,11 +244,6 @@ library LinkedList {
     function getBookConflictCode() public pure returns (int)
     {
         return BOOK_CONFLICT;
-    }
-
-    function getNoMoreSpaceCode() public pure returns (int)
-    {
-        return NO_MORE_SPACE;
     }
 
     function getInvalidCode() public pure returns (uint)

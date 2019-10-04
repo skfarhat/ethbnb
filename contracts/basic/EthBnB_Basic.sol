@@ -1,15 +1,9 @@
 pragma solidity ^0.5.0;
 
-import './OptimBookerLib.sol';
-
 /**
  *
  */
-contract EthBnB {
-
-  uint constant SECONDS_PER_DAY = 3600 * 24;
-
-  using OptimBookerLib for OptimBookerLib.Storage;
+contract EthBnB_Basic {
 
   enum Country {
     AF, AX, AL, DZ, AS, AD, AO, AI, AG, AR, AM, AW, AU, AT, AZ, BS, BH,
@@ -44,10 +38,9 @@ contract EthBnB {
     /** Bookings for the given listing */
     mapping(uint => Booking) bookings;
 
-    uint256 balance;
+    uint bookingCount;
 
-    /**  */
-    OptimBookerLib.Storage booker;
+    uint256 balance;
 
     string imageCID;
     string imageCIDSource;
@@ -88,7 +81,16 @@ contract EthBnB {
      * The listing balance is obviously decreased.
      */
     uint256 balance;
+
+    uint fromDate;
+    uint toDate;
+
   }
+
+  int public constant NOT_FOUND = -1;
+  int public constant BOOK_CONFLICT = -2;
+  uint public constant INVALID = 9999999; // FIXME: want to change this?
+
 
   // =======================================================================
   // MEMBER VARIABLES
@@ -108,12 +110,12 @@ contract EthBnB {
   // Booking events
   event BookingComplete(address from, uint lid, uint bid);
   event BookingConflict(address from, uint lid);
-  event BookingNoMoreSpace(address from, uint lid);
   event BookingCancelled(address from, uint lid, uint bid);
   event BookingNotFound(address from, uint lid, uint bid);
 
   event RatingComplete(address from, uint lid, uint bid, uint stars);
 
+  uint SECONDS_PER_DAY = 86400;
   uint public BOOKING_CAPACITY = 5;
 
   /**
@@ -190,6 +192,7 @@ contract EthBnB {
     public payable {
         require(hasAccount(), 'Must have an account before creating a listing');
         // Note: enforce a maximum number of listings per user?
+
         listings[nextListingId] = Listing({
           lid : nextListingId,
           owner: msg.sender,
@@ -199,10 +202,7 @@ contract EthBnB {
           balance: msg.value,
           imageCID: '',
           imageCIDSource: '',
-          booker: OptimBookerLib.Storage({
-            nextBid: 0,
-            nextPos: 0
-          })
+          bookingCount: 0
         });
         emit CreateListingEvent(msg.sender, nextListingId++);
   }
@@ -216,7 +216,6 @@ contract EthBnB {
    */
   function bookListing(uint lid, uint fromDate, uint nbOfDays)
     public payable listingExists(lid) {
-      // TODO: cap the number of booked days to 30 or so
       require(hasAccount(), 'Guest must have an account before booking');
       Listing storage listing = listings[lid];
       address payable guest = msg.sender;
@@ -231,10 +230,10 @@ contract EthBnB {
       // Try to book.
       // If successful, create a booking event with the balance amount
       // If unsuccessful, refund the stake to guest
-      int res = listing.booker.book(fromDate, toDate);
-      emitBookEvent(res, lid);
-      if (res >= 0) {
-        uint bid = uint(res);
+      // Check Intersection
+      int res = checkIntersect(lid, fromDate, toDate);
+      if (res < 0) {
+        uint bid = ++listing.bookingCount;
         // Save the booking
         listing.bookings[bid] = Booking({
           bid: bid,
@@ -245,15 +244,19 @@ contract EthBnB {
           guestRating: 0,
           // Add the amounts staked by the guest
           // and by the host to the booking balance
-          balance: 2 * stake
+          balance: 2 * stake,
+          fromDate: fromDate,
+          toDate: toDate
         });
         // Decrement the listing balance
         listing.balance -= stake;
         // Refund any excess to the guest
         guest.transfer(msg.value - stake);
+        emit BookingComplete(msg.sender, lid, bid);
       } else {
         // Refund all Ether provided if the booking failed
         guest.transfer(msg.value);
+        emit BookingConflict(msg.sender, lid);
       }
     }
 
@@ -282,13 +285,11 @@ contract EthBnB {
    * @param lid   id of the listing to be deleted
    */
   function deleteListing(uint lid) public listingExists(lid) onlyListingHost(lid) {
-    require(false, 'Not fixed yet');
-    // FIXME: Implement
-    // ...
+    Listing storage listing = listings[lid];
+    require(false, 'Implement this');
 
-    // Listing storage listing = listings[lid];
-    // Check that there are no active bookings before we proceed
-    // uint activeBookings = listing.booker.getActiveBookingsCount(listing.dbid);
+    // // Check that there are no active bookings before we proceed
+    // uint activeBookings = dateBooker.getActiveBookingsCount(listing.dbid);
     // require(activeBookings == 0, 'Cannot delete listing when there are active bookings');
 
     // // Return listing balance to its owner
@@ -401,14 +402,17 @@ contract EthBnB {
       msg.sender == listing.bookings[bid].hostAddr ||
       msg.sender == listing.bookings[bid].guestAddr,
       'Only Guest or Host can cancel a booking'
-      );
-    int res = listing.booker.cancel(bid);
-    emitBookCancelEvent(res, lid, bid);
+    );
+    if (listing.bookings[bid].bid == bid) {
+      delete listing.bookings[bid];
+      emit BookingCancelled(msg.sender, lid, bid);
+    }
   }
 
-  function getBookingDates(uint lid, uint bid) public view returns (uint fromDate, uint toDate) {
+  function getBookingDates(uint lid, uint bid) public returns (uint fromDate, uint toDate) {
     require(listings[lid].lid == lid, 'Listing does not exist');
-    return listings[lid].booker.getDates(bid);
+    Booking memory booking = listings[lid].bookings[bid];
+    return (booking.fromDate, booking.toDate);
   }
 
   function checkListingId(uint lid) view private {
@@ -419,25 +423,24 @@ contract EthBnB {
     require(listings[lid].owner == msg.sender, 'Only the owner of a listing make changes to it');
   }
 
-  /**
-   * Emits an a booking event depending on the result given
-   */
-  function emitBookEvent(int result, uint lid) private {
-    if (result == OptimBookerLib.getBookConflictCode()) {
-      emit BookingConflict(msg.sender, lid);
-    } else if (result >= 0) {
-      emit BookingComplete(msg.sender, lid, uint(result) /* = bid */ );
+
+  /// Returns the index of the first date which interesects with provided date range [fromDate, toDate]
+  /// otherwise returns -1
+  function checkIntersect(uint lid, uint fromDate, uint toDate) private view returns (int)
+  {
+    Listing storage listing = listings[lid];
+    for(uint i = 0; i < listing.bookingCount; i++) {
+      Booking storage booking = listing.bookings[i];
+      if (booking.bid != 0 && datesIntersect(booking.fromDate, booking.toDate, fromDate, toDate)) {
+        return int(i);
+      }
     }
+    return NOT_FOUND;
   }
 
-  /**
-   * Emits an a booking cancel event depending on the result given
-   */
-  function emitBookCancelEvent(int result, uint lid, uint bid) private {
-    if (result == OptimBookerLib.getNotFoundCode()) {
-      emit BookingNotFound(msg.sender, lid, bid);
-    } else if (result >= 0) {
-      emit BookingCancelled(msg.sender, lid, bid);
-    }
+  function datesIntersect(uint from1, uint to1, uint from2, uint to2) private pure returns (bool)
+  {
+    require(from1 < to1 && from2 < to2, 'invalid date ranges provided to datesIntersect');
+    return (from2 < to1 && from2 >= from1) || (to2 <= to1 && to2 > from1);
   }
 }
