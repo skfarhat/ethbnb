@@ -204,6 +204,7 @@ contract EthBnB {
             nextPos: 0
           })
         });
+        listings[nextListingId].booker.initialise();
         emit CreateListingEvent(msg.sender, nextListingId++);
   }
 

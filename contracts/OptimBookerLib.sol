@@ -118,12 +118,7 @@ library OptimBookerLib {
     function useNextPos(Storage storage self) public returns (uint pos)
     {
         if (junkIsEmpty(self)) {
-            if (self.nextPos == HEAD) {
-                self.nextPos = HEAD + 2;
-                return HEAD + 1;
-            } else {
-                return self.nextPos++;
-            }
+            return self.nextPos++;
         } else {
             // Recycle node
             return popJunk(self);
@@ -158,6 +153,13 @@ library OptimBookerLib {
         return bid;
     }
 
+    function initialise(Storage storage self) public
+    {
+        self.nextPos = 1;
+        // self.nodes[HEAD].next = HEAD; // (implicit since HEAD = 0)
+        self.nodes[JUNK].next = JUNK;
+    }
+
     function book(Storage storage self, uint fromDate, uint toDate) public returns (int)
     {
         require(fromDate < toDate, 'Invalid dates provided');
@@ -166,9 +168,6 @@ library OptimBookerLib {
         //     emit Error("Invalid date arguments");
         //     return -1;
         // }
-        if (isEmpty(self)) {
-            return int(newBook(self, HEAD, HEAD, fromDate, toDate));
-        }
         uint prev = HEAD;
         uint curr = self.nodes[HEAD].next;
         while (curr != HEAD) {
