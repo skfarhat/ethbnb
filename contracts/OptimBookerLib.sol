@@ -209,6 +209,11 @@ library OptimBookerLib {
         return NOT_FOUND;
     }
 
+    function hasActiveBookings(Storage storage self) public view returns (bool)
+    {
+        uint first = self.nodes[HEAD].next;
+        return self.nodes[first].toDate >= now;
+    }
 
     function getDates(Storage storage self, uint id) public view returns (uint fromDate, uint toDate) {
         int idx = find(self, id);

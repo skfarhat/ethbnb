@@ -283,23 +283,18 @@ contract EthBnB {
    * @param lid   id of the listing to be deleted
    */
   function deleteListing(uint lid) public listingExists(lid) onlyListingHost(lid) {
-    require(false, 'Not fixed yet');
-    // FIXME: Implement
-    // ...
-
-    // Listing storage listing = listings[lid];
     // Check that there are no active bookings before we proceed
-    // uint activeBookings = listing.booker.getActiveBookingsCount(listing.dbid);
-    // require(activeBookings == 0, 'Cannot delete listing when there are active bookings');
+    Listing storage listing = listings[lid];
+    require(false == listing.booker.hasActiveBookings(), 'Cannot delete listing with active bookings');
 
-    // // Return listing balance to its owner
-    // uint toReturn = listing.balance;
-    // listing.balance = 0;
-    // accounts[listing.owner].owner.transfer(toReturn);
+    // Return listing balance to its owner
+    uint toReturn = listing.balance;
+    listing.balance = 0;
+    accounts[listing.owner].owner.transfer(toReturn);
 
-    // // Delete listing's storage
-    // delete listings[lid];
-    // emit DeleteListingEvent(msg.sender, lid);
+    // Delete listing's storage
+    delete listings[lid];
+    emit DeleteListingEvent(msg.sender, lid);
   }
 
   function depositIntoListing(uint lid)
