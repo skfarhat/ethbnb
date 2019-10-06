@@ -25,7 +25,6 @@ library OptimBookerLib {
     event Cancelled(uint bid);
     event Booked(uint bid);
     event Conflict();
-    event Error(string msg);
     event Log(uint from, uint to);
 
     /// The list is empty if the HEAD node points to itself
@@ -70,12 +69,6 @@ library OptimBookerLib {
         return junkNotInitialised(self) || self.nodes[JUNK].next == JUNK;
     }
 
-    modifier junkNotEmpty(Storage storage self)
-    {
-        require(!junkIsEmpty(self));
-        _;
-    }
-
     // Adds the provided node to junk
     function addJunk(Storage storage self, uint node) private
     {
@@ -88,9 +81,7 @@ library OptimBookerLib {
     }
 
     /// Pops the junk node at head of list and returns its index
-    function popJunk(Storage storage self) private
-    junkNotEmpty(self)
-    returns (uint)
+    function popJunk(Storage storage self) private returns (uint)
     {
         uint ret = self.nodes[JUNK].next;
         createLink(self, JUNK, self.nodes[ret].next);
@@ -99,7 +90,6 @@ library OptimBookerLib {
 
     /// Free all junk storage kept for reuse
     function freeJunk(Storage storage self) public
-        junkNotEmpty(self)
     {
         while (!junkIsEmpty(self)) {
             uint idx = popJunk(self);
@@ -163,11 +153,6 @@ library OptimBookerLib {
     function book(Storage storage self, uint fromDate, uint toDate) public returns (int)
     {
         require(fromDate < toDate, 'Invalid dates provided');
-        // FIXME: uncomment below
-        // if (fromDate <= now || fromDate >= toDate) {
-        //     emit Error("Invalid date arguments");
-        //     return -1;
-        // }
         uint prev = HEAD;
         uint curr = self.nodes[HEAD].next;
         while (curr != HEAD) {
@@ -214,9 +199,6 @@ library OptimBookerLib {
 
     /// Return index of found id
     function find(Storage storage self, uint id) public view returns (int) {
-        if ( isEmpty(self) ) {
-            return NOT_FOUND;
-        }
         uint curr = self.nodes[HEAD].next;
         while (curr != HEAD) {
             if (self.nodes[curr].bid == id) {
