@@ -150,7 +150,7 @@ contract('EthBnB', async (accounts) => {
     try {
       res = await bnb.deleteListing(lid)
     } catch(err) {
-      assert(err.toString().search('Cannot delete listing when there are active bookings') > -1, 'Unexpected exception message')
+      assert(err.toString().search('Cannot delete listing with active bookings') > -1, 'Unexpected exception message')
       return
     }
     assert(false, 'deleteListing should have failed')
@@ -252,10 +252,14 @@ contract('EthBnB', async (accounts) => {
   it('Cannot cancel in-existent booking', async () => {
     let res
     const bnb = await EthBnB.deployed()
-    res = await bnb.createAccount('Alex', { from : accounts[0] })
+    res = await bnb.createAccount('Alex', { from: accounts[0] })
     const lid = await createListingDefault(bnb, accounts[0])
-    res = await bnb.cancelBooking(lid, /* in-existent id */ 128348, { from: accounts[0] })
-    truffleAssert.eventEmitted(res, 'BookingNotFound')
+    try {
+      res = await bnb.cancelBooking(lid, /* in-existent id */ 128348, { from: accounts[0] })
+    } catch (err) {
+      return
+    }
+    assert(false, 'cancelBooking should have failed')
   })
 
   // TODO: implement cancelBooking
@@ -275,21 +279,6 @@ contract('EthBnB', async (accounts) => {
   //   }
   //   assert(false, 'Expected cancelBooking to fail')
   // })
-
-  it('Cannot book more than capacity', async () => {
-    let res
-    let bid
-    const bnb = await EthBnB.deployed()
-    res = await bnb.createAccount('Alex', { from : accounts[0] })
-    res = await bnb.createAccount('Mary', { from : accounts[1] })
-    const lid = await createListingDefault(bnb, accounts[0])
-    for (let i = 0; i < BOOKING_CAPACITY; i++) {
-      res = await bnb.bookListing(lid, feb2019(18) + i * 86400, 1, { from: accounts[1], value: fromFinney(DEFAULT_LISTING_PRICE * 2)})
-      truffleAssert.eventNotEmitted(res, 'BookingNoMoreSpace')
-    }
-    res = await bnb.bookListing(lid, /* irrelevant arg */ 23423, 1, { from: accounts[1], value: fromFinney(DEFAULT_LISTING_PRICE * 2)})
-    truffleAssert.eventEmitted(res, 'BookingNoMoreSpace')
-  })
 
   // A host has two listings, and gets a booking for each.
   // His guests rate him
@@ -393,7 +382,7 @@ contract('EthBnB', async (accounts) => {
     try {
       res = await bnb.rate(lid, bid, 1, { from: accounts[1] })
     } catch (err) {
-      assert(err.toString().search('Cannot rate a booking before') > -1, 'Unexpected exception message')
+      assert(err.toString().search('Cannot rate a booking before it ends') > -1, 'Unexpected exception message')
       return
     }
     assert(false, 'Should not be able to rate a booking whose end date is in the future')

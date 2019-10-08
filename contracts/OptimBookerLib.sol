@@ -3,7 +3,9 @@ pragma solidity ^0.5.0;
 library OptimBookerLib {
 
     struct Node {
+        /// Booking's start date in seconds
         uint fromDate;
+        /// Booking's end date in seconds
         uint toDate;
         uint bid;
         uint next;
@@ -22,10 +24,9 @@ library OptimBookerLib {
     int public constant BOOK_CONFLICT = -2;
     uint public constant INVALID = 9999999; // FIXME: want to change this?
 
-    event Cancelled(uint bid);
     event Booked(uint bid);
-    event Conflict();
-    event Log(uint from, uint to);
+    event Cancelled(uint bid);
+    event Log(uint, uint);
 
     /// The list is empty if the HEAD node points to itself
     function isEmpty(Storage storage self) public view returns (bool)
@@ -173,8 +174,7 @@ library OptimBookerLib {
                 prev = curr;
                 curr = self.nodes[curr].next;
             } else {
-                emit Conflict();
-                return -1;
+                return BOOK_CONFLICT;
             }
         }
         return int(newBook(self, prev, HEAD, fromDate, toDate));
@@ -218,22 +218,7 @@ library OptimBookerLib {
     function getDates(Storage storage self, uint id) public view returns (uint fromDate, uint toDate) {
         int idx = find(self, id);
         require(idx != NOT_FOUND, 'Entry not found');
-        Node memory node = self.nodes[id];
+        Node memory node = self.nodes[uint(idx)];
         return (node.fromDate, node.toDate);
-    }
-
-    function getNotFoundCode() public pure returns (int)
-    {
-        return NOT_FOUND;
-    }
-
-    function getBookConflictCode() public pure returns (int)
-    {
-        return BOOK_CONFLICT;
-    }
-
-    function getInvalidCode() public pure returns (uint)
-    {
-        return INVALID;
     }
 }

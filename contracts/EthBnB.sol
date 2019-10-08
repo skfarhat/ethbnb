@@ -107,14 +107,9 @@ contract EthBnB {
   event DeleteListingEvent(address from, uint lid);
   // Booking events
   event BookingComplete(address from, uint lid, uint bid);
-  event BookingConflict(address from, uint lid);
-  event BookingNoMoreSpace(address from, uint lid);
   event BookingCancelled(address from, uint lid, uint bid);
-  event BookingNotFound(address from, uint lid, uint bid);
 
   event RatingComplete(address from, uint lid, uint bid, uint stars);
-
-  uint public BOOKING_CAPACITY = 5;
 
   /**
    * Listings will have incrementing Ids starting from 1
@@ -212,7 +207,7 @@ contract EthBnB {
    * Book a listing
    *
    * @param lid          id of the listing to be booked
-   * @param fromDate     start date of the booking
+   * @param fromDate     start date of the booking in seconds
    * @param nbOfDays     number of days for which the booking will be made
    */
   function bookListing(uint lid, uint fromDate, uint nbOfDays)
@@ -233,7 +228,6 @@ contract EthBnB {
       // If successful, create a booking event with the balance amount
       // If unsuccessful, refund the stake to guest
       int res = listing.booker.book(fromDate, toDate);
-      emitBookEvent(res, lid);
       if (res >= 0) {
         uint bid = uint(res);
         // Save the booking
@@ -252,6 +246,7 @@ contract EthBnB {
         listing.balance -= stake;
         // Refund any excess to the guest
         guest.transfer(msg.value - stake);
+        emit BookingComplete(msg.sender, lid, bid);
       } else {
         // Refund all Ether provided if the booking failed
         guest.transfer(msg.value);
@@ -399,7 +394,9 @@ contract EthBnB {
       'Only Guest or Host can cancel a booking'
       );
     int res = listing.booker.cancel(bid);
-    emitBookCancelEvent(res, lid, bid);
+    if (res >= 0) {
+      emit BookingCancelled(msg.sender, lid, bid);
+    }
   }
 
   function getBookingDates(uint lid, uint bid) public view returns (uint fromDate, uint toDate) {
@@ -413,27 +410,5 @@ contract EthBnB {
     // Make sure listing exists and properly associated with account
     require(listings[lid].lid != 0, 'No such listing found');
     require(listings[lid].owner == msg.sender, 'Only the owner of a listing make changes to it');
-  }
-
-  /**
-   * Emits an a booking event depending on the result given
-   */
-  function emitBookEvent(int result, uint lid) private {
-    if (result == OptimBookerLib.getBookConflictCode()) {
-      emit BookingConflict(msg.sender, lid);
-    } else if (result >= 0) {
-      emit BookingComplete(msg.sender, lid, uint(result) /* = bid */ );
-    }
-  }
-
-  /**
-   * Emits an a booking cancel event depending on the result given
-   */
-  function emitBookCancelEvent(int result, uint lid, uint bid) private {
-    if (result == OptimBookerLib.getNotFoundCode()) {
-      emit BookingNotFound(msg.sender, lid, bid);
-    } else if (result >= 0) {
-      emit BookingCancelled(msg.sender, lid, bid);
-    }
   }
 }
