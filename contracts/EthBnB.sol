@@ -98,18 +98,18 @@ contract EthBnB {
   event Error(int code);
 
   // Account events
-  event CreateAccountEvent(address from);
-  event UpdateAccountEvent(address from);
-  event DeleteAccountEvent(address from);
+  event CreateAccountEvent();
+  event UpdateAccountEvent();
+  event DeleteAccountEvent();
   // Listing events
-  event CreateListingEvent(address from, uint lid);
-  event UpdateListingEvent(address from, uint lid);
-  event DeleteListingEvent(address from, uint lid);
+  event CreateListingEvent(uint lid);
+  event UpdateListingEvent(uint lid);
+  event DeleteListingEvent(uint lid);
   // Booking events
-  event BookingComplete(address from, uint lid, uint bid);
-  event BookingCancelled(address from, uint lid, uint bid);
+  event BookingComplete(uint lid, uint bid);
+  event BookingCancelled(uint lid, uint bid);
 
-  event RatingComplete(address from, uint lid, uint bid, uint stars);
+  event RatingComplete(uint lid, uint bid, uint stars);
 
   /**
    * Listings will have incrementing Ids starting from 1
@@ -149,7 +149,7 @@ contract EthBnB {
       totalScore: 0,
       nRatings: 0
     });
-    emit CreateAccountEvent(msg.sender);
+    emit CreateAccountEvent();
   }
 
   function hasAccount() public view returns (bool) {
@@ -204,7 +204,7 @@ contract EthBnB {
           })
         });
         listings[nextListingId].booker.initialise();
-        emit CreateListingEvent(msg.sender, nextListingId++);
+        emit CreateListingEvent(nextListingId++);
   }
 
   /**
@@ -250,7 +250,7 @@ contract EthBnB {
         listing.balance -= stake;
         // Refund any excess to the guest
         guest.transfer(msg.value - stake);
-        emit BookingComplete(msg.sender, lid, bid);
+        emit BookingComplete(lid, bid);
       } else {
         // Refund all Ether provided if the booking failed
         guest.transfer(msg.value);
@@ -263,7 +263,7 @@ contract EthBnB {
       listing.location = location;
       listing.price = price;
       listing.country = country;
-      emit UpdateListingEvent(msg.sender, lid);
+      emit UpdateListingEvent(lid);
   }
 
   function setListingImage(uint lid, string memory cid, string memory cidSource)
@@ -271,7 +271,7 @@ contract EthBnB {
       Listing storage listing = listings[lid];
       listing.imageCID = cid;
       listing.imageCIDSource = cidSource;
-      emit UpdateListingEvent(msg.sender, lid);
+      emit UpdateListingEvent(lid);
   }
 
   /**
@@ -293,7 +293,7 @@ contract EthBnB {
 
     // Delete listing's storage
     delete listings[lid];
-    emit DeleteListingEvent(msg.sender, lid);
+    emit DeleteListingEvent(lid);
   }
 
   function depositIntoListing(uint lid)
@@ -381,7 +381,7 @@ contract EthBnB {
       accounts[booking.guestAddr].totalScore += stars;
       accounts[booking.guestAddr].nRatings++;
     }
-    emit RatingComplete(msg.sender, lid, bid, stars);
+    emit RatingComplete(lid, bid, stars);
   }
 
   /**
@@ -399,20 +399,12 @@ contract EthBnB {
       );
     int res = listing.booker.cancel(bid);
     if (res >= 0) {
-      emit BookingCancelled(msg.sender, lid, bid);
+      emit BookingCancelled(lid, bid);
     }
   }
 
   function getBookingDates(uint lid, uint bid) public view returns (uint fromDate, uint toDate) {
     require(listings[lid].lid == lid, 'Listing does not exist');
     return listings[lid].booker.getDates(bid);
-  }
-
-  function checkListingId(uint lid) view private {
-    // Make sure account exists
-    require(accounts[msg.sender].owner == msg.sender);
-    // Make sure listing exists and properly associated with account
-    require(listings[lid].lid != 0, 'No such listing found');
-    require(listings[lid].owner == msg.sender, 'Only the owner of a listing make changes to it');
   }
 }
