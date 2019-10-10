@@ -13,8 +13,10 @@ contract TestLegacyBooker {
   using OptimBookerLib for OptimBookerLib.Storage;
   OptimBookerLib.Storage booker;
 
+  uint nextBookingId = 0;
+
   function book(uint fromDate, uint nbOfDays) public returns (int) {
-    return booker.book(fromDate, nbOfDays);
+    return booker.book(nextBookingId++, fromDate, nbOfDays);
   }
 
   function cancel(uint bid) public returns (int) {

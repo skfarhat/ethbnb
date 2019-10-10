@@ -117,6 +117,11 @@ contract EthBnB {
   uint nextListingId = 1;
 
   /**
+   * Bookings will have incrementing Ids starting from 1
+   */
+  uint nextBookingId = 1;
+
+  /**
    * Store all created listings
    * note that these are also stored in each Account.
    */
@@ -195,7 +200,6 @@ contract EthBnB {
           imageCID: '',
           imageCIDSource: '',
           booker: OptimBookerLib.Storage({
-            nextBid: 0,
             nextPos: 0
           })
         });
@@ -227,7 +231,7 @@ contract EthBnB {
       // Try to book.
       // If successful, create a booking event with the balance amount
       // If unsuccessful, refund the stake to guest
-      int res = listing.booker.book(fromDate, toDate);
+      int res = listing.booker.book(nextBookingId++, fromDate, toDate);
       if (res >= 0) {
         uint bid = uint(res);
         // Save the booking

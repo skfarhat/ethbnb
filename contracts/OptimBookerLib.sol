@@ -13,7 +13,6 @@ library OptimBookerLib {
 
     struct Storage {
         uint nextPos;
-        uint nextBid;
         mapping (uint => Node) nodes;
     }
 
@@ -22,7 +21,6 @@ library OptimBookerLib {
 
     int public constant NOT_FOUND = -1;
     int public constant BOOK_CONFLICT = -2;
-    uint public constant INVALID = 9999999; // FIXME: want to change this?
 
     event Booked(uint bid);
     event Cancelled(uint bid);
@@ -135,10 +133,10 @@ library OptimBookerLib {
     ///     - Creates a new LinkedList node
     ///     - Emits Booking event
     ///     - Updates nextBid
-    function newBook(Storage storage self, uint prevNode, uint nextNode, uint fromDate, uint toDate) private returns (uint)
+    function newBook(Storage storage self, uint prevNode, uint nextNode, uint bid, uint fromDate, uint toDate)
+        private returns (uint)
     {
         require(toDate > fromDate, 'fromDate must be less than toDate');
-        uint bid = self.nextBid++;
         newNode(self, prevNode, nextNode, bid, fromDate, toDate);
         emit Booked(bid);
         return bid;
@@ -151,7 +149,7 @@ library OptimBookerLib {
         self.nodes[JUNK].next = JUNK;
     }
 
-    function book(Storage storage self, uint fromDate, uint toDate) public returns (int)
+    function book(Storage storage self, uint bid, uint fromDate, uint toDate) public returns (int)
     {
         require(fromDate < toDate, 'Invalid dates provided');
         uint prev = HEAD;
@@ -169,7 +167,7 @@ library OptimBookerLib {
             // } else
             if (fromDate >= y) {
                 // TODO: self.freeJunk()
-                return int(newBook(self, prev, curr, fromDate, toDate));
+                return int(newBook(self, prev, curr, bid, fromDate, toDate));
             } else if (toDate <= x) {
                 prev = curr;
                 curr = self.nodes[curr].next;
@@ -177,7 +175,7 @@ library OptimBookerLib {
                 return BOOK_CONFLICT;
             }
         }
-        return int(newBook(self, prev, HEAD, fromDate, toDate));
+        return int(newBook(self, prev, HEAD, bid, fromDate, toDate));
     }
 
     function cancel(Storage storage self, uint bid) public returns (int)
