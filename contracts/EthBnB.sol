@@ -41,9 +41,6 @@ contract EthBnB {
 
     Country country;
 
-    /** Bookings for the given listing */
-    mapping(uint => Booking) bookings;
-
     uint256 balance;
 
     /**  */
@@ -106,10 +103,10 @@ contract EthBnB {
   event UpdateListingEvent(uint lid);
   event DeleteListingEvent(uint lid);
   // Booking events
-  event BookingComplete(uint lid, uint bid);
-  event BookingCancelled(uint lid, uint bid);
+  event BookingComplete(uint bid);
+  event BookingCancelled(uint bid);
 
-  event RatingComplete(uint lid, uint bid, uint stars);
+  event RatingComplete(uint bid, uint stars);
 
   /**
    * Listings will have incrementing Ids starting from 1
@@ -121,23 +118,36 @@ contract EthBnB {
    */
   uint nextBookingId = 1;
 
-  /**
-   * Store all created listings
-   * note that these are also stored in each Account.
-   */
+  /** Store all created listings  */
   mapping(uint => Listing) listings;
 
-  /**
-   * Stores created accounts
-   */
+  /** Stores accounts */
   mapping(address => Account) accounts;
+
+  /** Stores bookings */
+  mapping(uint => Booking) bookings;
 
   // =======================================================================
   // FUNCTIONS
   // =======================================================================
 
   modifier accountExists(address owner) {
-    require(accounts[owner].owner == owner);
+    require(accounts[owner].owner == owner, 'Invalid account address');
+    _;
+  }
+
+  modifier validBooking(uint bid) {
+    require(bookings[bid].bid == bid, 'Invalid booking identifier');
+    _;
+  }
+
+  modifier listingExists(uint lid) {
+    require(listings[lid].lid == lid, 'Invalid listing identifier');
+    _;
+  }
+
+  modifier onlyListingHost(uint lid) {
+    require(listings[lid].owner == msg.sender, 'Only listing host can change it');
     _;
   }
 
@@ -161,16 +171,6 @@ contract EthBnB {
       Account memory account = accounts[owner];
       return (account.name, account.dateCreated, account.totalScore, account.nRatings);
     }
-
-  modifier listingExists(uint lid) {
-    require(listings[lid].lid == lid, 'No such listing found');
-    _;
-  }
-
-  modifier onlyListingHost(uint lid) {
-    require(listings[lid].owner == msg.sender, 'Only listing host can change it');
-    _;
-  }
 
   function getListingAll(uint lid) public listingExists(lid) view
     returns (address owner, uint price, string memory location, Country country, uint256 balance,
@@ -235,7 +235,7 @@ contract EthBnB {
       if (res >= 0) {
         uint bid = uint(res);
         // Save the booking
-        listing.bookings[bid] = Booking({
+        bookings[bid] = Booking({
           bid: bid,
           lid: lid,
           hostAddr: listings[lid].owner,
@@ -250,7 +250,7 @@ contract EthBnB {
         listing.balance -= stake;
         // Refund any excess to the guest
         guest.transfer(msg.value - stake);
-        emit BookingComplete(lid, bid);
+        emit BookingComplete(bid);
       } else {
         // Refund all Ether provided if the booking failed
         guest.transfer(msg.value);
@@ -321,14 +321,14 @@ contract EthBnB {
    * confirming the host fulfilled their obligations, and
    * releasing funds held in escrow.
    *
-   * @param lid       id of the booked listing
    * @param bid       id of the booking
    */
-  function fulfilBooking(uint lid, uint bid) public listingExists(lid) {
-    Booking storage booking = listings[lid].bookings[bid];
+  function fulfilBooking(uint bid) public validBooking(bid) {
+    Booking storage booking = bookings[bid];
+    uint lid = booking.lid;
     address guest = booking.guestAddr;
     address host = booking.hostAddr;
-    (, uint toDate) = getBookingDates(lid, bid);
+    (, uint toDate) = getBookingDates(bid);
     require(msg.sender == guest , 'Only guest can call fulfilBooking');
     require(toDate <= now, 'Cannot fulfil booking before end date');
 
@@ -358,12 +358,11 @@ contract EthBnB {
    * @param stars       unsigned integer between 1 and 5, anything else
    *                    will emit an error
    */
-  function rate(uint lid, uint bid, uint stars) public {
-    require(listings[lid].lid == lid && listings[lid].bookings[bid].bid == bid, 'No such listing or booking');
+  function rate(uint bid, uint stars) public validBooking(bid) {
     require(stars >= 1 && stars <= 5, 'Stars arg must be in [1,5]');
-    Booking storage booking = listings[lid].bookings[bid];
+    Booking storage booking = bookings[bid];
     require(booking.guestAddr == msg.sender || booking.hostAddr == msg.sender, 'Sender not participated in booking');
-    (, uint toDate) = getBookingDates(lid, bid);
+    (, uint toDate) = getBookingDates(bid);
     require(toDate <= now, 'Cannot rate a booking before it ends');
     if (booking.guestAddr == msg.sender) {
       // The guest is rating the owner
@@ -381,30 +380,33 @@ contract EthBnB {
       accounts[booking.guestAddr].totalScore += stars;
       accounts[booking.guestAddr].nRatings++;
     }
-    emit RatingComplete(lid, bid, stars);
+    emit RatingComplete(bid, stars);
   }
 
   /**
    * Cancel a booking
    *
-   * @param lid           id of the listing to be cancelled
    * @param bid           id of the booking to be cancelled
    */
-  function cancelBooking(uint lid, uint bid) public {
-    Listing storage listing = listings[lid];
+  function cancelBooking(uint bid) public validBooking(bid) {
+    Booking storage booking = bookings[bid];
+    uint lid = booking.lid;
     require(
-      msg.sender == listing.bookings[bid].hostAddr ||
-      msg.sender == listing.bookings[bid].guestAddr,
+      msg.sender == booking.hostAddr ||
+      msg.sender == booking.guestAddr,
       'Only Guest or Host can cancel a booking'
       );
-    int res = listing.booker.cancel(bid);
+    int res = listings[lid].booker.cancel(bid);
     if (res >= 0) {
-      emit BookingCancelled(lid, bid);
+      emit BookingCancelled(bid);
     }
   }
 
-  function getBookingDates(uint lid, uint bid) public view returns (uint fromDate, uint toDate) {
-    require(listings[lid].lid == lid, 'Listing does not exist');
+  function getBookingDates(uint bid) public view
+    validBooking(bid)
+    returns (uint fromDate, uint toDate)
+  {
+    uint lid = bookings[bid].lid;
     return listings[lid].booker.getDates(bid);
   }
 }

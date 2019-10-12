@@ -339,7 +339,7 @@ contract('EthBnB', async (accounts) => {
     const bid = await bookListingDefault(bnb, guest, lid, feb2019(20), 3)
 
     await assertExceptionOnAsyncFn(
-      async () => await bnb.fulfilBooking(lid, bid, { from: host }),
+      async () => await bnb.fulfilBooking(bid, { from: host }),
       'Only guest can call fulfilBooking'
     )
   })
@@ -363,7 +363,7 @@ contract('EthBnB', async (accounts) => {
     const lid = await createListingDefault(bnb, host)
     const bid = await bookListingDefault(bnb, guest, lid, futureDate, 3)
     await assertExceptionOnAsyncFn(
-      async () => await bnb.fulfilBooking(lid, bid, { from: guest }),
+      async () => await bnb.fulfilBooking(bid, { from: guest }),
       'Cannot fulfil booking before end date'
     )
   })
@@ -394,7 +394,7 @@ contract('EthBnB', async (accounts) => {
     const listingBalanceBefore = await getListingBalance(bnb, lid, host)
 
     // Guest fulfills
-    res = await bnb.fulfilBooking(lid, bid, { from: guest })
+    res = await bnb.fulfilBooking(bid, { from: guest })
 
     // AFTER: Calculate balance differentials
     const contractBalanceDiff = (await web3.eth.getBalance(bnb.address)) - contractBalanceBefore

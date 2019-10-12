@@ -93,7 +93,7 @@ contract('EthBnB', async (accounts) => {
     try {
         let x = await bnb.getListingAll(lid);
     } catch(e) {
-        assert(e.toString().search('No such listing found') > -1, 'The exception message did not match expectations')
+        assert(e.toString().search('Invalid listing identifier') > -1, 'The exception message did not match expectations')
         return
     }
     assert(false, 'Should have thrown exception as there is should be no listing after deletion.')
@@ -118,7 +118,7 @@ contract('EthBnB', async (accounts) => {
     res = await bnb.createAccount('Mary', { from : accounts[1] })
     const lid = await createListingDefault(bnb, accounts[0])
     const bid = await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
-    res = await bnb.cancelBooking(lid, bid, { from: accounts[0] })
+    res = await bnb.cancelBooking(bid, { from: accounts[0] })
     truffleAssert.eventEmitted(res, 'BookingCancelled')
   })
 
@@ -294,9 +294,9 @@ contract('EthBnB', async (accounts) => {
     const bid2 = await bookListingDefault(bnb, accounts[2], lid2, feb2019(10), 3)
 
     // Two ratings from the two users
-    res = await bnb.rate(lid1, bid1, 1, { from: accounts[1] })
+    res = await bnb.rate(bid1, 1, { from: accounts[1] })
     truffleAssert.eventEmitted(res, 'RatingComplete')
-    res = await bnb.rate(lid2, bid2, 5, { from: accounts[2] })
+    res = await bnb.rate(bid2, 5, { from: accounts[2] })
     truffleAssert.eventEmitted(res, 'RatingComplete')
     res = await bnb.getAccountAll(accounts[0], { from: accounts[5] })
     const { totalScore, nRatings } = res
@@ -304,7 +304,7 @@ contract('EthBnB', async (accounts) => {
     assert(bigNumberToInt(nRatings) === 2, 'Total number of ratings must be 2')
 
     // The host rates one of the users
-    res = await bnb.rate(lid1, bid1, 4, { from: accounts[0] })
+    res = await bnb.rate(bid1, 4, { from: accounts[0] })
     truffleAssert.eventEmitted(res, 'RatingComplete')
   })
 
@@ -316,11 +316,11 @@ contract('EthBnB', async (accounts) => {
     res = await bnb.createAccount('Guest1', { from: accounts[1] })
     const lid = await createListingDefault(bnb, accounts[0])
     const bid = await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
-    res = await bnb.rate(lid, bid, 1, { from: accounts[1] })
+    res = await bnb.rate(bid, 1, { from: accounts[1] })
     truffleAssert.eventEmitted(res, 'RatingComplete')
     let errorWasThrown = false
     try {
-      res = await bnb.rate(lid, bid, 5, { from: accounts[1] })
+      res = await bnb.rate(bid, 5, { from: accounts[1] })
     } catch (err) {
       errorWasThrown = true
     }
@@ -338,14 +338,14 @@ contract('EthBnB', async (accounts) => {
     const bid = await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
     let errorWasThrown = false
     try {
-      res = await bnb.rate(lid, bid, 0, { from: accounts[1] })
+      res = await bnb.rate(bid, 0, { from: accounts[1] })
     } catch (err) {
       errorWasThrown = true
     }
     assert(errorWasThrown, 'Rating below 1 should have failed')
     errorWasThrown = false
     try {
-      res = await bnb.rate(lid, bid, 6, { from: accounts[0] })
+      res = await bnb.rate(bid, 6, { from: accounts[0] })
     } catch (err) {
       errorWasThrown = true
     }
@@ -364,7 +364,7 @@ contract('EthBnB', async (accounts) => {
     const bid = await bookListingDefault(bnb, accounts[1], lid, feb2019(10), 3)
     let errorWasThrown = false
     try {
-      res = await bnb.rate(lid, bid, 1, { from: accounts[2] })
+      res = await bnb.rate(bid, 1, { from: accounts[2] })
     } catch (err) {
       errorWasThrown = true
     }
@@ -380,7 +380,7 @@ contract('EthBnB', async (accounts) => {
     const lid = await createListingDefault(bnb, accounts[0])
     const bid = await bookListingDefault(bnb, accounts[1], lid, date, 3)
     try {
-      res = await bnb.rate(lid, bid, 1, { from: accounts[1] })
+      res = await bnb.rate(bid, 1, { from: accounts[1] })
     } catch (err) {
       assert(err.toString().search('Cannot rate a booking before it ends') > -1, 'Unexpected exception message')
       return

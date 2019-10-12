@@ -4,6 +4,7 @@ const EthBnB = artifacts.require('EthBnB')
 
 const {
   fromFinney,
+  COUNTRIES,
   DEFAULT_LISTING_PRICE,
   DEFAULT_LISTING_PRICE_WEI,
 } = require('./utils')
@@ -31,11 +32,10 @@ const getDateShifting = (i, N) => {
   while (r in used) {
     r = Math.floor((r + i / N) * RANGE_DAYS) * DAY_MSEC
   }
-  // console.log(`${i}-${r}`)
-  return new Date(r).getTime() / 1000
+  return Math.floor(new Date(Date.now() + r).getTime() / 1000)
 }
 
-const runSetBoth = async (bnb, bnb2, n, lid, a1) => {
+const runSetBoth = async (bnb, bnb_basic, n, lid, a1) => {
   let res
   const bids = []
   const bids2 = []
@@ -46,14 +46,14 @@ const runSetBoth = async (bnb, bnb2, n, lid, a1) => {
   // Book all of them
   for (let i = 0; i < n; i++) {
     const date = getDateShifting(i, n)
-    const day = date / (86400)
-    // const date2 = new Date(day * 1000)
+    const day = Math.floor(date / (86400))
+    // const date2 = new Date(date * 1000)
     // console.log(`${date}, ${date2}`)
     res = await bnb.bookListing(lid, date, NB_OF_DAYS, d1)
     truffleAssert.eventEmitted(res, 'BookingComplete', ev => bids.push(ev.bid))
     const gas1 = getGas(res)
 
-    res = await bnb2.bookListing(lid, date, NB_OF_DAYS, d1)
+    res = await bnb_basic.bookListing(lid, date, NB_OF_DAYS, d1)
     truffleAssert.eventEmitted(res, 'BookingComplete', ev => bids2.push(ev.bid))
     const gas2 = getGas(res)
 
@@ -62,10 +62,10 @@ const runSetBoth = async (bnb, bnb2, n, lid, a1) => {
 
   // Cancel all of them
   for (let i = 0; i < n; i++) {
-    res = await bnb.cancelBooking(lid, bids[i], { from: a1 })
+    res = await bnb.cancelBooking(bids[i], { from: a1 })
     truffleAssert.eventEmitted(res, 'BookingCancelled')
     const gas1 = getGas(res)
-    res = await bnb2.cancelBooking(lid, bids2[i], { from: a1 })
+    res = await bnb_basic.cancelBooking(lid, bids2[i], { from: a1 }) // EthBnB_Basic requires the lid be provided unlike EthBnB
     truffleAssert.eventEmitted(res, 'BookingCancelled')
     const gas2 = getGas(res)
 
@@ -80,7 +80,7 @@ const runSetBoth = async (bnb, bnb2, n, lid, a1) => {
     truffleAssert.eventEmitted(res, 'BookingComplete', ev => bids.push(ev.bid))
     const gas1 = getGas(res)
 
-    res = await bnb2.bookListing(lid, date, NB_OF_DAYS, d1)
+    res = await bnb_basic.bookListing(lid, date, NB_OF_DAYS, d1)
     truffleAssert.eventEmitted(res, 'BookingComplete', ev => bids2.push(ev.bid))
     const gas2 = getGas(res)
 
