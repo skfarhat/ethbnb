@@ -162,7 +162,7 @@ const chainTransactions = [
   {
     // Guest1 -> Host1
     // lid: 1 (Cambridge)
-    // bid: 0
+    // bid: 1
     // booked for 3 days: 10/02/2019 to 13/02/2019
     clientIndex: 2,
     name: 'bookListing',
@@ -177,7 +177,7 @@ const chainTransactions = [
   {
     // Guest1 -> Host1
     // lid: 3 (Paris)
-    // bid: 1
+    // bid: 2
     // booked for 4 days: 16/02/2019 to 20/02/2019
     clientIndex: 2,
     name: 'bookListing',
@@ -192,7 +192,7 @@ const chainTransactions = [
   {
     // Guest2 -> Host1
     // lid: 1 (Cambridge)
-    // bid: 1
+    // bid: 3
     // booked for 4 days: 16/02/2019 to 20/02/2019
     clientIndex: 3,
     name: 'bookListing',
@@ -237,7 +237,7 @@ const chainTransactions = [
   // RATINGS
   // ============================================
   // Cambridge (lid=1) owned by Host1 (clientIndex=0) is rated:
-  //    5 stars by Guest1 (bid=0)
+  //    5 stars by Guest1 (bid=1)
   //    2 stars by Guest2 (bid=1)
   // Paris (lid=3) owned by Host2 (clientIndex=0) is rated:
   //    4 stars by Guest1 (bid=0)
@@ -248,8 +248,7 @@ const chainTransactions = [
     clientIndex: 2,
     name: 'rate',
     inputs: [
-      { value: 1, name: 'lid' },
-      { value: 0, name: 'bid' },
+      { value: 1, name: 'bid' },
       { value: 5, name: 'stars' },
     ],
     constant: false,
@@ -258,8 +257,7 @@ const chainTransactions = [
     clientIndex: 3,
     name: 'rate',
     inputs: [
-      { value: 1, name: 'lid' },
-      { value: 1, name: 'bid' },
+      { value: 3, name: 'bid' },
       { value: 2, name: 'stars' },
     ],
     constant: false,
@@ -268,8 +266,7 @@ const chainTransactions = [
     clientIndex: 2,
     name: 'rate',
     inputs: [
-      { value: 3, name: 'lid' },
-      { value: 0, name: 'bid' },
+      { value: 2, name: 'bid' },
       { value: 4, name: 'stars' },
     ],
     constant: false,
@@ -278,8 +275,7 @@ const chainTransactions = [
     clientIndex: 0,
     name: 'rate',
     inputs: [
-      { value: 1, name: 'lid' },
-      { value: 1, name: 'bid' },
+      { value: 3, name: 'bid' },
       { value: 3, name: 'stars' },
     ],
     constant: false,
