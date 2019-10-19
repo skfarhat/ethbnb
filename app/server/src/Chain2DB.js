@@ -73,19 +73,18 @@ module.exports = (database) => {
 
   // Given a 'bid' and 'from' address, this function reads
   // a booking's fields from the blockchain.
-  const fetchAndReturnBooking = async (bid, lid, from) => {
-    const b = {
-      bid,
-      lid,
-      guest: from,
-    }
+  const fetchAndReturnBooking = async (bid, from) => {
     try {
-      const r = await contract.methods.getBookingDates(lid, bid).call({ from })
-      b.fromDate = r.fromDate
-      b.toDate = r.toDate
+      const res = await contract.methods.getBookingAll(bid).call({ from })
+      const fields = ['lid', 'fromDate', 'toDate', 'guest', 'host']
+      const b = { bid }
+      Object.values(fields).forEach((field) => {
+        b[field] = res[field]
+      })
       return b
     } catch (exc) {
-      logger.error(`Failed to call getBookingDates()${exc}`)
+      console.log(exc)
+      logger.error(`Failed to call getBookingAll()${exc}`)
       throw exc
     }
   }
@@ -122,8 +121,10 @@ module.exports = (database) => {
 
   // Create a Booking object and add it to database
   const bookingCompleteEventHanlder = async (event) => {
-    const { lid, bid, from } = event.returnValues
-    const booking = await fetchAndReturnBooking(bid, lid, from)
+    const { bid, from } = event.returnValues
+    console.log('bookingCompleteEventHanlder', bid, from)
+    const booking = await fetchAndReturnBooking(bid, from)
+    console.log(booking)
     await addBookingToDatabase(booking)
   }
 
@@ -134,21 +135,21 @@ module.exports = (database) => {
   // Callback should fire after bookingComplete and others.
   const ratingCompleteEventHandler = async (event) => {
     logger.silly('ratingCompleteEventHandler')
-    const { from, bid, lid, stars } = event.returnValues
-
+    const { from, bid, stars } = event.returnValues
+    let booking = await Booking.findOne({ bid })
     // Get booking and listing
     // We might have to wait for them as the event firing is asynchronous
     // and RatingComplete relies on the Listing and Booking being present.
     //
     // FIXME: The below is not ideal but does the job for now.
-    const WAIT_INTERVAL = 500 // usec
-    let booking = await Booking.findOne({ bid, lid })
-    let listing = await Listing.findOne({ lid }, { owner: 1, _id: 0 })
-    while (!listing || !booking) {
-      booking = await Booking.findOne({ bid, lid })
-      listing = await Listing.findOne({ lid }, { owner: 1, _id: 0 })
+    const WAIT_INTERVAL = 50000 // usec
+
+    while (!booking) {
+      booking = await Booking.findOne({ bid })
       sleep(WAIT_INTERVAL)
     }
+    const { lid } = booking
+    const listing = await Listing.findOne({ lid }, { owner: 1, _id: 0 })
     // True if the guest is the one who is rating the owner
     const isGuestRater = from === booking.guest
     // If the rater = guest, other = owner
