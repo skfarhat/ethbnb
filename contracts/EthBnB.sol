@@ -95,18 +95,18 @@ contract EthBnB {
   event Error(int code);
 
   // Account events
-  event CreateAccountEvent();
-  event UpdateAccountEvent();
-  event DeleteAccountEvent();
+  event CreateAccountEvent(address from);
+  event UpdateAccountEvent(address from);
+  event DeleteAccountEvent(address from);
   // Listing events
-  event CreateListingEvent(uint lid);
-  event UpdateListingEvent(uint lid);
-  event DeleteListingEvent(uint lid);
+  event CreateListingEvent(address from, uint lid);
+  event UpdateListingEvent(address from, uint lid);
+  event DeleteListingEvent(address from, uint lid);
   // Booking events
-  event BookingComplete(uint bid);
-  event BookingCancelled(uint bid);
+  event BookingComplete(address from, uint bid);
+  event BookingCancelled(address from, uint bid);
 
-  event RatingComplete(uint bid, uint stars);
+  event RatingComplete(address from, uint bid, uint stars);
 
   /**
    * Listings will have incrementing Ids starting from 1
@@ -159,7 +159,7 @@ contract EthBnB {
       totalScore: 0,
       nRatings: 0
     });
-    emit CreateAccountEvent();
+    emit CreateAccountEvent(msg.sender);
   }
 
   function hasAccount() public view returns (bool) {
@@ -204,7 +204,7 @@ contract EthBnB {
           })
         });
         listings[nextListingId].booker.initialise();
-        emit CreateListingEvent(nextListingId++);
+        emit CreateListingEvent(msg.sender, nextListingId++);
   }
 
   /**
@@ -250,7 +250,7 @@ contract EthBnB {
         listing.balance -= stake;
         // Refund any excess to the guest
         guest.transfer(msg.value - stake);
-        emit BookingComplete(bid);
+        emit BookingComplete(msg.sender, bid);
       } else {
         // Refund all Ether provided if the booking failed
         guest.transfer(msg.value);
@@ -263,7 +263,7 @@ contract EthBnB {
       listing.location = location;
       listing.price = price;
       listing.country = country;
-      emit UpdateListingEvent(lid);
+      emit UpdateListingEvent(msg.sender, lid);
   }
 
   function setListingImage(uint lid, string memory cid, string memory cidSource)
@@ -271,7 +271,7 @@ contract EthBnB {
       Listing storage listing = listings[lid];
       listing.imageCID = cid;
       listing.imageCIDSource = cidSource;
-      emit UpdateListingEvent(lid);
+      emit UpdateListingEvent(msg.sender, lid);
   }
 
   /**
@@ -293,7 +293,7 @@ contract EthBnB {
 
     // Delete listing's storage
     delete listings[lid];
-    emit DeleteListingEvent(lid);
+    emit DeleteListingEvent(msg.sender, lid);
   }
 
   function depositIntoListing(uint lid)
@@ -329,7 +329,7 @@ contract EthBnB {
     address guest = booking.guestAddr;
     address host = booking.hostAddr;
     (, uint toDate) = getBookingDates(bid);
-    require(msg.sender == guest , 'Only guest can call fulfilBooking');
+    require(msg.sender == guest, 'Only guest can call fulfilBooking');
     require(toDate <= now, 'Cannot fulfil booking before end date');
 
     // Fund Release:
@@ -380,7 +380,7 @@ contract EthBnB {
       accounts[booking.guestAddr].totalScore += stars;
       accounts[booking.guestAddr].nRatings++;
     }
-    emit RatingComplete(bid, stars);
+    emit RatingComplete(msg.sender, bid, stars);
   }
 
   /**
@@ -398,8 +398,18 @@ contract EthBnB {
       );
     int res = listings[lid].booker.cancel(bid);
     if (res >= 0) {
-      emit BookingCancelled(bid);
+      delete bookings[bid];
+      emit BookingCancelled(msg.sender, bid);
     }
+  }
+
+  function getBookingAll(uint bid) public view
+    validBooking(bid)
+    returns (uint lid, address guest, address host, uint fromDate, uint toDate)
+  {
+    Booking storage booking = bookings[bid];
+    (uint fromDate1, uint toDate1) = listings[booking.lid].booker.getDates(bid);
+    return (booking.lid, booking.guestAddr, booking.hostAddr, fromDate1, toDate1);
   }
 
   function getBookingDates(uint bid) public view
