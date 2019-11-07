@@ -2,6 +2,7 @@ app/client/js/loadAbi.js
 *loadAbi.js*
 app/server/dist
 coverage/
+results/
 coverage.json
 doc/exclude
 trash**

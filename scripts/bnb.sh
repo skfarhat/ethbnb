@@ -25,7 +25,7 @@ else
   alias quick_setup="node $SERVER_DIR/src/server.js --initTestData=false"
   alias s1="npm start --prefix $CLIENT_DIR" # Start client
   alias s2="npm start --prefix $SERVER_DIR" # Start server
-  alias s9="ganache-cli -e 10000 -m \"eyebrow pluck bonus glove drastic nature chef rent youth dizzy magnet virtual\""
+  alias s9="ganache-cli -e 100000 -m \"eyebrow pluck bonus glove drastic nature chef rent youth dizzy magnet virtual\""
   alias s0=full_setup
   alias q0=quick_setup
 fi

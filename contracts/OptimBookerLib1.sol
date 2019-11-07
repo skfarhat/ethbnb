@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-library OptimBookerLib {
+library OptimBookerLib1 {
 
     struct Node {
         /// Booking's start date in seconds
@@ -17,7 +17,7 @@ library OptimBookerLib {
     }
 
     uint constant HEAD = 0;
-    uint constant JUNK = 2^256-1; // We assume there won't be that many bookings
+    uint constant JUNK = 999999; // We assume there won't be that many bookings
 
     int public constant NOT_FOUND = -1;
     int public constant BOOK_CONFLICT = -2;
@@ -155,13 +155,22 @@ library OptimBookerLib {
         uint prev = HEAD;
         uint curr = self.nodes[HEAD].next;
         while (curr != HEAD) {
-            uint currFrom = self.nodes[curr].fromDate;
-            uint currTo = self.nodes[curr].toDate;
-            if (fromDate >= currTo) {
-                return int(newBook(self, prev, curr, bid, fromDate, toDate));
-            } else if (toDate <= currFrom) {
+            uint x = self.nodes[curr].fromDate;
+            uint y = self.nodes[curr].toDate;
+            // if (y <= now) {
+                // FIXME:
+                // Remove curr node
+                // self.head = self.nodes[curr].next;
+                // TODO: addJunk(curr);
+                // prev = 0;
+                // curr = self.head;
+            // } else
+            if (fromDate >= y) {
                 prev = curr;
                 curr = self.nodes[curr].next;
+            } else if (toDate <= x) {
+                // TODO: self.freeJunk()
+                return int(newBook(self, prev, curr, bid, fromDate, toDate));
             } else {
                 return BOOK_CONFLICT;
             }
@@ -184,22 +193,6 @@ library OptimBookerLib {
             curr = self.nodes[curr].next;
         }
         return NOT_FOUND;
-    }
-
-    function cancelPastBookings(Storage storage self) public
-    {
-        uint curr = self.nodes[HEAD].next;
-        while (curr != HEAD) {
-            if (self.nodes[curr].toDate < now) {
-                break;
-            }
-            curr = self.nodes[curr].next;
-        }
-        // Add all bookings starting from curr to junk
-        while (curr != HEAD) {
-            addJunk(self, curr);
-            curr = self.nodes[curr].next;
-        }
     }
 
     /// Return index of found id

@@ -20,7 +20,7 @@ pipeline {
         steps {
           sh ('rm -rf build/')
           /* Run smart-contract tests */
-          sh('truffle test')
+          sh('./scripts/truffle-test.sh')
         }
       }
 
