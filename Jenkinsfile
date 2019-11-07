@@ -33,7 +33,7 @@ pipeline {
       stage('Client Vulnerability check') {
          steps {
           dir('app/client') {
-            sh('npm audit')
+            sh('npm audit || true')
           }
         }
       }
@@ -50,7 +50,7 @@ pipeline {
       stage('Server Vulnerability Check') {
         steps {
           dir('app/server') {
-            sh('npm audit')
+            sh('npm audit || true')
           }
         }
       }
