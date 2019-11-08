@@ -5,7 +5,7 @@ import './OptimBookerLib.sol';
 /**
  *
  */
-contract EthBnB {
+contract Ethbnb {
 
   uint constant SECONDS_PER_DAY = 3600 * 24;
 
@@ -131,8 +131,8 @@ contract EthBnB {
   // FUNCTIONS
   // =======================================================================
 
-  modifier accountExists(address owner) {
-    require(accounts[owner].owner == owner, 'Invalid account address');
+  modifier accountExists() {
+    require(accounts[msg.sender].owner == msg.sender, 'Invalid account address');
     _;
   }
 
@@ -142,6 +142,7 @@ contract EthBnB {
   }
 
   modifier listingExists(uint lid) {
+    require(accounts[msg.sender].owner == msg.sender, 'Invalid account address');
     require(listings[lid].lid == lid, 'Invalid listing identifier');
     _;
   }
@@ -166,8 +167,9 @@ contract EthBnB {
     return accounts[msg.sender].owner == msg.sender;
   }
 
-  function getAccountAll(address owner) public accountExists(owner) view
+  function getAccountAll(address owner) public view
     returns (string memory name, uint dateCreated, uint totalScore, uint nRatings) {
+      require(accounts[owner].owner == owner, 'Invalid account address');
       Account memory account = accounts[owner];
       return (account.name, account.dateCreated, account.totalScore, account.nRatings);
     }
@@ -187,8 +189,7 @@ contract EthBnB {
    * added to its balance.
    */
   function createListing(Country country, string memory location, uint price)
-    public payable {
-        require(hasAccount(), 'Must have an account before creating a listing');
+    public payable accountExists() {
         // Note: enforce a maximum number of listings per user?
         listings[nextListingId] = Listing({
           lid : nextListingId,
@@ -217,7 +218,6 @@ contract EthBnB {
   function bookListing(uint lid, uint fromDate, uint nbOfDays)
     public payable listingExists(lid) {
       // TODO: cap the number of booked days to 30 or so
-      require(hasAccount(), 'Guest must have an account before booking');
       Listing storage listing = listings[lid];
       address payable guest = msg.sender;
       uint256 stake = 2 * listing.price * nbOfDays;
