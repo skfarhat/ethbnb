@@ -34,28 +34,60 @@ const chainTransactions = [
   // ACCOUNTS
   // ============================================
   {
+    // Host1
     name: 'createAccount',
-    inputs: [{ value: 'Host1' }],
+    inputs: [{ value: 'Alex' }],
     constant: false,
     clientIndex: 0,
   },
   {
+    // Host2
     name: 'createAccount',
-    inputs: [{ value: 'Host2' }],
+    inputs: [{ value: 'Jerôme' }],
     constant: false,
     clientIndex: 1,
   },
   {
+    // Host3
     name: 'createAccount',
-    inputs: [{ value: 'Guest1' }],
+    inputs: [{ value: 'Jose' }],
+    constant: false,
+    clientIndex: 4,
+  },
+  {
+    // Host4
+    name: 'createAccount',
+    inputs: [{ value: 'Georges' }],
+    constant: false,
+    clientIndex: 6,
+  },
+  {
+    // Host5
+    name: 'createAccount',
+    inputs: [{ value: 'Felipe' }],
+    constant: false,
+    clientIndex: 7,
+  },
+  {
+    // Guest1
+    name: 'createAccount',
+    inputs: [{ value: 'Brendan' }],
     constant: false,
     clientIndex: 2,
   },
   {
+    // Guest2
     name: 'createAccount',
-    inputs: [{ value: 'Guest2' }],
+    inputs: [{ value: 'Xao' }],
     constant: false,
     clientIndex: 3,
+  },
+  {
+    // Guest3
+    name: 'createAccount',
+    inputs: [{ value: 'Jenny' }],
+    constant: false,
+    clientIndex: 5,
   },
   // ============================================
   // LISTINGS
@@ -122,9 +154,9 @@ const chainTransactions = [
   },
   {
     // Beirut
-    // owner: Host2
+    // owner: Host4
     // lid: 4
-    clientIndex: 1,
+    clientIndex: 6,
     name: 'createListing',
     inputs: [
       { value: '118'/* LB */, name: 'country' },
@@ -136,24 +168,45 @@ const chainTransactions = [
     metadata: {
       title: 'Beirut Central',
       description: 'Lovely house',
+      images: ['5.jpg'],
     },
   },
   {
-    // Saida
-    // owner: Host2
+    // Greece
+    // owner: Host5
     // lid: 5
-    clientIndex: 1,
+    clientIndex: 7,
     name: 'createListing',
     inputs: [
-      { value: '118'/* LB */, name: 'country' },
-      { value: 'Saida', name: 'location' },
+      { value: '85'/* Greece */, name: 'country' },
+      { value: 'Samothraki', name: 'location' },
       { value: '3', name: 'price' },
     ],
     constant: false,
     value: 2 * 3,
     metadata: {
-      title: 'Sidon Castle',
-      description: 'Great flat with a nice view!',
+      title: 'Samothraki House',
+      description: 'Beautiful house on a lovely island!',
+      images: ['6.jpg'],
+    },
+  },
+  {
+    // Brazil
+    // owner: Host3
+    // lid: 6
+    clientIndex: 4,
+    name: 'createListing',
+    inputs: [
+      { value: '29'/* Brazil */, name: 'country' },
+      { value: 'Rio', name: 'location' },
+      { value: '25', name: 'price' },
+    ],
+    constant: false,
+    value: 2 * 25,
+    metadata: {
+      title: 'Remarkable house in Rio',
+      description: 'Property located in the heart of Rio, quiet street-side, with the best restaurants, theaters and cinemas a few feet away.',
+      images: ['7.jpg'],
     },
   },
   // ============================================
@@ -207,6 +260,7 @@ const chainTransactions = [
   {
     // Guest1 -> Host2
     // lid: 3 (Paris)
+    // bid: 4
     // booked for 4 days: 06/02/2019 to 10/02/2019
     clientIndex: 2,
     name: 'bookListing',
@@ -221,7 +275,7 @@ const chainTransactions = [
   {
     // Guest2 -> Host2
     // lid: 4 (Beirut)
-    // bid: 0
+    // bid: 5
     // booked for 2 days: 12/02/2019 to 14/02/2019
     clientIndex: 3,
     name: 'bookListing',
@@ -231,6 +285,21 @@ const chainTransactions = [
       { value: 2, name: 'nbOfDays' },
     ],
     value: 2 * 7,
+    constant: false,
+  },
+  {
+    // Guest3 -> Host3
+    // lid: 6 (Rio)
+    // bid: 6
+    // booked for 3 days: 10/02/2019 to 13/02/2019
+    clientIndex: 5,
+    name: 'bookListing',
+    inputs: [
+      { value: 6, name: 'listingId' },
+      { value: feb2019(10), name: 'fromDate' },
+      { value: 3, name: 'nbOfDays' },
+    ],
+    value: 2 * 25,
     constant: false,
   },
   // ============================================
@@ -258,7 +327,7 @@ const chainTransactions = [
     name: 'rate',
     inputs: [
       { value: 3, name: 'bid' },
-      { value: 2, name: 'stars' },
+      { value: 4, name: 'stars' },
     ],
     constant: false,
   },
@@ -267,7 +336,16 @@ const chainTransactions = [
     name: 'rate',
     inputs: [
       { value: 2, name: 'bid' },
-      { value: 4, name: 'stars' },
+      { value: 5, name: 'stars' },
+    ],
+    constant: false,
+  },
+  {
+    clientIndex: 2,
+    name: 'rate',
+    inputs: [
+      { value: 4, name: 'bid' },
+      { value: 5, name: 'stars' },
     ],
     constant: false,
   },
@@ -276,7 +354,25 @@ const chainTransactions = [
     name: 'rate',
     inputs: [
       { value: 3, name: 'bid' },
-      { value: 3, name: 'stars' },
+      { value: 5, name: 'stars' },
+    ],
+    constant: false,
+  },
+  {
+    clientIndex: 1,
+    name: 'rate',
+    inputs: [
+      { value: 2, name: 'bid' },
+      { value: 5, name: 'stars' },
+    ],
+    constant: false,
+  },
+  {
+    clientIndex: 5,
+    name: 'rate',
+    inputs: [
+      { value: 6, name: 'bid' },
+      { value: 5, name: 'stars' },
     ],
     constant: false,
   },
