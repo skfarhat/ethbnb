@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { withRouter, Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import { Menu } from 'semantic-ui-react'
+import { Menu, Image } from 'semantic-ui-react'
 import { isSet } from '../constants/global'
 
 class Navigation extends Component {
@@ -14,17 +14,17 @@ class Navigation extends Component {
     return (
       <Menu>
         <Link to="/listing/">
-          <Menu.Item
-            name="editorials"
-            active
-          >
-            EthBnB
+          <Menu.Item id="logo-item">
+            <Menu.Header>
+                <Image src="/house-logo-small.png" size="mini" style={{ marginRight: '10px' }} />
+            </Menu.Header>
+              <h5> Ethbnb </h5>
           </Menu.Item>
         </Link>
         <Menu.Menu position="right">
-          {balanceDOM}
-        </Menu.Menu>
-        <Menu.Menu position="right">
+          <Menu.Menu position="left">
+            {balanceDOM}
+          </Menu.Menu>
           <Menu.Item
             name="New Listing"
             onClick={() => history.push('/new-listing')}

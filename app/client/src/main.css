@@ -1,5 +1,9 @@
+body {
+  background-color: #fbfbfb;
+}
 .container {
-    max-width: 95%;
+    max-width: 85%;
+    background-color: #fbfbfb;
 }
 .grid-item {
     float: left;
@@ -7,6 +11,9 @@
     height: 200px;
     background: #e6e5e4;
     border: 2px solid #b6b5b4;
+}
+#logo-item {
+  padding: 8px;
 }
 /** See ListingMini.jsx */
 .listing-mini {

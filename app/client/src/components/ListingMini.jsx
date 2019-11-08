@@ -76,12 +76,11 @@ class ListingMini extends Component {
           </span>
         </div>
         <div>
-          <em> Owner: {ownerStr} </em>
+          <em> {ownerStr} </em>
         </div>
         <div>
-          <em> Price: </em>
           <span className="price">
-            {price}
+            {price} ETH
           </span>
         </div>
       </div>
