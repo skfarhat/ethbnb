@@ -9,7 +9,7 @@ const myFormat = printf(info => `${info.timestamp} [${info.label}] ${info.level}
 
 const logger = createLogger({
   format: combine(
-    label({ label: colors.red('EthBnB') }),
+    label({ label: colors.red('Ethbnb') }),
     timestamp(),
   ),
   transports: [

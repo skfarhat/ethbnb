@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "Server component of EthBnB",
+  "description": "Server component of Ethbnb",
   "main": "dist/server.js",
   "scripts": {
     "start": "node src/server",

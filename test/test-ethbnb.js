@@ -1,5 +1,5 @@
 const truffleAssert = require('truffle-assertions')
-const EthBnB = artifacts.require('EthBnB')
+const Ethbnb = artifacts.require('Ethbnb')
 
 const {
   feb2019,
@@ -13,15 +13,15 @@ const {
   COUNTRIES
 } = require('./utils')
 
-contract('EthBnB', async (accounts) => {
+contract('Ethbnb', async (accounts) => {
   const d = { from: accounts[0] }
 
-  // Eth account that has no corresponding 'Account' in EthBnB contract
+  // Eth account that has no corresponding 'Account' in Ethbnb contract
   const UNUSED_ACCOUNT = accounts[8]
 
   // Checks that hasAccount() returns false when no account has been created
   it('Account: hasAcccount() returns false when no account has been created', async () => {
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     const [a0, a1] = accounts
     const account0Exists = await bnb.hasAccount.call({ from: a0 })
     const account1Exists = await bnb.hasAccount.call({ from: a1 })
@@ -31,7 +31,7 @@ contract('EthBnB', async (accounts) => {
 
   // Check that we can create an account
   it('Account: hasAccount() createAccount() are correct', async () => {
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     const NAME = 'Alex'
     const [a0] = accounts
     await bnb.createAccount(NAME, { from: a0 })
@@ -48,7 +48,7 @@ contract('EthBnB', async (accounts) => {
 
   // Create listing without an account
   it('Listing: createListing() fails when user has no \'Account\'', async () => {
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     // Create a listing
     try {
       const imageCID = ''
@@ -65,7 +65,7 @@ contract('EthBnB', async (accounts) => {
   it('Listing: createListing() correct', async () => {
     let res
     const [a0] = accounts
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Alex', { from: a0 })
     const lid = await createListingDefault(bnb, a0)
     assert (lid > 0, 'The listing id should be greater than zero')
@@ -74,7 +74,7 @@ contract('EthBnB', async (accounts) => {
   it('Listing can be booked', async () => {
     let res
     const [host, guest] = accounts
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Alex', { from: host })
     res = await bnb.createAccount('Mark', { from: guest })
     const lid = await createListingDefault(bnb, host)
@@ -84,7 +84,7 @@ contract('EthBnB', async (accounts) => {
   it('Listing can be deleted and cannot be accessed afterwards', async () => {
     let res
     const [host] = accounts
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Alex', { from: host })
     let lid = await createListingDefault(bnb, host)
     res = await bnb.deleteListing(lid)
@@ -101,7 +101,7 @@ contract('EthBnB', async (accounts) => {
 
   it('Two bookings on the same listing have different bids.', async () => {
     let res
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Alex', { from : accounts[0] })
     res = await bnb.createAccount('Mary', { from : accounts[1] })
     res = await bnb.createAccount('Joey', { from : accounts[2] })
@@ -113,7 +113,7 @@ contract('EthBnB', async (accounts) => {
 
   it('Listing can be cancelled', async () => {
     let res
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Alex', { from : accounts[0] })
     res = await bnb.createAccount('Mary', { from : accounts[1] })
     const lid = await createListingDefault(bnb, accounts[0])
@@ -124,7 +124,7 @@ contract('EthBnB', async (accounts) => {
 
   it('Listing: Owner cannot book their own listing', async () => {
     let res
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Alex', { from : accounts[0] })
     const lid = await createListingDefault(bnb, accounts[0])
     try {
@@ -138,7 +138,7 @@ contract('EthBnB', async (accounts) => {
 
   it('Listing: Deleting a listing fails when there are unfinished bookings', async () => {
     let res
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     const futureDate = new Date('3119-02-11').getTime() / 1000
     const [host] = accounts
     res = await bnb.createAccount('Alex', { from: host })
@@ -158,7 +158,7 @@ contract('EthBnB', async (accounts) => {
 
   it('Listing: getListingAll() returns correct details', async () => {
     let lid
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     const [host] = accounts
     await bnb.createAccount('Alex', { from: host })
     const LOCATION = 'London'
@@ -180,7 +180,7 @@ contract('EthBnB', async (accounts) => {
   it('Listing: setListing works and emits UpdateListingEvent', async () => {
     let lid
     const [host] = accounts
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     await bnb.createAccount('Alex', { from : host})
     const LOCATION = 'London'
     const PRICE = 5000
@@ -209,7 +209,7 @@ contract('EthBnB', async (accounts) => {
   it('Listing: setListingImage works and emits UpdateListingEvent', async () => {
     let lid
     const [host] = accounts
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     await bnb.createAccount('Alex', { from : host})
     const LOCATION = 'London'
     const PRICE = 5000
@@ -235,7 +235,7 @@ contract('EthBnB', async (accounts) => {
   // // Test get/set listing price
   // it('Listing: get/set listing price()', async () => {
   //   let lid
-  //   const bnb = await EthBnB.deployed()
+  //   const bnb = await Ethbnb.deployed()
   //   await bnb.createAccount('Alex', d)
   //   const LOCATION = 'London'
   //   const PRICE = 5000
@@ -251,7 +251,7 @@ contract('EthBnB', async (accounts) => {
 
   it('Cannot cancel in-existent booking', async () => {
     let res
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Alex', { from: accounts[0] })
     const lid = await createListingDefault(bnb, accounts[0])
     try {
@@ -265,7 +265,7 @@ contract('EthBnB', async (accounts) => {
   // TODO: implement cancelBooking
   // it('Only booking owner can cancel it', async () => {
   //   let res
-  //   const bnb = await EthBnB.deployed()
+  //   const bnb = await Ethbnb.deployed()
   //   res = await bnb.createAccount('Alex', { from : accounts[0] })
   //   res = await bnb.createAccount('Mary', { from : accounts[1] })
   //   res = await bnb.createAccount('John', { from : accounts[2] })
@@ -284,7 +284,7 @@ contract('EthBnB', async (accounts) => {
   // His guests rate him
   it('Rating: a user twice, check their totalScore and nRatings', async () => {
     let res
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Host', { from: accounts[0] })
     res = await bnb.createAccount('Guest1', { from: accounts[1] })
     res = await bnb.createAccount('Guest2', { from: accounts[2] })
@@ -311,7 +311,7 @@ contract('EthBnB', async (accounts) => {
   it('Rating: Cannot rate a booking twice', async () => {
     let res
     let lid1; let bid1
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Host', { from: accounts[0] })
     res = await bnb.createAccount('Guest1', { from: accounts[1] })
     const lid = await createListingDefault(bnb, accounts[0])
@@ -331,7 +331,7 @@ contract('EthBnB', async (accounts) => {
     let res
     let lid1; let
       bid1
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Host', { from: accounts[0] })
     res = await bnb.createAccount('Guest1', { from: accounts[1] })
     const lid = await createListingDefault(bnb, accounts[0])
@@ -356,7 +356,7 @@ contract('EthBnB', async (accounts) => {
     let res
     let lid1; let
       bid1
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Host', { from: accounts[0] })
     res = await bnb.createAccount('Guest1', { from: accounts[1] })
     res = await bnb.createAccount('Guest1', { from: accounts[2] })
@@ -373,7 +373,7 @@ contract('EthBnB', async (accounts) => {
 
   it('Rating: cannot rate before booking\'s end_date\'', async () => {
     let res
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     const date = new Date('3119-02-11').getTime() / 1000
     res = await bnb.createAccount('Host', { from: accounts[0] })
     res = await bnb.createAccount('Guest1', { from: accounts[1] })

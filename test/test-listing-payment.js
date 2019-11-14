@@ -1,5 +1,5 @@
 const truffleAssert = require('truffle-assertions')
-const EthBnB = artifacts.require('EthBnB')
+const Ethbnb = artifacts.require('Ethbnb')
 
 const {
   feb2019,
@@ -51,7 +51,7 @@ const getListingBalance = async (bnb, lid, host) => {
 const imageCID = ''
 const imageCIDSource = ''
 
-contract('EthBnB', async (accounts) => {
+contract('Ethbnb', async (accounts) => {
 
   /**
    * Convenience function
@@ -86,7 +86,7 @@ contract('EthBnB', async (accounts) => {
     let lid
     let res
     let bid
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     const [host, guest1, guest2, guest3] = accounts
     const priceFinney = 8
     const priceWei = fromFinney(priceFinney)
@@ -111,7 +111,7 @@ contract('EthBnB', async (accounts) => {
   })
 
   it('Balances are correct after listing creation', async() => {
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     let lid
     let res
     let bid
@@ -138,7 +138,7 @@ contract('EthBnB', async (accounts) => {
   })
 
   it('Balances are correct after listing booking', async() => {
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     let lid
     let res
     let bid
@@ -175,7 +175,7 @@ contract('EthBnB', async (accounts) => {
   it('Listing can be deleted and stake is returned to host', async () => {
     let res
     const [host] = accounts
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Alex', { from: host })
     const balance1 = await web3.eth.getBalance(host)
     let lid = await createListingDefault(bnb, host)
@@ -196,7 +196,7 @@ contract('EthBnB', async (accounts) => {
   it('Listing: Only owner can deposit and withdraw', async () => {
     let res
     const [host, other] = accounts
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Alex', { from: host })
     const lid = await createListingDefault(bnb, host)
     await assertExceptionOnAsyncFn(
@@ -213,7 +213,7 @@ contract('EthBnB', async (accounts) => {
     let lid
     const [host] = accounts
     const amountAdded = fromFinney(3000)
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
 
     // Initially the listing has zero in the balance
     // then owner will
@@ -232,7 +232,7 @@ contract('EthBnB', async (accounts) => {
     const [host] = accounts
     const initialAmount = fromFinney(3000)
     const amountRemoved = fromFinney(1000)
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
 
     // Initially the listing has zero
     // in the balance then owner will
@@ -254,7 +254,7 @@ contract('EthBnB', async (accounts) => {
     const [host] = accounts
     const initialAmount = fromFinney(1000)
     const amountRemoved = fromFinney(3000)
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     // Initially the listing has zero
     // in the balance then owner will
     res = await bnb.createAccount('Alex', { from: host })
@@ -272,7 +272,7 @@ contract('EthBnB', async (accounts) => {
   it('Contract refunds the guest if the booking fails', async () => {
     let res
     const [host, guest1, guest2] = accounts
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     const guest2Stake = fromFinney(DEFAULT_LISTING_PRICE * 2)
     res = await bnb.createAccount('Host', { from: host })
     res = await bnb.createAccount('Guest1', { from: guest1 })
@@ -294,7 +294,7 @@ contract('EthBnB', async (accounts) => {
   it('Booking price scales with number of days', async () => {
     let res
     const [host, guest] = accounts
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     const guestStake = fromFinney(DEFAULT_LISTING_PRICE * 2)
     res = await bnb.createAccount('Host', { from: host })
     res = await bnb.createAccount('Guest', { from: guest })
@@ -316,7 +316,7 @@ contract('EthBnB', async (accounts) => {
   it('Booking: excess payment value in bookListing is returned to guest', async () => {
     let res
     const [host, guest] = accounts
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     const guestStake = fromFinney(DEFAULT_LISTING_PRICE * 4)
     res = await bnb.createAccount('Host', { from: host })
     res = await bnb.createAccount('Guest', { from: guest })
@@ -332,7 +332,7 @@ contract('EthBnB', async (accounts) => {
 
   it('Fulfill: fulfilBooking fails when host tries', async () => {
     const [host, guest] = accounts
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Host', { from: host })
     res = await bnb.createAccount('Guest', { from: guest })
     const lid = await createListingDefault(bnb, host)
@@ -346,7 +346,7 @@ contract('EthBnB', async (accounts) => {
 
   it('Fulfill: fulfilBooking succeeds when guest tries', async () => {
     const [host, guest] = accounts
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Host', { from: host })
     res = await bnb.createAccount('Guest', { from: guest })
     const lid = await createListingDefault(bnb, host)
@@ -357,7 +357,7 @@ contract('EthBnB', async (accounts) => {
   it('Fulfill: fulfilBooking can only be called after the booking end date', async () => {
     const [host, guest] = accounts
     const futureDate = new Date('3119-02-11').getTime() / 1000
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Host', { from: host })
     res = await bnb.createAccount('Guest', { from: guest })
     const lid = await createListingDefault(bnb, host)
@@ -371,7 +371,7 @@ contract('EthBnB', async (accounts) => {
   it('Fulfill: Releases funds after guest confirms', async () => {
 
     const [host, guest] = accounts
-    const bnb = await EthBnB.deployed()
+    const bnb = await Ethbnb.deployed()
     res = await bnb.createAccount('Host', { from: host })
     res = await bnb.createAccount('Guest', { from: guest })
 

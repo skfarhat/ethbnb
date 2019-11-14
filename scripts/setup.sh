@@ -6,7 +6,7 @@
 SCRIPTS_DIR=$(cd $(dirname "${BASH_SOURCE[0]}" ) && pwd )
 ROOT_DIR=$(cd $SCRIPTS_DIR && cd .. && pwd)
 ABI_FILE="$ROOT_DIR/app/loadAbi.js"
-ABI_BUILT="$ROOT_DIR/build/contracts/EthBnB.json"
+ABI_BUILT="$ROOT_DIR/build/contracts/Ethbnb.json"
 
 
 exit_err() {
@@ -32,10 +32,10 @@ truffle compile
 out=$(truffle migrate --reset)
 echo "$out"
 if [ `truffle --version 2>&1 | grep -p 'v\d' -o` '==' "v5" ]; then
-  contractAddress=$(echo "$out" | grep "'EthBnB'" -A10 | grep 'contract address' | egrep -p '0x\w+' -o) # for truffle v5
+  contractAddress=$(echo "$out" | grep "'Ethbnb'" -A10 | grep 'contract address' | egrep -p '0x\w+' -o) # for truffle v5
 else
   # Assume it is version 4
-  contractAddress=$(echo "$out" | grep 'EthBnB:' | cut -d ':' -f2) # for truffle v4
+  contractAddress=$(echo "$out" | grep 'Ethbnb:' | cut -d ':' -f2) # for truffle v4
   contractAddress=${contractAddress:1} # because there's one space at the beginning
 fi
 
