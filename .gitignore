@@ -1,5 +1,8 @@
 app/client/js/loadAbi.js
-*loadAbi.js*
+# *loadAbi.js*
+app/loadAbi.js
+!app/client/src/loadAbi.js
+!app/server/src/loadAbi.js
 app/server/dist
 coverage/
 results/
