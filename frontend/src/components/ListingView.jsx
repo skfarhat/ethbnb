@@ -6,7 +6,7 @@ import { Button, Loader } from 'semantic-ui-react'
 import { contractCall } from '../redux/actions'
 import { fetchListingsIfNeeded } from '../redux/listingActions'
 import { getAddr } from '../redux/accountActions'
-import { isSet, formatDate, hasKey, capitaliseWord } from '../constants/global'
+import { isSet, formatDate, capitaliseWord } from '../constants/global'
 import IPFSImage from './IPFSImage'
 import '../css/listing-view.css'
 import EthDatePicker from './EthDatePicker'
@@ -202,7 +202,7 @@ class ListingView extends Component {
 
   async verifyAgainstChain() {
     const { addr, contract } = this.props
-    const { verified, hasVerified } = this.state
+    const { verified } = this.state
     const listing = this.getListing()
     const { lid } = listing
     const obj = {

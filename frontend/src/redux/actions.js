@@ -1,9 +1,4 @@
 import {
-  isSet,
-  hasKey,
-} from '../constants/global'
-
-import {
   SET_ETH_ACCOUNTS,
   setAccount,
   updateAccountBalance,
