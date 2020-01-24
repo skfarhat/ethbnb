@@ -22,7 +22,7 @@
     "mongoose": "^5.7.5",
     "mongoose-hidden": "^1.6.1",
     "path": "^0.12.7",
-    "web3": "^1.2.1",
+    "web3": "^1.2.4",
     "winston": "^3.2.1"
   },
   "devDependencies": {
