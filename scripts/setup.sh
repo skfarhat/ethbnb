@@ -5,9 +5,9 @@
 # ================================================
 SCRIPTS_DIR=$(cd $(dirname "${BASH_SOURCE[0]}" ) && pwd )
 ROOT_DIR=$(cd $SCRIPTS_DIR && cd .. && pwd)
-ABI_FILE="$ROOT_DIR/app/loadAbi.js"
-ABI_BUILT="$ROOT_DIR/build/contracts/Ethbnb.json"
-
+CONTRACTS_DIR="$ROOT_DIR/truffle"
+ABI_FILE="$ROOT_DIR/loadAbi.js"
+ABI_BUILT="$CONTRACTS_DIR/build/contracts/Ethbnb.json"
 
 exit_err() {
   echo "$1"
@@ -17,7 +17,7 @@ exit_err() {
 # ================================================
 # CHANGE DIRECTORY
 # ================================================
-pushd $ROOT_DIR > /dev/null
+pushd $CONTRACTS_DIR > /dev/null
 
 # ================================================
 # COMPILE CONTRACT
@@ -39,14 +39,9 @@ else
   contractAddress=${contractAddress:1} # because there's one space at the beginning
 fi
 
-
 # ================================================
 # UPDATE ABI_FILE
 # ================================================
-# echo "const x = {" > $ABI_FILE
-# echo "contractAddress : '$contractAddress'," >> $ABI_FILE
-# echo "jsonInterface : " >> $ABI_FILE
-# echo "}" >> $ABI_FILE
 cat << EOF > $ABI_FILE
 const x = {
     contractAddress: '$contractAddress',

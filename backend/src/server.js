@@ -3,7 +3,7 @@ const path = require('path')
 const { spawn } = require('child_process')
 require('./globals')()
 
-const SETUP_SCRIPT = path.join(__dirname, '../../../scripts/setup.sh')
+const SETUP_SCRIPT = path.join(__dirname, '../../scripts/setup.sh')
 const constants = global.constants
 const WebServer = require('./WebServer')
 const Chain2DB = require('./Chain2DB')

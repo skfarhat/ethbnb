@@ -1,11 +1,10 @@
-app/client/js/loadAbi.js
-# *loadAbi.js*
-app/loadAbi.js
-!app/client/src/loadAbi.js
-!app/server/src/loadAbi.js
-app/server/dist
-coverage/
+frontend/js/loadAbi.js
+loadAbi.js
+!frontend/src/loadAbi.js
+!backend/src/loadAbi.js
+backend/dist
+truffle/coverage/
+truffle/coverage.json
 results/
-coverage.json
 doc/exclude
 trash**

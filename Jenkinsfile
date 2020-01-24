@@ -11,28 +11,32 @@ pipeline {
 
       stage('Build smart-contract') {
         steps {
-          /* Compile smart-contract */
-          sh('truffle compile')
+          dir('truffle/') {
+            /* Compile smart-contract */
+            sh('truffle compile')
+          }
         }
       }
 
       stage('Test Smart-Contract') {
         steps {
-          sh ('rm -rf build/')
-          /* Run smart-contract tests */
-          sh('./scripts/truffle-test.sh')
-        }
+            sh ('rm -rf truffle/build/')
+            /* Run smart-contract tests */
+            sh('./scripts/truffle-test.sh')
+          }
       }
 
       stage('Coverage Smart-Contract') {
         steps {
-          sh('npx solidity-coverage')
+          dir('truffle/') {
+            sh('npx solidity-coverage')
+          }
         }
       }
 
       stage('Client Vulnerability check') {
          steps {
-          dir('app/client') {
+          dir('frontend/') {
             sh('npm audit || true')
           }
         }
@@ -40,7 +44,7 @@ pipeline {
 
       stage('Client Code Linting') {
         steps {
-          dir('app/client') {
+          dir('frontend/') {
             /* Run Eslint but make sure it doesn't force build failure */
             sh('eslint --config .eslintrc.json --ext .jsx  --format html -o eslint-output.html src/ || true')
           }
@@ -49,7 +53,7 @@ pipeline {
 
       stage('Server Vulnerability Check') {
         steps {
-          dir('app/server') {
+          dir('backend/') {
             sh('npm audit || true')
           }
         }

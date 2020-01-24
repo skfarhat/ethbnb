@@ -4,8 +4,8 @@
 
 SCRIPTS_DIR=$(cd $(dirname "$0}" ) && pwd )
 ROOT_DIR=$(cd $SCRIPTS_DIR && cd .. && pwd)
-CLIENT_DIR="$ROOT_DIR/app/client"
-SERVER_DIR="$ROOT_DIR/app/server"
+CLIENT_DIR="$ROOT_DIR/frontend"
+SERVER_DIR="$ROOT_DIR/backend"
 
 lintClient() {
   d=$(mktemp -d)

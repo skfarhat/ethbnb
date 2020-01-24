@@ -1,5 +1,5 @@
 module.exports = {
-  testCommand: './scripts/truffle-test.sh',
+  testCommand: '../scripts/truffle-test.sh',
   skipFiles: [
     'contracts/EthBnB1.sol',
     'contracts/OptimBookerLib1.sol',
