@@ -37,7 +37,7 @@ pipeline {
       stage('Client Vulnerability check') {
          steps {
           dir('frontend/') {
-            sh('npm audit || true')
+            sh('npm audit')
           }
         }
       }
@@ -46,7 +46,7 @@ pipeline {
         steps {
           dir('frontend/') {
             /* Run Eslint but make sure it doesn't force build failure */
-            sh('eslint --config .eslintrc.json --ext .jsx  --format html -o eslint-output.html src/ || true')
+            sh('eslint --config .eslintrc.json --ext .jsx  --format html -o eslint-output.html src/')
           }
         }
       }
@@ -54,7 +54,7 @@ pipeline {
       stage('Server Vulnerability Check') {
         steps {
           dir('backend/') {
-            sh('npm audit || true')
+            sh('npm audit')
           }
         }
       }
