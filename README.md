@@ -44,7 +44,7 @@ npm start --prefix <proj_root>/frontend
 
 # Test smart-contract
 
-```
+```bash
 # 1. Ensure ganache-cli is running
 ganache-cli
 
