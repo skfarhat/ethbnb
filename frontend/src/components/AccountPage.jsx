@@ -24,8 +24,7 @@ class AccountPage extends Component {
 
   render() {
     const { addr, account, accountInfo } = this.props
-
-    if (!isSet(account)) {
+    if (!isSet(account) || !isSet(addr)) {
       return (<div> No account available </div>)
     }
 
