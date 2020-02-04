@@ -163,50 +163,24 @@ export const setWeb3JsWithMetamask = (web3js) => {
     const ethereum = window.ethereum
     window.web3 = web3js
     ethereum.enable().then((accounts) => {
+      const formattedAccounts = accounts.map(acct => web3js.utils.toChecksumAddress(acct))
       dispatch({
         type: SET_WEB3,
         web3js,
         contract,
-        accounts,
+        accounts: formattedAccounts,
       })
       dispatch({
         type: SET_ETH_ACCOUNTS,
-        accounts,
+        accounts: formattedAccounts,
       })
       // Calling setAccount without parameters
       // sets the account to default (whatever that is
       // defined as)
       dispatch(setAccount())
     }).catch((err) => {
-      console.log("Failed to enable accounts")
+      console.log('Failed to enable accounts', err)
     })
-
-    // try {
-    //   ethereum.enable().then((result) => {
-    //     console.log('result', result)
-    //   }).catch((err) => {
-    //     console.log('error', err)
-    //   })
-    //   web3js.eth.getAccounts()
-    //     .then((accounts) => {
-    //       dispatch({
-    //         type: SET_WEB3,
-    //         web3js,
-    //         contract,
-    //         accounts,
-    //       })
-    //       dispatch({
-    //         type: SET_ETH_ACCOUNTS,
-    //         accounts,
-    //       })
-    //       // Calling setAccount without parameters
-    //       // sets the account to default (whatever that is
-    //       // defined as)
-    //       dispatch(setAccount())
-    //     })
-    // } catch (error) {
-    //   // User denied account access...
-    // }
   }
 }
 
