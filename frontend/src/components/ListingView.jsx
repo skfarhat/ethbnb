@@ -10,7 +10,7 @@ import { isSet, formatDate, capitaliseWord } from '../constants/global'
 import IPFSImage from './IPFSImage'
 import '../css/listing-view.css'
 import EthDatePicker from './EthDatePicker'
-
+import { fromFinney } from './Utils'
 
 class ListingView extends Component {
   constructor(props) {
@@ -71,7 +71,10 @@ class ListingView extends Component {
       storageKey: this.getStorageKey(lid, fromDate, nbOfDays, addr),
       returnVal: true,
     }
-    dispatch(contractCall('bookListing', [lid, fromDate, nbOfDays], addr, other))
+    console.log('this is the listing', this.getListing())
+    // const fromFinney = value => web3.utils.toWei(`${value}`, 'finney')
+    const stake = fromFinney(2 * this.getListing().price)
+    dispatch(contractCall('bookListing', [lid, fromDate, nbOfDays], addr, stake, other))
   }
 
   // Returns [fromDate, nbOfDays] if 'fromDate' and 'toDate' props
@@ -163,6 +166,7 @@ class ListingView extends Component {
     }
     // Get the listing for this component
     const listing = this.getListing()
+
     if (!isSet(listing)) {
       return (
         <h4>

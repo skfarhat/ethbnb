@@ -1,4 +1,4 @@
-
+import Web3 from 'web3'
 // Return the extension for the given file object
 const getExtensionFromFile = (file) => {
   if (file) {
@@ -6,6 +6,8 @@ const getExtensionFromFile = (file) => {
   }
   return null
 }
+
+const fromFinney = value => Web3.utils.toWei(`${value}`, 'finney')
 
 const fileObjectFromImgDOM = async (imgDOM, filename) => new Promise((resolve, reject) => {
   fetch(imgDOM.src)
@@ -20,4 +22,5 @@ const fileObjectFromImgDOM = async (imgDOM, filename) => new Promise((resolve, r
 export {
   getExtensionFromFile,
   fileObjectFromImgDOM,
+  fromFinney,
 }

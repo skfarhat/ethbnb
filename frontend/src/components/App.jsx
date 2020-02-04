@@ -9,7 +9,7 @@ import ListingSearch from './ListingSearch'
 import Navigation from './Navigation'
 import AccountPage from './AccountPage'
 import ListingCreate from './ListingCreate'
-import { setWeb3Js, REMOVE_MESSAGE } from '../redux/actions'
+import { setWeb3Js, setWeb3JsWithMetamask, REMOVE_MESSAGE } from '../redux/actions'
 
 
 class App extends Component {
@@ -24,9 +24,17 @@ class App extends Component {
   }
 
   onWindowLoad() {
+    console.log('web3 is', Web3)
+    // const { dispatch } = this.props
+    // const web3js = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
+    // dispatch(setWeb3Js(web3js))
+    this.onWindowLoadWithMetamask()
+  }
+
+  onWindowLoadWithMetamask() {
     const { dispatch } = this.props
     const web3js = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
-    dispatch(setWeb3Js(web3js))
+    dispatch(setWeb3JsWithMetamask(web3js))
   }
 
   handleMessageDismiss(key) {
