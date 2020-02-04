@@ -84,12 +84,13 @@ const shouldFetchEthEvents = (state, accountAddr) => {
 // @userAddr     address for the account sending the TX
 // @other        anything else that needs to be stored in the txObj
 //               e.g. txHash, eventName
-export const contractCall = (funcName, input, userAddr, other) => {
+export const contractCall = (funcName, input, userAddr, stake, other) => {
   return (dispatch, getState) => {
     const { contract } = getState()
     const obj = {
       from: userAddr,
       gas: 1000000,
+      value: stake,
     }
     // Async
     dispatch(addPendingTx(funcName, input, userAddr, other))
@@ -144,10 +145,68 @@ export const setWeb3Js = (web3js) => {
           accounts,
         })
         // Calling setAccount without parameters
-        // sets the account to default (whatever that is
-        // defined as)
+        // sets the account to default (whatever that is defined as)
         dispatch(setAccount())
       })
+  }
+}
+
+export const setWeb3JsWithMetamask = (web3js) => {
+  return (dispatch) => {
+    const { jsonInterface, contractAddress } = window.contractDetails
+    // We must set the provider before instantiating the contract
+    // so that the provider is passed to the contract instance
+    const provider = new web3js.providers.WebsocketProvider('ws://localhost:8545')
+    web3js.setProvider(provider)
+    const contract = new web3js.eth.Contract(jsonInterface.abi, contractAddress)
+    console.log(window.ethereum)
+    const ethereum = window.ethereum
+    window.web3 = web3js
+    ethereum.enable().then((accounts) => {
+      dispatch({
+        type: SET_WEB3,
+        web3js,
+        contract,
+        accounts,
+      })
+      dispatch({
+        type: SET_ETH_ACCOUNTS,
+        accounts,
+      })
+      // Calling setAccount without parameters
+      // sets the account to default (whatever that is
+      // defined as)
+      dispatch(setAccount())
+    }).catch((err) => {
+      console.log("Failed to enable accounts")
+    })
+
+    // try {
+    //   ethereum.enable().then((result) => {
+    //     console.log('result', result)
+    //   }).catch((err) => {
+    //     console.log('error', err)
+    //   })
+    //   web3js.eth.getAccounts()
+    //     .then((accounts) => {
+    //       dispatch({
+    //         type: SET_WEB3,
+    //         web3js,
+    //         contract,
+    //         accounts,
+    //       })
+    //       dispatch({
+    //         type: SET_ETH_ACCOUNTS,
+    //         accounts,
+    //       })
+    //       // Calling setAccount without parameters
+    //       // sets the account to default (whatever that is
+    //       // defined as)
+    //       dispatch(setAccount())
+    //     })
+    // } catch (error) {
+    //   // User denied account access...
+    // }
   }
 }
 

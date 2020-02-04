@@ -41,7 +41,7 @@ class ListingSearch extends Component {
         x: parseInt(i % COLS, 10),
         y: parseInt(i / COLS, 10),
         w: 1,
-        h: 0.98,
+        h: 0.93,
       })
       i += 1
     })

@@ -32,7 +32,8 @@ class BookingEvent extends Component {
         storageKey: this.getStorageKey(lid, bid, userAddr),
         returnVal: rating,
       }
-      dispatch(contractCall('rate', [lid, bid, rating], userAddr, other))
+      const stake = 0
+      dispatch(contractCall('rate', [lid, bid, rating], userAddr, stake, other))
       // TODO: show something on the UI suggesting we have submitted
     }
   }
