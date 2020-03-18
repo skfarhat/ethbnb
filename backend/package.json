@@ -17,7 +17,7 @@
     "colors": "^1.3.3",
     "express": "^4.16.4",
     "ipfs-api": "^26.1.2",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.2",
     "mongodb": "^3.1.13",
     "mongoose": "^5.7.5",
     "mongoose-hidden": "^1.6.1",
